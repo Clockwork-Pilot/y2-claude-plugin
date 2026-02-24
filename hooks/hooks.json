@@ -1,52 +1,72 @@
 {
-  "hooks": [
-    {
-      "event": "PreToolUse.Write",
-      "description": "Triggered before Write tool is used",
-      "handler": [
-        "/home/yaroslav/local/python3/bin/python3",
-        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      ]
-    },
-    {
-      "event": "PreToolUse.Edit",
-      "description": "Triggered before Edit tool is used",
-      "handler": [
-        "/home/yaroslav/local/python3/bin/python3",
-        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      ]
-    },
-    {
-      "event": "PreToolUse.Bash",
-      "description": "Triggered before Bash tool is used",
-      "handler": [
-        "/home/yaroslav/local/python3/bin/python3",
-        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      ]
-    },
-    {
-      "event": "PreToolUse.Read",
-      "description": "Triggered before Read tool is used",
-      "handler": [
-        "/home/yaroslav/local/python3/bin/python3",
-        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      ]
-    },
-    {
-      "event": "PreToolUse.Glob",
-      "description": "Triggered before Glob tool is used",
-      "handler": [
-        "/home/yaroslav/local/python3/bin/python3",
-        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      ]
-    },
-    {
-      "event": "PreToolUse.Grep",
-      "description": "Triggered before Grep tool is used",
-      "handler": [
-        "/home/yaroslav/local/python3/bin/python3",
-        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      ]
-    }
-  ]
+  "hooks": {
+    "startup": [
+      {
+        "type": "command",
+        "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      }
+    ],
+    "resume": [
+      {
+        "type": "command",
+        "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+          }
+        ]
+      }
+    ]
+  }
 }
