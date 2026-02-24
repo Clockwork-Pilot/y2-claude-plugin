@@ -1,0 +1,49 @@
+{
+  "version": "0.1.0",
+  "name": "claude-plugin",
+  "description": "Minimal Claude plugin with hook handlers",
+  "hooks": [
+    {
+      "event": "PreToolUse.Write",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Edit",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Bash",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Read",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Glob",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Grep",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "hooks": [
+    {
+      "event": "PreToolUse.Write",
+      "description": "Triggered before Write tool is used",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Edit",
+      "description": "Triggered before Edit tool is used",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Bash",
+      "description": "Triggered before Bash tool is used",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Read",
+      "description": "Triggered before Read tool is used",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Glob",
+      "description": "Triggered before Glob tool is used",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    },
+    {
+      "event": "PreToolUse.Grep",
+      "description": "Triggered before Grep tool is used",
+      "handler": [
+        "/home/yaroslav/local/python3/bin/python3",
+        "/home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+      ]
+    }
+  ]
+}
