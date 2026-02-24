@@ -1,17 +1,5 @@
 {
   "hooks": {
-    "startup": [
-      {
-        "type": "command",
-        "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      }
-    ],
-    "resume": [
-      {
-        "type": "command",
-        "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Write",
@@ -30,9 +18,22 @@
             "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
           }
         ]
-      },
+      }
+    ],
+    "SessionStart": [
       {
-        "matcher": "Bash",
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -41,7 +42,7 @@
         ]
       },
       {
-        "matcher": "Read",
+        "matcher": "Edit",
         "hooks": [
           {
             "type": "command",
@@ -50,16 +51,7 @@
         ]
       },
       {
-        "matcher": "Glob",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler.py"
-          }
-        ]
-      },
-      {
-        "matcher": "Grep",
+        "matcher": "Write",
         "hooks": [
           {
             "type": "command",
