@@ -3,7 +3,7 @@
 import logging
 import json
 import os
-import sys
+from io import StringIO
 from config import HOOKS_LOG_FILE, HOOKS_LOG_LEVEL
 
 
@@ -15,7 +15,7 @@ def setup_logger(name: str, output=None) -> logging.Logger:
         name: Logger name (typically __name__)
         output: Optional output destination - can be a file path (str) or stream object.
                 Defaults to HOOKS_LOG_FILE if not provided.
-                If TEST_LOG env var is set, uses stdout instead.
+                If TEST_LOG env var is set, uses StringIO instead.
 
     Returns:
         Configured logger instance
@@ -27,9 +27,9 @@ def setup_logger(name: str, output=None) -> logging.Logger:
     formatter = logging.Formatter('%(message)s')
 
     if output is None:
-        # Check if TEST_LOG is set, use stdout if so
+        # Check if TEST_LOG is set, use StringIO if so
         if os.getenv('TEST_LOG'):
-            handler = logging.StreamHandler(sys.stdout)
+            handler = logging.StreamHandler(StringIO())
         else:
             handler = logging.FileHandler(str(HOOKS_LOG_FILE))
     elif isinstance(output, str):
