@@ -3,20 +3,14 @@
 
 import sys
 import json
-import logging
 from pathlib import Path
 from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config import HOOKS_LOG_FILE, HOOKS_LOG_LEVEL
+from hook_logging import setup_logger
 
-logging.basicConfig(
-    filename=str(HOOKS_LOG_FILE),
-    level=getattr(logging, HOOKS_LOG_LEVEL),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 def main():
