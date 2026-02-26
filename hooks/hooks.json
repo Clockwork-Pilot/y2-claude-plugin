@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_bash.py"
+            "command": "python3 ./hooks/handler_bash.py"
           }
         ]
       },
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_edit.py"
+            "command": "python3 ./hooks/handler_edit.py"
           }
         ]
       },
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_write.py"
+            "command": "python3 ./hooks/handler_write.py"
           }
         ]
       }
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_start.py"
+            "command": "python3 ./hooks/handler_session_start.py"
           }
         ]
       },
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_start.py"
+            "command": "python3 ./hooks/handler_session_start.py"
           }
         ]
       },
@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_start.py"
+            "command": "python3 ./hooks/handler_session_start.py"
           }
         ]
       },
@@ -65,7 +65,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_start.py"
+            "command": "python3 ./hooks/handler_session_start.py"
           }
         ]
       }
@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_end.py"
+            "command": "python3 ./hooks/handler_session_end.py"
           }
         ]
       },
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_end.py"
+            "command": "python3 ./hooks/handler_session_end.py"
           }
         ]
       },
@@ -94,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_end.py"
+            "command": "python3 ./hooks/handler_session_end.py"
           }
         ]
       },
@@ -103,7 +103,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_end.py"
+            "command": "python3 ./hooks/handler_session_end.py"
           }
         ]
       },
@@ -112,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_session_end.py"
+            "command": "python3 ./hooks/handler_session_end.py"
           }
         ]
       }
@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_notification.py"
+            "command": "python3 ./hooks/handler_notification.py"
           }
         ]
       },
@@ -132,7 +132,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_notification.py"
+            "command": "python3 ./hooks/handler_notification.py"
           }
         ]
       },
@@ -141,7 +141,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_notification.py"
+            "command": "python3 ./hooks/handler_notification.py"
           }
         ]
       },
@@ -150,7 +150,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_notification.py"
+            "command": "python3 ./hooks/handler_notification.py"
           }
         ]
       }
@@ -161,7 +161,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_pre_compact.py"
+            "command": "python3 ./hooks/handler_pre_compact.py"
           }
         ]
       },
@@ -170,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_pre_compact.py"
+            "command": "python3 ./hooks/handler_pre_compact.py"
           }
         ]
       }
@@ -181,7 +181,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_config_change.py"
+            "command": "python3 ./hooks/handler_config_change.py"
           }
         ]
       },
@@ -190,7 +190,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_config_change.py"
+            "command": "python3 ./hooks/handler_config_change.py"
           }
         ]
       },
@@ -199,7 +199,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_config_change.py"
+            "command": "python3 ./hooks/handler_config_change.py"
           }
         ]
       },
@@ -208,7 +208,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_config_change.py"
+            "command": "python3 ./hooks/handler_config_change.py"
           }
         ]
       },
@@ -217,7 +217,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_config_change.py"
+            "command": "python3 ./hooks/handler_config_change.py"
           }
         ]
       }
@@ -227,7 +227,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_user_prompt_submit.py"
+            "command": "python3 ./hooks/handler_user_prompt_submit.py"
           }
         ]
       }
@@ -237,7 +237,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_stop.py"
+            "command": "python3 ./hooks/handler_stop.py"
           }
         ]
       }
@@ -247,7 +247,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_teammate_idle.py"
+            "command": "python3 ./hooks/handler_teammate_idle.py"
           }
         ]
       }
@@ -257,7 +257,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_task_completed.py"
+            "command": "python3 ./hooks/handler_task_completed.py"
           }
         ]
       }
@@ -267,7 +267,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_worktree_create.py"
+            "command": "python3 ./hooks/handler_worktree_create.py"
           }
         ]
       }
@@ -277,7 +277,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/yaroslav/local/python3/bin/python3 /home/yaroslav/git/y2-claude-plugin/hooks/handler_worktree_remove.py"
+            "command": "python3 ./hooks/handler_worktree_remove.py"
           }
         ]
       }
