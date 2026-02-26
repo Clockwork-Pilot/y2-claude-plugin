@@ -19,7 +19,7 @@ cd /project && \
 
 # Inside of container - run claude
 cd /project && \
-  claude --model claude-haiku-4-5 --debug --plugin-dir /project
+  cd /project && source .venv/bin/activate &&   claude --model claude-haiku-4-5 --debug --plugin-dir /project
 ```
 
 ## Features

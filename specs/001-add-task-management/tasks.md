@@ -19,12 +19,12 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create tasks_scripts/ directory structure with __init__.py
-- [ ] T002 Create pytest.ini and conftest.py at project root for TEST_LOG environment variable setup
-- [ ] T003 [P] Create .gitignore entries for __pycache__/, .pytest_cache/, *.pyc, .env
-- [ ] T004 Create tasks_scripts/tests/ subdirectories: fixtures/, integration/
-- [ ] T005 Create hooks/ directory and hooks/tests/ for common.py testing
-- [ ] T006 Add pydantic to project dependencies/requirements.txt
+- [x] T001 Create tasks_scripts/ directory structure with __init__.py
+- [x] T002 Create pytest.ini and conftest.py at project root for TEST_LOG environment variable setup
+- [x] T003 [P] Create .gitignore entries for __pycache__/, .pytest_cache/, *.pyc, .env
+- [x] T004 Create tasks_scripts/tests/ subdirectories: fixtures/, integration/
+- [x] T005 Create hooks/ directory and hooks/tests/ for common.py testing
+- [x] T006 Add pydantic to project dependencies/requirements.txt
 
 ---
 
@@ -36,7 +36,7 @@
 
 ### Pydantic Data Models
 
-- [ ] T007 [P] Create tasks_scripts/models.py with Pydantic models: PhaseHeader, ScoringEntry, RollbackEntry, Phase, TaskDocument, MetricsFile
+- [x] T007 [P] Create tasks_scripts/models.py with Pydantic models: PhaseHeader, ScoringEntry, RollbackEntry, Phase, TaskDocument, MetricsFile
   - PhaseHeader: phase_name (str), timestamp (datetime)
   - ScoringEntry: timestamp (datetime), metrics (dict), test_results (Optional[List[str]])
   - RollbackEntry: from_phase (str), timestamp (datetime), issue_type (str), problem_description (str)
@@ -46,7 +46,7 @@
 
 ### Parser Tests (Write FIRST)
 
-- [ ] T008 [P] Create tasks_scripts/tests/test_parsing.py with 8+ parser validation tests
+- [x] T008 [P] Create tasks_scripts/tests/test_parsing.py with 8+ parser validation tests
   - test_parse_phase_header_valid
   - test_parse_scoring_entry_with_metrics_dict
   - test_parse_scoring_entry_with_test_results_list
@@ -60,7 +60,7 @@
 
 ### Shared Task State Module
 
-- [ ] T009 Create tasks_scripts/task_state.py with core functions (uses models.py)
+- [x] T009 Create tasks_scripts/task_state.py with core functions (uses models.py)
   - load_task_document(filepath: str) -> TaskDocument
   - parse_phase_section(markdown_text: str) -> Phase
   - append_to_phase(doc: TaskDocument, phase_id: str, content: str) -> str (atomic regex with <!-- phase_id --> marker)
@@ -70,7 +70,7 @@
   - save_metrics(filepath: str, metrics: MetricsFile) -> None
   - validate_document_structure(doc: TaskDocument) -> List[str] (returns list of errors if any)
 
-- [ ] T010 [P] Create tasks_scripts/tests/test_task_state.py - Unit tests for task_state.py (parsing, writing, validation with Pydantic assertions)
+- [x] T010 [P] Create tasks_scripts/tests/test_task_state.py - Unit tests for task_state.py (parsing, writing, validation with Pydantic assertions)
   - Test load_task_document() returns valid TaskDocument model
   - Test TaskDocument.phases list populated correctly
   - Test Phase.header contains correct phase_name and timestamp
@@ -87,7 +87,7 @@
 
 ### Hook Integration
 
-- [ ] T011 Create hooks/common.py with task loading utilities (NO external imports beyond pydantic and pathlib)
+- [x] T011 Create hooks/common.py with task loading utilities (NO external imports beyond pydantic and pathlib)
   - load_task_document(start_dir: Optional[str] = None) -> Optional[TaskDocument]
     - Search for .TASK.md in start_dir, then parent directories up to repo root
     - Return TaskDocument model if found and valid, None otherwise
@@ -96,7 +96,7 @@
     - Extract task metadata for logging
     - Return: {"task_name": str, "current_phase": str, "created_at": str} or None
 
-- [ ] T012 Create hooks/tests/test_common.py - Hook integration tests
+- [x] T012 Create hooks/tests/test_common.py - Hook integration tests
   - test_load_task_document_finds_task_in_current_directory
   - test_load_task_document_searches_parent_directories
   - test_load_task_document_returns_none_if_not_found
@@ -109,16 +109,16 @@
 
 ### Test Fixtures
 
-- [ ] T013 [P] Create tasks_scripts/tests/fixtures/valid_single_phase.md - Sample .TASK.md with single TASK_PLAN.DEFINE phase
-- [ ] T014 [P] Create tasks_scripts/tests/fixtures/valid_multi_phase_with_scoring.md - Sample with multiple phases and SCORING entries
-- [ ] T015 [P] Create tasks_scripts/tests/fixtures/valid_exec_eval_with_test_lists.md - EXEC_EVAL phases with test result lists
-- [ ] T016 [P] Create tasks_scripts/tests/fixtures/corrupted_missing_header.md - Missing phase header for error testing
-- [ ] T017 [P] Create tasks_scripts/tests/fixtures/corrupted_invalid_timestamp.md - Invalid RFC 3339 timestamp
-- [ ] T018 [P] Create tasks_scripts/tests/fixtures/corrupted_malformed_sections.md - Malformed section markers
+- [x] T013 [P] Create tasks_scripts/tests/fixtures/valid_single_phase.md - Sample .TASK.md with single TASK_PLAN.DEFINE phase
+- [x] T014 [P] Create tasks_scripts/tests/fixtures/valid_multi_phase_with_scoring.md - Sample with multiple phases and SCORING entries
+- [x] T015 [P] Create tasks_scripts/tests/fixtures/valid_exec_eval_with_test_lists.md - EXEC_EVAL phases with test result lists
+- [x] T016 [P] Create tasks_scripts/tests/fixtures/corrupted_missing_header.md - Missing phase header for error testing
+- [x] T017 [P] Create tasks_scripts/tests/fixtures/corrupted_invalid_timestamp.md - Invalid RFC 3339 timestamp
+- [x] T018 [P] Create tasks_scripts/tests/fixtures/corrupted_malformed_sections.md - Malformed section markers
 
 ### Shared Test Configuration
 
-- [ ] T019 Create tasks_scripts/tests/conftest.py - Pytest fixtures for:
+- [x] T019 Create tasks_scripts/tests/conftest.py - Pytest fixtures for:
   - temp_task_dir (pytest tmpdir)
   - sample_task_document (TaskDocument factory)
   - sample_phase (Phase factory)
@@ -137,7 +137,7 @@
 
 ### Tests for User Story 1 (Write FIRST)
 
-- [ ] T020 [P] [US1] Create tasks_scripts/tests/test_task_create.py with unit tests
+- [x] T020 [P] [US1] Create tasks_scripts/tests/test_task_create.py with unit tests
   - test_create_task_initializes_file_with_task_plan_define_header
   - test_create_task_records_rfc3339_timestamp
   - test_create_task_creates_file_in_correct_location
@@ -148,7 +148,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T021 [P] [US1] Implement tasks_scripts/task_create.py script
+- [x] T021 [P] [US1] Implement tasks_scripts/task_create.py script
   - Main function: create_task(output_path: str = ".TASK.md") -> TaskDocument
   - Create initial TaskDocument with phase=TASK_PLAN.DEFINE, timestamp=now (RFC 3339)
   - Write to markdown file with proper header: "# PHASE TASK_PLAN.DEFINE at [timestamp]"
@@ -157,12 +157,12 @@
   - Exit code 0 on success, 1 on error (e.g., file exists)
   - Clear error messages to stdout
 
-- [ ] T022 [US1] Add error handling to task_create.py
+- [x] T022 [US1] Add error handling to task_create.py
   - Handle FileExistsError gracefully
   - Validate output path is writable
   - Log errors clearly for user
 
-- [ ] T023 [US1] Run test_task_create.py - ALL tests MUST PASS
+- [x] T023 [US1] Run test_task_create.py - ALL tests MUST PASS
   - pytest tasks_scripts/tests/test_task_create.py -v
 
 **Checkpoint**: User Story 1 complete - can create new task documents
@@ -177,7 +177,7 @@
 
 ### Tests for User Story 2 (Write FIRST)
 
-- [ ] T024 [P] [US2] Create tasks_scripts/tests/test_task_roll.py with unit tests
+- [x] T024 [P] [US2] Create tasks_scripts/tests/test_task_roll.py with unit tests
   - test_advance_to_next_phase_in_workflow
   - test_phase_header_updated_with_new_timestamp
   - test_all_prior_content_preserved
@@ -189,11 +189,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Implement PHASE_WORKFLOW constant in tasks_scripts/task_state.py
+- [x] T025 [US2] Implement PHASE_WORKFLOW constant in tasks_scripts/task_state.py
   - PHASE_WORKFLOW = ["TASK_PLAN.DEFINE", "TASK_PLAN.REFINE_CONTEXT", "TASK_PLAN.DESIGN", "TASK_PLAN.DECOMPOSE", "EXEC_EVAL.TEST_PLAN", "EXEC_EVAL.CODING", "EXEC_EVAL.TESTING"]
   - Helper function: get_next_phase(current: str) -> str
 
-- [ ] T026 [US2] Implement tasks_scripts/task_roll.py script
+- [x] T026 [US2] Implement tasks_scripts/task_roll.py script
   - Main function: advance_phase(task_path: str = ".TASK.md") -> TaskDocument
   - Load current TaskDocument from task_path
   - Get next phase from workflow
@@ -204,12 +204,12 @@
   - Exit code 0 on success, 1 on error
   - Error cases: invalid phase sequence, concurrent write, file not found
 
-- [ ] T027 [US2] Add file locking to task_roll.py
+- [x] T027 [US2] Add file locking to task_roll.py
   - Detect concurrent writes using O_EXCL (exclusive file mode)
   - Fail-fast with clear error message
   - Exit code 1 if concurrent access detected
 
-- [ ] T028 [US2] Run test_task_roll.py - ALL tests MUST PASS
+- [x] T028 [US2] Run test_task_roll.py - ALL tests MUST PASS
   - pytest tasks_scripts/tests/test_task_roll.py -v
 
 **Checkpoint**: User Story 2 complete - can advance through all phases safely
