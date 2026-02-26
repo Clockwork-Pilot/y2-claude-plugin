@@ -4,19 +4,23 @@ A minimal Claude plugin written in Python that implements hook handlers and logs
 
 ## Run in docker
 Use docker image from this repo: github.com:YuraLitvinov/y2-docker-claude
-Build & Run docker container as specified in their readme
+Build & Run docker container as specified in their readme.
 
 ```
 mkdir $(pwd)/.credentials -p && \
-docker run -it --rm  \
+  docker run -it --rm  \
     --user 1000:1000  \
     -v $(pwd)/.credentials:/home/node/:Z  \
     -v $(pwd):/project y2-coder
 
-# Inside of container
-cd /project && claude --model claude-haiku-4-5 --debug --plugin-dir /project
-```
+# Inside of container - init specify for project
+cd /project && \
+  specify init --here --ai claude
 
+# Inside of container - run claude
+cd /project && \
+  claude --model claude-haiku-4-5 --debug --plugin-dir /project
+```
 
 ## Features
 
