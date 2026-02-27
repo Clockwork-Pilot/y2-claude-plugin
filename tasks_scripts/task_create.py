@@ -1,44 +1,32 @@
 #!/usr/bin/env python3
 """
-Task creation script: Initialize a new .TASK.md and .metrics file.
+Task creation script: Initialize a new .TASK.md file.
 
-By design, ALL work flows EXCLUSIVELY through tasks_scripts/ lifecycle.
-This module ensures both critical files are created together with consistent state.
+Creates a new task document with:
+- Initial phase: TASK_PLAN.DEFINE
+- RFC 3339 timestamp
+- Section marker for atomic updates
+- Valid Pydantic model structure
 
-Creates a new task with:
-- .TASK.md: Initial TASK_PLAN.DEFINE phase with RFC 3339 timestamp
-- .metrics: Empty metrics structure ready for first scoring
-- Section markers (<!-- PHASE_NAME -->) for atomic regex updates
-- Valid Pydantic model structure for complete lifecycle management
-
-Design principle:
-  The task lifecycle IS the workflow engine. Both files must exist from creation
-  to represent the complete initial state: markdown for display, .metrics for
-  storing measurements and coverage data (source of truth).
+Note: .metrics file is created by task_metrics.py when metrics are first collected
+      at EXEC_EVAL phases (responsibility separation: task_create handles phases,
+      task_metrics handles metrics collection).
 """
 import sys
-import json
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional
 
-from tasks_scripts.models import TaskDocument, Phase, PhaseHeader, MetricsFile
+from tasks_scripts.models import TaskDocument, Phase, PhaseHeader
 from tasks_scripts.task_state import validate_document_structure
 
 
 def create_task(output_path: str = ".TASK.md") -> TaskDocument:
     """
-    Create a new task with both .TASK.md and .metrics files.
+    Create a new task document (.TASK.md) with initial structure.
 
-    By design, ALL work flows EXCLUSIVELY through tasks_scripts lifecycle.
-    Both files must exist from task creation to ensure complete initial state.
-
-    Creates:
-      1. .TASK.md: Markdown document with TASK_PLAN.DEFINE phase (display & version control)
-      2. .metrics: Empty JSON structure ready for first collect_metrics call (source of truth)
-
-    The section marker <!-- TASK_PLAN.DEFINE --> enables atomic regex-based updates
-    without full document rewrites. This is critical for concurrent-safe modifications.
+    Responsibility per design: task_create.py creates ONLY .TASK.md
+    (task_metrics.py creates .metrics on first metrics collection at EXEC_EVAL phases)
 
     Args:
         output_path: Path where .TASK.md should be created (default: ".TASK.md")
@@ -47,34 +35,24 @@ def create_task(output_path: str = ".TASK.md") -> TaskDocument:
         TaskDocument model representing the created task
 
     Raises:
-        FileExistsError: If .TASK.md or .metrics already exists
-        IOError: If files cannot be written
-        ValueError: If document structure is invalid
+        FileExistsError: If .TASK.md already exists
+        IOError: If file cannot be written
     """
     path = Path(output_path)
-    metrics_path = path.parent / ".metrics"
 
-    # Validate parent directory exists and is writable
-    if not path.parent.exists():
-        try:
-            path.parent.mkdir(parents=True, exist_ok=True)
-        except (OSError, PermissionError) as e:
-            raise IOError(f"Cannot create parent directory: {path.parent}") from e
-
-    # Check if task file already exists
+    # Check if file already exists
     if path.exists():
         raise FileExistsError(f"Task file already exists: {output_path}")
 
-    # Check if metrics file already exists
-    if metrics_path.exists():
-        raise FileExistsError(f"Metrics file already exists: {metrics_path}")
+    # Check if parent directory exists, create if needed
+    if not path.parent.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
 
     # Create initial phase header with current timestamp
     now = datetime.now(timezone.utc)
     timestamp_str = now.isoformat()
 
-    # === Create .TASK.md ===
-    # Markdown content: human-readable progress document with atomic update markers
+    # Create markdown content with section marker for atomic updates
     markdown_content = f"""# PHASE TASK_PLAN.DEFINE at {timestamp_str}
 
 Task initialized. Ready for planning and development.
@@ -87,18 +65,10 @@ Task initialized. Ready for planning and development.
     if errors:
         raise ValueError(f"Invalid document structure: {errors}")
 
-    # Write markdown file
+    # Write to file
     path.write_text(markdown_content, encoding="utf-8")
 
-    # === Create .metrics ===
-    # JSON file: source of truth for all metrics and coverage data
-    # Initialize with empty structure. Keys will be populated during collect_metrics calls.
-    metrics_data = {}
-    metrics_json = json.dumps(metrics_data, indent=2)
-    metrics_path.write_text(metrics_json, encoding="utf-8")
-
-    # === Create TaskDocument model ===
-    # Represents the complete task state in memory
+    # Create and return TaskDocument model
     header = PhaseHeader(
         phase_name="TASK_PLAN.DEFINE",
         timestamp=now
@@ -120,30 +90,18 @@ def main():
     """
     CLI entry point for task_create.py.
 
-    Creates both .TASK.md and .metrics files for exclusive lifecycle management.
-
     Usage: python task_create.py [output_path]
 
     Args:
         output_path: Optional path to create .TASK.md (default: ".TASK.md")
-                    .metrics will be created in the same directory
     """
     output_path = sys.argv[1] if len(sys.argv) > 1 else ".TASK.md"
 
     try:
         doc = create_task(output_path)
-
-        # Show both files created
-        task_path = Path(output_path)
-        metrics_path = task_path.parent / ".metrics"
-
-        print(f"✓ Task created successfully")
-        print(f"  .TASK.md: {output_path}")
-        print(f"  .metrics: {metrics_path}")
+        print(f"✓ Task created: {output_path}")
         print(f"  Phase: {doc.current_phase}")
         print(f"  Created: {doc.created_at.isoformat()}")
-        print()
-        print(f"Ready for exclusive lifecycle management through tasks_scripts/")
         return 0
     except FileExistsError as e:
         print(f"✗ Error: {e}", file=sys.stderr)
