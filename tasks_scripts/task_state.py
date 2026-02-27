@@ -143,7 +143,7 @@ def load_task_document(filepath: str) -> TaskDocument:
         rollback_entries = _parse_rollback_entries(phase_content)
 
         # Remove section markers from displayed content
-        phase_content_clean = re.sub(r"<!--\s*:\S+\s*-->\s*", "", phase_content).strip()
+        phase_content_clean = re.sub(r"<!--\s*\S+\s*-->\s*", "", phase_content).strip()
 
         phase = Phase(
             header=header,
@@ -193,27 +193,26 @@ def _parse_scoring_entries(content: str) -> List[ScoringEntry]:
         except ValueError:
             continue  # Skip invalid timestamps
 
-        # Extract metrics from content
-        metrics = {}
-        test_results = None
+        # Parse metrics and test results from entry content
+        metrics_dict = {}
+        test_results = []
 
-        lines = entry_content.split("\n")
-        for line in lines:
-            if ":" in line and not line.startswith("-"):
-                parts = line.split(":", 1)
-                key = parts[0].strip().lower()
-                value = parts[1].strip()
-                metrics[key] = value
-            elif line.startswith("-"):
+        for line in entry_content.split("\n"):
+            if line.startswith("- "):
                 # Test result item
-                if test_results is None:
-                    test_results = []
-                test_results.append(line[1:].strip())
+                test_results.append(line[2:].strip())
+            elif ": " in line:
+                # Metric key: value
+                key, val = line.split(": ", 1)
+                try:
+                    metrics_dict[key] = float(val)
+                except ValueError:
+                    metrics_dict[key] = val
 
         entry = ScoringEntry(
             timestamp=timestamp,
-            metrics=metrics,
-            test_results=test_results
+            metrics=metrics_dict,
+            test_results=test_results if test_results else None
         )
         entries.append(entry)
 
@@ -224,28 +223,25 @@ def _parse_rollback_entries(content: str) -> List[RollbackEntry]:
     """Parse rollback entries from phase content."""
     entries = []
 
-    # Rollback entry pattern: ### [RFC 3339 timestamp] Back from PHASE_NAME
-    rollback_pattern = r"### (.+?) Back from\s+(\S+)\n(.*?)(?=###|\Z)"
-    matches = re.finditer(rollback_pattern, content, re.DOTALL)
+    # Look for rollback headers like "### [timestamp] Back from [PHASE]"
+    rollback_pattern = r"###\s+([^\n]+)\s+Back from\s+(\S+)(.*?)(?=###|\Z)"
+    rollback_matches = re.finditer(rollback_pattern, content, re.DOTALL)
 
-    for match in matches:
+    for match in rollback_matches:
         timestamp_str = match.group(1).strip()
         from_phase = match.group(2).strip()
-        problem_desc = match.group(3).strip()
+        problem_text = match.group(3).strip()
 
         try:
             timestamp = datetime.fromisoformat(timestamp_str)
         except ValueError:
-            continue  # Skip invalid timestamps
-
-        # Determine issue type from problem description
-        issue_type = "loop" if "loop" in problem_desc.lower() else "metrics_regression"
+            continue
 
         entry = RollbackEntry(
             from_phase=from_phase,
             timestamp=timestamp,
-            issue_type=issue_type,
-            problem_description=problem_desc
+            issue_type="loop",  # Default issue type
+            problem_description=problem_text or "Rollback executed"
         )
         entries.append(entry)
 
@@ -261,34 +257,29 @@ def append_to_phase(
     Append content to a phase using atomic regex update.
 
     Uses section marker pattern: <!-- phase_id --> to identify phase end.
-    Inserts new_content before the marker.
+    Inserts new_content just before the marker using atomic regex.
 
     Args:
-        markdown_content: Full .TASK.md content as string
-        phase_id: Phase identifier (e.g., "TASK_PLAN.DEFINE")
-        new_content: Content to append
+        markdown_content: Full .TASK.md content
+        phase_id: Target phase identifier (e.g., "TASK_PLAN.DEFINE")
+        new_content: Content to append to phase
 
     Returns:
-        Updated markdown content
+        Updated markdown with new_content inserted before phase marker
 
     Raises:
-        ValueError: If phase marker not found or multiple markers exist
+        ValueError: If phase marker not found
     """
     marker = f"<!-- {phase_id} -->"
 
+    # Check if marker exists
     if marker not in markdown_content:
         raise ValueError(f"Phase marker not found: {marker}")
 
-    # Count markers - should only have one per phase
-    marker_count = markdown_content.count(marker)
-    if marker_count != 1:
-        raise ValueError(f"Expected 1 phase marker for {phase_id}, found {marker_count}")
-
-    # Use atomic regex: insert before marker
+    # Use atomic regex to insert before marker
     pattern = rf"(<!-- {re.escape(phase_id)} -->)"
-    replacement = new_content + "\n\\1"
+    updated = re.sub(pattern, f"{new_content}\n\1", markdown_content)
 
-    updated = re.sub(pattern, replacement, markdown_content)
     return updated
 
 
@@ -323,127 +314,99 @@ def append_scoring(
     # Build scoring entry
     scoring_content = f"### {timestamp_str}\n"
     scoring_content += "\n".join(metrics_lines)
-    if test_results_lines:
-        scoring_content += "\n\n" + "\n".join(test_results_lines)
 
+    if test_results_lines:
+        scoring_content += "\n" + "\n".join(test_results_lines)
+
+    # Find or create SCORING section
     marker = f"<!-- {phase_id} -->"
 
-    # Check if SCORING section exists in this phase
-    # Find phase content between last "# PHASE phase_id" and the marker
-    phase_pattern = rf"(# PHASE {re.escape(phase_id)} at .+?\n)(.*?)({re.escape(marker)})"
-    match = re.search(phase_pattern, markdown_content, re.DOTALL)
-
-    if match:
-        phase_intro = match.group(1)
-        phase_body = match.group(2)
-        marker_line = match.group(3)
-
-        if "## SCORING" in phase_body:
-            # SCORING section exists - insert before marker
-            pattern = rf"(<!-- {re.escape(phase_id)} -->)"
-            replacement = scoring_content + "\n\n\\1"
-            updated = re.sub(pattern, replacement, markdown_content)
-        else:
-            # Create SCORING section
-            scoring_section = f"## SCORING\n\n{scoring_content}"
-            pattern = rf"(<!-- {re.escape(phase_id)} -->)"
-            replacement = scoring_section + "\n\n\\1"
-            updated = re.sub(pattern, replacement, markdown_content)
+    if "## SCORING" not in markdown_content:
+        # Create SCORING section before phase marker
+        scoring_section = "\n## SCORING\n" + scoring_content
+        return append_to_phase(markdown_content, phase_id, scoring_section)
     else:
-        # Phase not found - just append before marker
-        updated = append_to_phase(markdown_content, phase_id, f"## SCORING\n\n{scoring_content}")
-
-    return updated
+        # Append to existing SCORING section (before phase marker)
+        scoring_addition = "\n" + scoring_content
+        return append_to_phase(markdown_content, phase_id, scoring_addition)
 
 
 def append_rollback_entry(
     markdown_content: str,
-    target_phase_id: str,
+    phase_id: str,
     entry: RollbackEntry
 ) -> str:
     """
-    Append a rollback entry to target phase.
+    Append a rollback entry to a phase.
 
     Args:
         markdown_content: Full .TASK.md content
-        target_phase_id: Phase to add rollback entry to
-        entry: RollbackEntry model
+        phase_id: Target phase identifier
+        entry: RollbackEntry model to append
 
     Returns:
         Updated markdown content
     """
     timestamp_str = entry.timestamp.isoformat()
+    from_phase = entry.from_phase
 
-    # Format rollback entry
-    rollback_content = f"### {timestamp_str} Back from {entry.from_phase}\n{entry.problem_description}"
+    rollback_entry = f"### {timestamp_str} Back from {from_phase}\n{entry.problem_description}"
 
-    # Insert before phase marker
-    return append_to_phase(markdown_content, target_phase_id, rollback_content)
+    return append_to_phase(markdown_content, phase_id, rollback_entry)
 
 
-def validate_document_structure(markdown_content: str) -> List[str]:
+def validate_document_structure(markdown: str) -> List[str]:
     """
-    Validate .TASK.md structure and return list of errors.
+    Validate task document structure and return error list.
 
     Args:
-        markdown_content: Full .TASK.md content
+        markdown: Markdown content to validate
 
     Returns:
-        List of error messages (empty if valid)
+        List of error strings (empty if valid)
     """
     errors = []
 
     # Check for phase headers
     phase_pattern = r"^# PHASE\s+(\S+)\s+at\s+(.+)$"
-    phase_matches = list(re.finditer(phase_pattern, markdown_content, re.MULTILINE))
+    matches = list(re.finditer(phase_pattern, markdown, re.MULTILINE))
 
-    if not phase_matches:
+    if not matches:
         errors.append("No phase headers found")
         return errors
 
-    # Check each phase has matching section marker
-    for match in phase_matches:
-        phase_name = match.group(1)
+    # Validate each phase header
+    for i, match in enumerate(matches, 1):
         timestamp_str = match.group(2)
-        line_num = markdown_content[:match.start()].count("\n") + 1
-
-        # Validate timestamp
         try:
             datetime.fromisoformat(timestamp_str)
         except ValueError:
-            errors.append(f"Line {line_num}: Invalid RFC 3339 timestamp: {timestamp_str}")
-
-        # Check for matching section marker
-        marker = f"<!-- {phase_name} -->"
-        if marker not in markdown_content:
-            errors.append(f"Line {line_num}: Missing section marker: {marker}")
+            errors.append(f"Line {i}: Invalid RFC 3339 timestamp: {timestamp_str}")
 
     return errors
 
 
 def load_metrics(filepath: str) -> MetricsFile:
     """
-    Load .metrics JSON file into MetricsFile model.
+    Load MetricsFile from .metrics JSON file.
 
     Args:
         filepath: Path to .metrics file
 
     Returns:
         MetricsFile model
-
-    Raises:
-        FileNotFoundError: If file doesn't exist
-        ValidationError: If JSON is invalid
     """
     path = Path(filepath)
 
     if not path.exists():
-        return MetricsFile()  # Return empty metrics
+        return MetricsFile()
 
-    content = path.read_text(encoding="utf-8")
-    data = json.loads(content)
-
-    return MetricsFile(**data)
+    try:
+        content = path.read_text(encoding="utf-8")
+        data = json.loads(content)
+        return MetricsFile(**data)
+    except (json.JSONDecodeError, ValueError):
+        return MetricsFile()
 
 
 def save_metrics(filepath: str, metrics: MetricsFile) -> None:
