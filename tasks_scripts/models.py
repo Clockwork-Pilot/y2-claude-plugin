@@ -20,6 +20,8 @@ class ScoringEntry(BaseModel):
     timestamp: datetime = Field(..., description="RFC 3339 timestamp of scoring")
     metrics: Dict[str, Any] = Field(default_factory=dict, description="Technical metrics dict")
     test_results: Optional[List[str]] = Field(None, description="List of test result items")
+    coverage: Optional[Dict[str, Any]] = Field(None, description="Extended coverage metrics per file")
+    coverage_summary: Optional[Dict[str, Any]] = Field(None, description="Cumulative coverage summary")
 
 
 class RollbackEntry(BaseModel):

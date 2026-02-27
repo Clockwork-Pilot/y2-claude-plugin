@@ -1,0 +1,3 @@
+[submodule "y2_pycov"]
+	path = y2_pycov
+	url = git@github.com:YuraLitvinov/y2-pycov.git
