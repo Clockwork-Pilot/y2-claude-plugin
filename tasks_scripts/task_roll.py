@@ -8,7 +8,7 @@ Uses atomic updates with section markers and exclusive file mode for safety.
 import sys
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 from tasks_scripts.models import TaskDocument, Phase, PhaseHeader
 from tasks_scripts.task_state import load_task_document, append_to_phase, get_next_phase, PHASE_WORKFLOW
@@ -67,7 +67,7 @@ def advance_phase(task_path: str = ".TASK.md") -> TaskDocument:
             raise IOError(f"Failed to read task file: {e}")
 
         # Create new phase header with current timestamp
-        now = datetime.now(datetime.timezone.utc)
+        now = datetime.now(timezone.utc)
         timestamp_str = now.isoformat()
 
         # Build new phase section

@@ -224,7 +224,7 @@
 
 ### Tests for User Story 3 (Write FIRST)
 
-- [ ] T029 [P] [US3] Create tasks_scripts/tests/test_task_metrics.py with unit tests
+- [x] T029 [P] [US3] Create tasks_scripts/tests/test_task_metrics.py with unit tests
   - test_collect_metrics_stores_in_metrics_json_file
   - test_metrics_structure_supports_test_plan_coding_testing
   - test_parse_test_results_list_from_metrics
@@ -237,7 +237,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Implement tasks_scripts/task_metrics.py script
+- [x] T030 [US3] Implement tasks_scripts/task_metrics.py script
   - Main function: collect_metrics(task_path: str = ".TASK.md", metrics_json: str = "{}") -> (TaskDocument, MetricsFile)
   - Parse incoming metrics JSON (dict with coverage, tests_passed, tests_failed, test_results: List[str])
   - Load current TaskDocument
@@ -249,12 +249,12 @@
   - Return updated TaskDocument and MetricsFile models
   - Exit code 0 on success, 1 on error
 
-- [ ] T031 [US3] Add test results list parsing to task_metrics.py
+- [x] T031 [US3] Add test results list parsing to task_metrics.py
   - Extract test_results: List[str] from metrics input
   - Support format: ["test_name_1", "test_name_2 (FAILED)", ...]
   - Populate ScoringEntry.test_results correctly
 
-- [ ] T032 [US3] Run test_task_metrics.py - ALL tests MUST PASS
+- [x] T032 [US3] Run test_task_metrics.py - ALL tests MUST PASS
   - pytest tasks_scripts/tests/test_task_metrics.py -v
 
 **Checkpoint**: User Story 3 complete - can track metrics across phases
@@ -269,7 +269,7 @@
 
 ### Tests for User Story 4 (Write FIRST)
 
-- [ ] T033 [P] [US4] Create tasks_scripts/tests/test_task_roll_back.py with unit tests
+- [x] T033 [P] [US4] Create tasks_scripts/tests/test_task_roll_back.py with unit tests
   - test_rollback_to_specified_phase
   - test_rollback_to_previous_phase_when_target_not_specified
   - test_rollback_entry_added_with_problem_description
@@ -281,7 +281,7 @@
 
 ### Implementation for User Story 4
 
-- [ ] T034 [US4] Implement tasks_scripts/task_roll_back.py script
+- [x] T034 [US4] Implement tasks_scripts/task_roll_back.py script
   - Main function: rollback_phase(task_path: str = ".TASK.md", target_phase: Optional[str] = None, reason: str = "loop detected") -> TaskDocument
   - Load current TaskDocument
   - If target_phase not specified: use get_previous_phase(current) from PHASE_WORKFLOW
@@ -293,12 +293,12 @@
   - Return updated TaskDocument
   - Exit code 0 on success, 1 on error
 
-- [ ] T035 [US4] Add rollback entry formatting to task_state.py
+- [x] T035 [US4] Add rollback entry formatting to task_state.py
   - Format: "### [RFC 3339 timestamp] Back from [PREVIOUS_PHASE]"
   - Include problem description in section body
   - Proper markdown hierarchy
 
-- [ ] T036 [US4] Run test_task_roll_back.py - ALL tests MUST PASS
+- [x] T036 [US4] Run test_task_roll_back.py - ALL tests MUST PASS
   - pytest tasks_scripts/tests/test_task_roll_back.py -v
 
 **Checkpoint**: User Story 4 complete - can safely revert phases with history
@@ -313,7 +313,7 @@
 
 ### Tests for User Story 5 (Write FIRST)
 
-- [ ] T037 [P] [US5] Create tasks_scripts/tests/test_task_load.py with unit tests
+- [x] T037 [P] [US5] Create tasks_scripts/tests/test_task_load.py with unit tests
   - test_load_valid_single_phase_document
   - test_load_valid_multi_phase_document
   - test_load_extracts_current_phase_correctly
@@ -326,7 +326,7 @@
 
 ### Implementation for User Story 5
 
-- [ ] T038 [US5] Enhance task_state.py load_task_document() function (already defined in T009)
+- [x] T038 [US5] Enhance task_state.py load_task_document() function (already defined in T009)
   - Read .TASK.md file
   - Use regex to detect phase headers: r"^# PHASE\s+(\S+)\s+at\s+(.+)$"
   - Extract timestamp, validate RFC 3339 format
@@ -338,12 +338,12 @@
   - Collect errors: missing headers, invalid markers, malformed sections
   - Report errors with line numbers
 
-- [ ] T039 [US5] Add error reporting to task_state.py
+- [x] T039 [US5] Add error reporting to task_state.py
   - Function: validate_document_structure(markdown: str) -> List[str]
   - Return list of error messages with line numbers
   - Error types: missing phase header, invalid timestamp, missing section marker, duplicate marker
 
-- [ ] T040 [US5] Run test_task_load.py - ALL tests MUST PASS
+- [x] T040 [US5] Run test_task_load.py - ALL tests MUST PASS
   - pytest tasks_scripts/tests/test_task_load.py -v
 
 **Checkpoint**: User Story 5 complete - can safely load and validate task documents
@@ -358,7 +358,7 @@
 
 ### Tests for User Story 6 (Write FIRST)
 
-- [ ] T041 [P] [US6] Create tasks_scripts/tests/test_task_update.py with unit tests
+- [x] T041 [P] [US6] Create tasks_scripts/tests/test_task_update.py with unit tests
   - test_append_content_to_single_phase
   - test_append_content_to_current_phase_in_multi_phase
   - test_appended_content_appears_in_correct_location
@@ -371,7 +371,7 @@
 
 ### Implementation for User Story 6
 
-- [ ] T042 [US6] Enhance task_state.py append_to_phase() function (already defined in T009)
+- [x] T042 [US6] Enhance task_state.py append_to_phase() function (already defined in T009)
   - Load TaskDocument from markdown
   - Identify current phase ID
   - Use atomic regex: `re.sub(rf'(<!-- {phase_id} -->)', f'{new_content}\n\1', markdown)`
@@ -380,12 +380,12 @@
   - Use exclusive file mode (O_EXCL) for atomic write
   - No partial writes on error
 
-- [ ] T043 [US6] Add content ordering validation
+- [x] T043 [US6] Add content ordering validation
   - Verify appended content appears in chronological order
   - Test with multiple appends to same phase
   - Confirm SCORING entries timestamped in order
 
-- [ ] T044 [US6] Run test_task_update.py - ALL tests MUST PASS
+- [x] T044 [US6] Run test_task_update.py - ALL tests MUST PASS
   - pytest tasks_scripts/tests/test_task_update.py -v
   - Include large document stress test (10+ phases, 50+ entries)
 

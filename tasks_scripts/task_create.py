@@ -10,7 +10,7 @@ Creates a new task document with:
 """
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from tasks_scripts.models import TaskDocument, Phase, PhaseHeader
@@ -42,7 +42,7 @@ def create_task(output_path: str = ".TASK.md") -> TaskDocument:
         path.parent.mkdir(parents=True, exist_ok=True)
 
     # Create initial phase header with current timestamp
-    now = datetime.now(datetime.timezone.utc)
+    now = datetime.now(timezone.utc)
     timestamp_str = now.isoformat()
 
     # Create markdown content

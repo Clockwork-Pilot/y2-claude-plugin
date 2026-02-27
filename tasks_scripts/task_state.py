@@ -180,7 +180,8 @@ def _parse_scoring_entries(content: str) -> List[ScoringEntry]:
     scoring_section = scoring_match.group(1)
 
     # Find individual scoring entries (by timestamp)
-    entry_pattern = r"### (.+)\n(.*?)(?=###|\Z)"
+    # Use [^\n]+ instead of .+ to match only the timestamp on the same line as ###
+    entry_pattern = r"###\s+([^\n]+)\n(.*?)(?=###|\Z)"
     entry_matches = re.finditer(entry_pattern, scoring_section, re.DOTALL)
 
     for match in entry_matches:
@@ -285,7 +286,7 @@ def append_to_phase(
 
     # Use atomic regex: insert before marker
     pattern = rf"(<!-- {re.escape(phase_id)} -->)"
-    replacement = f"{new_content}\n\1"
+    replacement = new_content + "\n\\1"
 
     updated = re.sub(pattern, replacement, markdown_content)
     return updated
@@ -340,13 +341,13 @@ def append_scoring(
         if "## SCORING" in phase_body:
             # SCORING section exists - insert before marker
             pattern = rf"(<!-- {re.escape(phase_id)} -->)"
-            replacement = f"{scoring_content}\n\n\1"
+            replacement = scoring_content + "\n\n\\1"
             updated = re.sub(pattern, replacement, markdown_content)
         else:
             # Create SCORING section
             scoring_section = f"## SCORING\n\n{scoring_content}"
             pattern = rf"(<!-- {re.escape(phase_id)} -->)"
-            replacement = f"{scoring_section}\n\n\1"
+            replacement = scoring_section + "\n\n\\1"
             updated = re.sub(pattern, replacement, markdown_content)
     else:
         # Phase not found - just append before marker
@@ -456,6 +457,11 @@ def save_metrics(filepath: str, metrics: MetricsFile) -> None:
     path = Path(filepath)
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    data = metrics.model_dump(exclude_none=True)
+    # Use model_dump without exclude_none to include extra fields
+    data = metrics.model_dump()
+
+    # Remove None values to keep JSON clean
+    data = {k: v for k, v in data.items() if v is not None}
+
     content = json.dumps(data, indent=2)
     path.write_text(content, encoding="utf-8")

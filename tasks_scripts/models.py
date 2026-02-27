@@ -47,6 +47,8 @@ class TaskDocument(BaseModel):
 
 class MetricsFile(BaseModel):
     """Represents metrics storage (.metrics JSON)."""
+    model_config = {"extra": "allow"}
+
     TEST_PLAN: Optional[Dict[str, Any]] = Field(None, description="TEST_PLAN phase metrics")
     CODING: Optional[Dict[str, Any]] = Field(None, description="CODING phase metrics")
     TESTING: Optional[Dict[str, Any]] = Field(None, description="TESTING phase metrics")
