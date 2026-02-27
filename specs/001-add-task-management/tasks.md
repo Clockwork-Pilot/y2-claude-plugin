@@ -401,7 +401,7 @@
 
 ### Tests for User Story 7 (Write FIRST)
 
-- [ ] T045 [P] [US7] Create tasks_scripts/tests/test_task_archive.py with unit tests
+- [x] T045 [P] [US7] Create tasks_scripts/tests/test_task_archive.py with unit tests
   - test_archive_moves_to_tasks_history_directory
   - test_archive_generates_auto_incremented_task_id
   - test_archive_uses_github_issue_id_when_specified
@@ -415,7 +415,7 @@
 
 ### Implementation for User Story 7
 
-- [ ] T046 [US7] Implement tasks_scripts/task_to_history.py script
+- [x] T046 [US7] Implement tasks_scripts/task_archive.py script
   - Main function: archive_task(task_path: str = ".TASK.md", task_id: Optional[int] = None, is_github_issue: bool = False, github_id: Optional[int] = None, failure: bool = False) -> str
   - Load TaskDocument
   - Extract task name/description from first phase content or user input
@@ -428,14 +428,14 @@
   - Return full archived path
   - Exit code 0 on success, 1 on error
 
-- [ ] T047 [US7] Add auto-increment logic for task IDs
+- [x] T047 [US7] Add auto-increment logic for task IDs
   - Function: get_next_task_id(history_dir: str = ".tasks_history") -> int
   - Scan directory for TASK_##### files
   - Extract all used IDs
   - Return max(IDs) + 1
   - Start at 1 if directory empty
 
-- [ ] T048 [US7] Run test_task_archive.py - ALL tests MUST PASS
+- [x] T048 [US7] Run test_task_archive.py - ALL tests MUST PASS
   - pytest tasks_scripts/tests/test_task_archive.py -v
 
 **Checkpoint**: User Story 7 complete - tasks properly archived with standardized naming
@@ -448,33 +448,33 @@
 
 ### Integration Testing
 
-- [ ] T049 [P] Create tasks_scripts/tests/integration/test_task_workflow.py
+- [x] T049 [P] Create tasks_scripts/tests/integration/test_task_workflow.py
   - Full workflow test: create → roll → metrics → roll → metrics → roll → archive
   - Large document test: 10+ phases, 50+ rollback/scoring entries
   - Concurrent write detection test (O_EXCL)
   - Error recovery test (rollback after partial operation)
 
-- [ ] T050 Run full integration test suite
+- [x] T050 Run full integration test suite
   - pytest tasks_scripts/tests/integration/ -v
   - All tests MUST PASS
 
 ### Hook Handler Integration
 
-- [ ] T051 [P] Update hooks/[handler].py to integrate task loading
+- [x] T051 [P] Update hooks/[handler].py to integrate task loading
   - Import load_task_document, get_task_context from hooks/common.py
   - Load task at handler entry point
   - Add "task" key to all log structures via serialize_log_data()
   - Test: handler runs with and without .TASK.md present
   - Handler execution unaffected if task file missing (graceful)
 
-- [ ] T052 [P] Verify hooks/common.py integration with all existing handlers
+- [x] T052 [P] Verify hooks/common.py integration with all existing handlers
   - Each handler logs task context
   - No handler crashes if .TASK.md absent
   - Task context available in hook_logging output
 
 ### Documentation
 
-- [ ] T053 Create tasks_scripts/README.md with:
+- [x] T053 Create tasks_scripts/README.md with:
   - Overview of task management system
   - Script usage examples (create, roll, metrics, rollback, archive)
   - Pydantic model reference
@@ -483,7 +483,7 @@
   - Atomic update pattern with regex
   - Error handling and concurrent write detection
 
-- [ ] T054 Create QUICKSTART.md with:
+- [x] T054 Create QUICKSTART.md with:
   - Complete workflow example (create → multiple phases → archive)
   - Hook handler integration example
   - Test results list format
@@ -491,21 +491,21 @@
 
 ### Quality Assurance
 
-- [ ] T055 [P] Run full test suite with coverage
+- [x] T055 [P] Run full test suite with coverage
   - pytest tasks_scripts/tests/ --cov=tasks_scripts --cov-report=html
   - Target: 95%+ coverage
   - Ensure all happy paths and error paths tested
 
-- [ ] T056 [P] Run linting and style checks
+- [x] T056 [P] Run linting and style checks
   - flake8 tasks_scripts/
   - black --check tasks_scripts/
   - mypy tasks_scripts/ (if using type hints)
 
-- [ ] T057 Verify exclusive file mode (O_EXCL) works on target platform
+- [x] T057 Verify exclusive file mode (O_EXCL) works on target platform
   - Test on Unix/Linux/macOS
   - Document Windows compatibility notes if applicable
 
-- [ ] T058 Performance validation
+- [x] T058 Performance validation
   - Measure task_roll.py: <100ms for phase advancement (SC-002)
   - Measure task_state parsing: <50ms for 100KB documents
   - Test with large documents: 10+ phases, 50+ entries
