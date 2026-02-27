@@ -32,7 +32,7 @@ def advance_phase(task_path: str = ".TASK.md") -> TaskDocument:
         IOError: If file is locked (concurrent write detected) or cannot be read/written
     """
     path = Path(task_path)
-    lock_path = path.with_name(f".{path.name}.lock")
+    lock_path = path.with_name(f"{path.name}.lock")
 
     # Detect concurrent writes: try to create lock file exclusively
     try:
