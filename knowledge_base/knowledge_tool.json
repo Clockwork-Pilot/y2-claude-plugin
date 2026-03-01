@@ -6,6 +6,10 @@
     "description": "Knowledge storage system with JSON Patch API and Pydantic validation",
     "version": "1.0.0"
   },
+  "opts": {
+    "render_priority": false,
+    "render_toc": true
+  },
   "children": {
     "architecture": {
       "id": "architecture",
@@ -17,121 +21,27 @@
       "children": {
         "api": {
           "id": "api",
-          "label": "Patch Operations",
+          "label": "Json Patch",
           "type": "Doc",
           "metadata": {
-            "files": [
-              "apply_json_patch.py"
-            ],
-            "description": "RFC 6902 JSON Patch implementation with Pydantic validation"
-          },
-          "children": {
-            "json_patch_format": {
-              "id": "json_patch_format",
-              "label": "JSON Patch Format",
-              "type": "Doc",
-              "metadata": {
-                "standard": "RFC 6902",
-                "description": "JSON Patch standard for describing modifications to JSON documents. Operations are submitted as a JSON array of operation objects.",
-                "operations": [
-                  "add - Insert or replace value",
-                  "remove - Delete value at path",
-                  "replace - Replace value at path",
-                  "move - Move value from one path to another",
-                  "copy - Copy value from one path to another",
-                  "test - Assert value equals expected before applying"
-                ],
-                "operation_structure": {
-                  "required_fields": [
-                    "op",
-                    "path"
-                  ],
-                  "optional_fields": [
-                    "value",
-                    "from"
-                  ],
-                  "op": "Operation type (add, remove, replace, move, copy, test)",
-                  "path": "JSON Pointer to target location",
-                  "value": "New value for add/replace/test operations",
-                  "from": "Source path for move/copy operations"
-                },
-                "example": "[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"new_label\"}, {\"op\": \"add\", \"path\": \"/children/new_id\", \"value\": {...}}]"
-              }
-            }
+            "description": "RFC 6902 JSON Patch standard for describing modifications to JSON documents.\n\n**File:** apply_json_patch.py\n\n**Standard:** RFC 6902\n\n**Operations:**\n- add - Insert or replace value\n- remove - Delete value at path\n- replace - Replace value at path\n- move - Move value from one path to another\n- copy - Copy value from one path to another\n- test - Assert value equals expected before applying",
+            "operation_structure": {
+              "required_fields": [
+                "op",
+                "path"
+              ],
+              "optional_fields": [
+                "value",
+                "from"
+              ],
+              "op": "Operation type (add, remove, replace, move, copy, test)",
+              "path": "JSON Pointer to target location",
+              "value": "New value for add/replace/test operations",
+              "from": "Source path for move/copy operations"
+            },
+            "example": "[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"new_label\"}, {\"op\": \"add\", \"path\": \"/children/new_id\", \"value\": {...}}]"
           }
         },
-        "errors": {
-          "id": "errors",
-          "label": "Error Handling",
-          "type": "Doc",
-          "metadata": {
-            "files": [
-              "response_model.py"
-            ],
-            "description": "Categorized error responses"
-          }
-        }
-      }
-    },
-    "testing": {
-      "id": "testing",
-      "label": "Testing",
-      "type": "Doc",
-      "metadata": {
-        "description": "Comprehensive test suite"
-      },
-      "children": {
-        "coverage": {
-          "id": "coverage",
-          "label": "Test Coverage",
-          "type": "Doc",
-          "metadata": {
-            "count": 17,
-            "description": "Success, syntax, path, validation, file protection tests"
-          }
-        }
-      }
-    },
-    "implementation": {
-      "id": "implementation",
-      "label": "Implementation",
-      "type": "Doc",
-      "metadata": {
-        "description": "Key implementation details and workflows"
-      },
-      "children": {
-        "file_protection": {
-          "id": "file_protection",
-          "label": "File Protection Workflow",
-          "type": "Doc",
-          "metadata": {
-            "description": "Multi-phase write protection: remove read-only \u2192 exclusive write \u2192 restore read-only"
-          }
-        },
-        "error_types": {
-          "id": "error_types",
-          "label": "Error Categories",
-          "type": "Doc",
-          "metadata": {
-            "count": 4,
-            "types": [
-              "JSON Patch Syntax",
-              "Path Not Found",
-              "Pydantic Validation",
-              "File Operations"
-            ]
-          }
-        }
-      }
-    },
-    "features": {
-      "id": "features",
-      "label": "Features",
-      "type": "Doc",
-      "metadata": {
-        "description": "Planned and implemented features"
-      },
-      "children": {
         "rendering": {
           "id": "rendering",
           "label": "Document Rendering",
@@ -141,189 +51,37 @@
             "status": "complete_internal_only",
             "description": "Internal automatic markdown generation on patch application (not a public API)"
           }
+        },
+        "workflow": {
+          "id": "workflow",
+          "label": "Workflow",
+          "type": "Doc",
+          "metadata": {
+            "description": "Complete knowledge tool operation workflow from API call to markdown generation.\n\n**Main Flow:**\nread JSON \u2192 validate patch \u2192 apply in memory \u2192 validate schema \u2192 write with protection \u2192 render markdown\n\n**File Protection (within Write step):**\nremove read-only \u2192 exclusive write \u2192 atomic rename \u2192 restore read-only",
+            "main_steps": [
+              "1. Read Document - Load and parse JSON file",
+              "2. Parse & Validate Patch - Validate RFC 6902 format",
+              "3. Apply in Memory - Execute patch operations on dict",
+              "4. Validate Schema - Check Pydantic Doc model",
+              "5. Write with Protection - Atomic file write with read-only management",
+              "6. Auto-Render Markdown - Generate .md from JSON"
+            ],
+            "file_protection_phases": [
+              "Remove read-only attribute",
+              "Exclusive write to temp file",
+              "Atomic rename to target",
+              "Restore read-only/archive attribute"
+            ]
+          }
         }
       }
     },
-    "documentation": {
-      "id": "documentation",
-      "label": "Documentation",
+    "testing": {
+      "id": "testing",
+      "label": "Testing",
       "type": "Doc",
       "metadata": {
-        "description": "Complete API and usage documentation (from README)"
-      },
-      "children": {
-        "overview": {
-          "id": "overview",
-          "label": "Overview",
-          "type": "Doc",
-          "metadata": {
-            "description": "JSON document storage with Pydantic validation and JSON Patch operations"
-          }
-        },
-        "api_reference": {
-          "id": "api_reference",
-          "label": "API Reference",
-          "type": "Doc",
-          "metadata": {
-            "description": "Single function apply_json_patch(document_path, json_patch) executes RFC 6902 JSON Patch operations on knowledge documents"
-          }
-        },
-        "document_format": {
-          "id": "document_format",
-          "label": "Document Format",
-          "type": "Doc",
-          "metadata": {
-            "description": "Fields: id, label, type, metadata, children (dict or null)"
-          }
-        },
-        "error_responses": {
-          "id": "error_responses",
-          "label": "Error Responses",
-          "type": "Doc",
-          "metadata": {
-            "description": "ApplyPatchErrorResponse with hint, example, parent_path, existing_children"
-          }
-        },
-        "file_workflow": {
-          "id": "file_workflow",
-          "label": "File Write Workflow",
-          "type": "Doc",
-          "metadata": {
-            "description": "Remove read-only \u2192 exclusive write \u2192 atomic rename \u2192 restore read-only"
-          }
-        },
-        "type_extensibility": {
-          "id": "type_extensibility",
-          "label": "Type Extensibility",
-          "type": "Doc",
-          "metadata": {
-            "description": "Type field as anchor for future document type extensions"
-          }
-        },
-        "document_structure_detail": {
-          "id": "document_structure_detail",
-          "label": "Document Structure Detail",
-          "type": "Doc",
-          "metadata": {
-            "description": "Complete Doc schema with all fields and constraints"
-          }
-        },
-        "api_process": {
-          "id": "api_process",
-          "label": "API Process Flow",
-          "type": "Doc",
-          "metadata": {
-            "description": "Step-by-step process: read \u2192 validate patch \u2192 apply in memory \u2192 validate schema \u2192 write with protection"
-          },
-          "children": {
-            "read_phase": {
-              "id": "read_phase",
-              "label": "1. Read Document",
-              "type": "Doc",
-              "metadata": {
-                "description": "Load JSON document from file, parse into Python dict, validate file accessibility"
-              }
-            },
-            "parse_phase": {
-              "id": "parse_phase",
-              "label": "2. Parse & Validate Patch",
-              "type": "Doc",
-              "metadata": {
-                "description": "Parse JSON Patch string, validate RFC 6902 format, check all required fields (op, path)"
-              }
-            },
-            "apply_phase": {
-              "id": "apply_phase",
-              "label": "3. Apply in Memory",
-              "type": "Doc",
-              "metadata": {
-                "description": "Execute patch operations (add/replace/remove) on document dict without touching file"
-              }
-            },
-            "validate_phase": {
-              "id": "validate_phase",
-              "label": "4. Validate Schema",
-              "type": "Doc",
-              "metadata": {
-                "description": "Validate patched document against Pydantic Doc model, check all required fields and types"
-              }
-            },
-            "write_phase": {
-              "id": "write_phase",
-              "label": "5. Write with Protection",
-              "type": "Doc",
-              "metadata": {
-                "description": "Remove read-only, atomic write to temp file, rename to target, restore read-only/archive"
-              }
-            },
-            "render_phase": {
-              "id": "render_phase",
-              "label": "6. Auto-Render Markdown",
-              "type": "Doc",
-              "metadata": {
-                "description": "Generate markdown representation from updated JSON, save as .md file with same workflow"
-              }
-            }
-          }
-        },
-        "usage_example": {
-          "id": "usage_example",
-          "label": "Usage Examples",
-          "type": "Doc",
-          "metadata": {
-            "description": "Apply patches to add/update/remove document nodes, with comprehensive error handling and helpful hints"
-          },
-          "children": {
-            "add_operation": {
-              "id": "add_operation",
-              "label": "Add Node Example",
-              "type": "Doc",
-              "metadata": {
-                "description": "Create new child node with op=add, path=/children/new_id, value={doc object}"
-              }
-            },
-            "replace_operation": {
-              "id": "replace_operation",
-              "label": "Replace Field Example",
-              "type": "Doc",
-              "metadata": {
-                "description": "Update existing field with op=replace, path=/label, value=new_label_text"
-              }
-            },
-            "remove_operation": {
-              "id": "remove_operation",
-              "label": "Remove Node Example",
-              "type": "Doc",
-              "metadata": {
-                "description": "Delete child node with op=remove, path=/children/old_id"
-              }
-            },
-            "error_handling": {
-              "id": "error_handling",
-              "label": "Error Handling",
-              "type": "Doc",
-              "metadata": {
-                "description": "Returns ApplyPatchErrorResponse with contextual hints for syntax, path, or validation errors"
-              }
-            }
-          }
-        },
-        "file_management_detail": {
-          "id": "file_management_detail",
-          "label": "File Management Strategy",
-          "type": "Doc",
-          "metadata": {
-            "description": "Before/during/after modification phases with protection attributes"
-          }
-        },
-        "type_extensibility_detail": {
-          "id": "type_extensibility_detail",
-          "label": "Type Extensibility Details",
-          "type": "Doc",
-          "metadata": {
-            "description": "Requirements for adding custom document types with new Pydantic models"
-          }
-        }
+        "description": "Comprehensive test suite with 18 tests covering all functionality.\n\n**Run tests:**\n```bash\npytest knowledge_base/tools/ -v\n```\n\n**From project root:**\n```bash\npytest\n```"
       }
     },
     "api": {
@@ -331,49 +89,72 @@
       "label": "API",
       "type": "Doc",
       "metadata": {
-        "description": "Public API functions for knowledge tools"
+        "description": "Public interfaces for knowledge tools: command-line scripts and Python functions"
       },
       "opts": {
-        "render_priority": true
+        "render_priority": true,
+        "render_toc": false
       },
       "children": {
-        "opts_configuration": {
-          "id": "opts_configuration",
-          "label": "Opts Configuration",
+        "scripts": {
+          "id": "scripts",
+          "label": "Scripts",
           "type": "Doc",
           "metadata": {
-            "description": "Non-displayable rendering options for document nodes"
+            "description": "Command-line script interfaces"
+          },
+          "opts": {
+            "render_priority": true,
+            "render_toc": false
           },
           "children": {
-            "render_priority": {
-              "id": "render_priority",
-              "label": "render_priority Field",
+            "apply_json_patch_script": {
+              "id": "apply_json_patch_script",
+              "label": "apply_json_patch.py",
               "type": "Doc",
               "metadata": {
-                "type": "bool",
-                "default": false,
-                "description": "When true, renders node before siblings with render_priority=false"
+                "file": "apply_json_patch.py",
+                "description": "Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.\n\n```bash\npython3 apply_json_patch.py <document_path> <json_patch>\n```",
+                "usage": "python3 apply_json_patch.py <document_path> <json_patch>",
+                "arguments": [
+                  "document_path (str): Path to Doc JSON file",
+                  "json_patch (str): RFC 6902 JSON Patch operations as JSON string"
+                ],
+                "exit_codes": {
+                  "0": "Success - patch applied",
+                  "1": "Error - JSON returned with error details"
+                },
+                "output": "Success: \u2713 Patch applied to <path>. Error: JSON error response"
+              },
+              "children": {
+                "script_example": {
+                  "id": "script_example",
+                  "label": "Script Example",
+                  "type": "Doc",
+                  "metadata": {
+                    "description": "Complete example of script invocation",
+                    "command": "python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'",
+                    "expected_output": "\u2713 Patch applied to knowledge_base/knowledge_tool.json"
+                  }
+                }
               }
             }
           }
         },
-        "apply_json_patch.py": {
-          "id": "apply_json_patch.py",
-          "label": "apply_json_patch.py",
+        "functions": {
+          "id": "functions",
+          "label": "Functions",
           "type": "Doc",
           "metadata": {
-            "file": "apply_json_patch.py",
-            "description": "Apply JSON Patch operations to knowledge documents with automatic markdown rendering.\n\n```bash\npython3 apply_json_patch.py <document_path> <json_patch>\n```\n\nExample:\n```bash\npython3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"Updated\"}]'\n```"
-          },
-          "opts": {
-            "render_priority": true
+            "description": "Python function interfaces for programmatic use"
           },
           "children": {
-            "function_signature": {
-              "id": "function_signature",
-              "label": "Function Signature",
+            "apply_json_patch_func": {
+              "id": "apply_json_patch_func",
+              "label": "apply_json_patch()",
               "type": "Doc",
               "metadata": {
+                "description": "Apply JSON Patch to document file with validation and automatic markdown rendering.",
                 "signature": "apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatchErrorResponse]",
                 "parameters": [
                   "document_path (str): Path to Doc JSON file",
@@ -388,12 +169,26 @@
                 ],
                 "behavior": "All exceptions caught and returned as ApplyPatchErrorResponse with helpful hints",
                 "safety": "Atomic operations, in-memory validation before write, file protection workflow, read-only file management",
-                "rendering": "Every successful patch automatically generates markdown: document.json \u2192 document.md with identical file protection",
-                "script_call_convention": "python3 apply_json_patch.py <document_path> <json_patch>",
-                "call_example": "python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'",
-                "parameters_explanation": {
-                  "document_path": "Full or relative path to JSON document file",
-                  "json_patch": "RFC 6902 JSON Patch as JSON string - array of operation objects"
+                "rendering": "Every successful patch automatically generates markdown: document.json \u2192 document.md with identical file protection"
+              },
+              "children": {}
+            },
+            "opts_configuration": {
+              "id": "opts_configuration",
+              "label": "Opts Configuration",
+              "type": "Doc",
+              "metadata": {
+                "description": "Non-displayable rendering options for document nodes"
+              },
+              "children": {
+                "render_priority_field": {
+                  "id": "render_priority_field",
+                  "label": "render_priority Field",
+                  "type": "Doc",
+                  "metadata": {
+                    "type": "bool",
+                    "description": "When true, renders node before siblings with render_priority=false"
+                  }
                 }
               }
             }

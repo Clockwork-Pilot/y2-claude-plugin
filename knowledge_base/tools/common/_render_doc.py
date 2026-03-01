@@ -41,6 +41,18 @@ def _render_doc_internal(document_path: str) -> Optional[str]:
 
     lines = []
     _render_node(doc_dict, lines, level=1)
+
+    # Insert TOC if enabled in opts
+    opts = doc_dict.get("opts", {})
+    if opts.get("render_toc", False):
+        toc_lines = _generate_toc(doc_dict)
+        if toc_lines:
+            lines.insert(1, "")
+            lines.insert(2, "## Table of Contents")
+            lines.insert(3, "")
+            lines[4:4] = toc_lines
+            lines.insert(4 + len(toc_lines), "")
+
     markdown_content = "\n".join(lines)
 
     # Save to .md file with protection
@@ -62,7 +74,6 @@ def _render_node(node: Dict[str, Any], lines: list, level: int = 1) -> None:
     label = node.get("label", "Untitled")
     heading = "#" * level + " " + label
     lines.append(heading)
-    lines.append("")
 
     # Add metadata information (skip opts field - non-displayable)
     metadata = node.get("metadata", {})
@@ -88,6 +99,38 @@ def _render_node(node: Dict[str, Any], lines: list, level: int = 1) -> None:
             # Use heading levels for shallow nesting
             for child_id, child_node in sorted_children:
                 _render_node(child_node, lines, level=level + 1)
+
+
+def _generate_toc(node: Dict[str, Any], level: int = 1, parent_label: str = "") -> list:
+    """Generate table of contents lines from document structure.
+
+    Args:
+        node: Doc node dictionary
+        level: Current heading level (1-6)
+        parent_label: Label of parent node for context
+
+    Returns:
+        List of TOC lines
+    """
+    toc_lines = []
+
+    children = node.get("children", {})
+    if children:
+        sorted_children = _sort_children_by_priority(children)
+
+        for child_id, child_node in sorted_children:
+            label = child_node.get("label", child_id)
+            anchor = label.lower()
+            anchor = "".join(c if c.isalnum() else "-" for c in anchor).strip("-")
+
+            indent = "  " * (level - 1)
+            toc_lines.append(f"{indent}- [{label}](#{anchor})")
+
+            # Recursively add child's children
+            child_toc = _generate_toc(child_node, level + 1, label)
+            toc_lines.extend(child_toc)
+
+    return toc_lines
 
 
 def _sort_children_by_priority(children: Dict[str, Any]) -> list:
@@ -117,22 +160,39 @@ def _render_metadata(metadata: Dict[str, Any]) -> list:
         List of formatted lines
     """
     lines = []
+    description = metadata.get("description")
+    first_field = True
+
+    if description:
+        lines.append(str(description))
+        first_field = False
 
     for key, value in metadata.items():
-        # Skip rendering "description" key label, just render the value
         if key == "description":
-            if value:
-                lines.append(str(value))
-        elif isinstance(value, list):
+            continue
+
+        # Add empty line before each field (except right after description)
+        if not first_field:
+            lines.append("")
+        first_field = False
+
+        if isinstance(value, list):
             lines.append(f"**{_format_key(key)}:**")
+            # Check if list items already start with number pattern (1., 2., etc.)
+            import re
+            is_ordered = all(isinstance(item, str) and re.match(r'^\d+\.\s', item) for item in value)
             for item in value:
-                lines.append(f"  - {item}")
+                if is_ordered:
+                    # Already numbered, render as-is
+                    lines.append(f"  {item}")
+                else:
+                    # Bullet list
+                    lines.append(f"  - {item}")
         elif isinstance(value, dict):
             lines.append(f"**{_format_key(key)}:**")
             for sub_key, sub_value in value.items():
                 lines.append(f"  - {_format_key(sub_key)}: {sub_value}")
         elif value:
-            # Only add non-empty values
             lines.append(f"**{_format_key(key)}:** {value}")
 
     return lines

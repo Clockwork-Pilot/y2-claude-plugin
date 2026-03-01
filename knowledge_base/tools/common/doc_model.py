@@ -9,6 +9,7 @@ class Opts(BaseModel):
     """Non-displayable options for document rendering behavior."""
 
     render_priority: bool = False
+    render_toc: bool = False
 
 
 class Doc(BaseModel):
