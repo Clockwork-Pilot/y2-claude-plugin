@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 import pytest
 
-from knowledge_tools.apply_json_patch import apply_json_patch
-from knowledge_tools.response_model import ApplyPatchErrorResponse
+from apply_json_patch import apply_json_patch
+from common.response_model import ApplyPatchErrorResponse
 
 
 @pytest.fixture

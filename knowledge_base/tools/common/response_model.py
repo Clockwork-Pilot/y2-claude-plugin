@@ -17,4 +17,3 @@ class ApplyPatchErrorResponse(BaseModel):
     parent_path: Optional[str] = Field(None, description="Parent path for path errors")
     existing_children: Optional[List[str]] = Field(None, description="Available children for path errors")
     details: Optional[List[Dict[str, Any]]] = Field(None, description="Validation error details")
-    schema: Optional[Dict[str, Any]] = Field(None, description="Pydantic schema for validation errors")

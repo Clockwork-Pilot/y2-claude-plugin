@@ -3,30 +3,32 @@
 
 import json
 import os
-import stat
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from jsonpatch import JsonPatch, JsonPatchException
 from pydantic import ValidationError
 
-from knowledge_tools.doc_model import Doc
-from knowledge_tools.response_model import ApplyPatchErrorResponse
+from common.doc_model import Doc
+from common.response_model import ApplyPatchErrorResponse
+from common.file_ops import write_protected_file
+from common._render_doc import _render_doc_internal
 
 
 def apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatchErrorResponse]:
     """
-    Apply JSON Patch to document file with validation and error handling.
+    Apply JSON Patch to document file with validation and automatic markdown rendering.
 
     Process:
     1. Read document from file
-    2. Parse and validate JSON Patch
+    2. Parse and validate JSON Patch (RFC 6902)
     3. Apply patch in memory
     4. Validate against Pydantic Doc schema
     5. Write changes with file protection
+    6. Auto-render markdown representation to .md file
 
     Args:
         document_path: Path to document JSON file
-        json_patch: JSON Patch operations as JSON string
+        json_patch: JSON Patch operations as JSON string (RFC 6902 format)
 
     Returns:
         Dict with success status, data/error, and operation metadata
@@ -84,12 +86,20 @@ def apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatch
 
     # 6. Write to file with protection
     try:
-        _write_protected_document(doc_path, patched_dict)
+        write_protected_file(doc_path, json.dumps(patched_dict, indent=2))
     except Exception as e:
         return ApplyPatchErrorResponse(
             error=f"Failed to write document: {str(e)}",
             operation=operation
         )
+
+    # 7. Render markdown representation
+    try:
+        _render_doc_internal(str(doc_path))
+    except Exception as e:
+        # Rendering failure doesn't fail the patch operation
+        # Just silently continue - the JSON was updated successfully
+        pass
 
     return None
 
@@ -193,29 +203,3 @@ def _get_path_value(doc: Dict, path: str) -> Any:
     return current
 
 
-def _write_protected_document(doc_path: Path, doc_dict: Dict) -> None:
-    """Write document to file with protection workflow."""
-    # Remove read-only/archive attributes
-    if doc_path.exists():
-        current_mode = doc_path.stat().st_mode
-        doc_path.chmod(current_mode | stat.S_IWUSR | stat.S_IWGRP)
-
-    # Ensure parent directory exists
-    doc_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Write with exclusive lock semantics
-    try:
-        # Write to temp file first for atomicity
-        temp_path = doc_path.with_suffix(doc_path.suffix + ".tmp")
-        temp_path.write_text(json.dumps(doc_dict, indent=2), encoding="utf-8")
-
-        # Atomic rename
-        temp_path.replace(doc_path)
-    finally:
-        # Clean up temp file if it exists
-        if temp_path.exists():
-            temp_path.unlink()
-
-    # Set read-only/archive attributes
-    current_mode = doc_path.stat().st_mode
-    doc_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)

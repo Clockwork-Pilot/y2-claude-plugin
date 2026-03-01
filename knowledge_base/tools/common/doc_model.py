@@ -5,6 +5,12 @@ from typing import Any, Dict, Optional, Literal
 from pydantic import BaseModel
 
 
+class Opts(BaseModel):
+    """Non-displayable options for document rendering behavior."""
+
+    render_priority: bool = False
+
+
 class Doc(BaseModel):
     """Document node with type-based extensibility and optional children."""
 
@@ -12,6 +18,7 @@ class Doc(BaseModel):
     label: str
     type: Literal["Doc"] = "Doc"
     metadata: Dict[str, Any] = {}
+    opts: Optional[Opts] = None
     children: Optional[Dict[str, "Doc"]] = None
 
 
