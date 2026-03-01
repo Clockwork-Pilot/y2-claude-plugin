@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from .apply_json_patch import apply_json_patch
-from .models.response_model import ApplyPatchErrorResponse
+from .common.response import ApplyPatchErrorResponse
 
 
 @pytest.fixture

@@ -8,27 +8,30 @@ from typing import Any, Dict, List, Optional
 from jsonpatch import JsonPatch, JsonPatchException
 from pydantic import ValidationError
 
-from .models.doc_model import Doc
-from .models.response_model import ApplyPatchErrorResponse
+from .models import Doc, MODEL_REGISTRY
+from .common.response import ApplyPatchErrorResponse
 from .common.file_ops import write_protected_file
-from .common._render_doc import _render_doc_internal
+from .common.render import render
 
 
-def apply_json_patch(document_path: str, json_patch: str, create: bool = False) -> Optional[ApplyPatchErrorResponse]:
+def apply_json_patch(document_path: str, json_patch: Optional[str] = None, create: bool = False) -> Optional[ApplyPatchErrorResponse]:
     """
     Apply JSON Patch to document file with validation and automatic markdown rendering.
 
+    If json_patch is None, only re-renders the document without patching.
+
     Process:
     1. Read document from file (or create if create=True and document doesn't exist)
-    2. Parse and validate JSON Patch (RFC 6902)
-    3. Apply patch in memory
-    4. Validate against Pydantic Doc schema
-    5. Write changes with file protection
-    6. Auto-render markdown representation to .md file
+    2. If json_patch provided:
+       a. Parse and validate JSON Patch (RFC 6902)
+       b. Apply patch in memory
+       c. Validate against Pydantic Doc schema
+       d. Write changes with file protection
+    3. Render markdown representation to .md file
 
     Args:
         document_path: Path to document JSON file
-        json_patch: JSON Patch operations as JSON string (RFC 6902 format)
+        json_patch: JSON Patch operations as JSON string (RFC 6902 format). If None, only re-renders.
         create: If True, create document with patch as initial state (default: False)
 
     Returns:
@@ -57,30 +60,43 @@ def apply_json_patch(document_path: str, json_patch: str, create: bool = False) 
             operation=operation
         )
 
-    # 2. Parse JSON Patch
-    try:
-        patch_ops = json.loads(json_patch)
-        if not isinstance(patch_ops, list):
-            raise ValueError("JSON Patch must be an array of operations")
-    except (json.JSONDecodeError, ValueError) as e:
-        return _error_json_patch_syntax(str(e), operation)
+    # If no patch provided, skip patching and go straight to render
+    if json_patch is None:
+        patched_dict = doc_dict
+    else:
+        # 2. Parse JSON Patch
+        try:
+            patch_ops = json.loads(json_patch)
+            if not isinstance(patch_ops, list):
+                raise ValueError("JSON Patch must be an array of operations")
+        except (json.JSONDecodeError, ValueError) as e:
+            return _error_json_patch_syntax(str(e), operation)
 
-    # 3. Create JsonPatch object
-    try:
-        patch = JsonPatch(patch_ops)
-    except Exception as e:
-        return _error_json_patch_syntax(str(e), operation)
+        # 3. Create JsonPatch object
+        try:
+            patch = JsonPatch(patch_ops)
+        except Exception as e:
+            return _error_json_patch_syntax(str(e), operation)
 
-    # 4. Apply patch in memory
-    try:
-        patched_dict = patch.apply(doc_dict)
-    except Exception as e:
-        return _error_path_not_found(str(e), doc_dict, operation)
+        # 4. Apply patch in memory
+        try:
+            patched_dict = patch.apply(doc_dict)
+        except Exception as e:
+            return _error_path_not_found(str(e), doc_dict, operation)
 
-    # 5. Validate against Pydantic
+    # 5. Validate against correct model type
     try:
-        validated_doc = Doc(**patched_dict)
-        patched_dict = json.loads(validated_doc.model_dump_json(exclude_none=True))
+        model_type = patched_dict.get("type", "Doc")
+        ModelClass = MODEL_REGISTRY.get(model_type)
+
+        if not ModelClass:
+            return ApplyPatchErrorResponse(
+                error=f"Unknown model type: {model_type}",
+                operation=operation
+            )
+
+        validated_model = ModelClass(**patched_dict)
+        patched_dict = json.loads(validated_model.model_dump_json(exclude_none=True))
     except ValidationError as e:
         return _error_pydantic_validation(e, operation)
     except Exception as e:
@@ -100,7 +116,7 @@ def apply_json_patch(document_path: str, json_patch: str, create: bool = False) 
 
     # 7. Render markdown representation
     try:
-        _render_doc_internal(str(doc_path))
+        render(str(doc_path))
     except Exception as e:
         # Rendering failure doesn't fail the patch operation
         # Just silently continue - the JSON was updated successfully
@@ -211,9 +227,9 @@ def _get_path_value(doc: Dict, path: str) -> Any:
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print(
-            "Usage: python3 apply_json_patch.py [--create] <document_path> <json_patch>",
+            "Usage: python3 apply_json_patch.py [--create] <document_path> [json_patch]",
             file=sys.stderr,
         )
         print("\nExamples:", file=sys.stderr)
@@ -225,17 +241,25 @@ if __name__ == "__main__":
             '  python3 apply_json_patch.py --create doc.json \'[{"op": "add", "path": "/id", "value": "doc1"}]\'',
             file=sys.stderr,
         )
+        print(
+            '  python3 apply_json_patch.py doc.json  # Re-render only',
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Parse arguments
     create = False
+    json_patch = None
+
     if sys.argv[1] == "--create":
         create = True
         document_path = sys.argv[2]
-        json_patch = sys.argv[3]
+        if len(sys.argv) > 3:
+            json_patch = sys.argv[3]
     else:
         document_path = sys.argv[1]
-        json_patch = sys.argv[2]
+        if len(sys.argv) > 2:
+            json_patch = sys.argv[2]
 
     result = apply_json_patch(document_path, json_patch, create=create)
 
@@ -246,6 +270,11 @@ if __name__ == "__main__":
         sys.exit(1)
     else:
         # Success
-        action = "Created" if create else "Patched"
+        if create:
+            action = "Created"
+        elif json_patch is not None:
+            action = "Patched"
+        else:
+            action = "Re-rendered"
         print(f"✓ {action} {document_path}")
         sys.exit(0)
