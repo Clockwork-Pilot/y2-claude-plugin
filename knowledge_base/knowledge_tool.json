@@ -24,6 +24,40 @@
               "apply_json_patch.py"
             ],
             "description": "RFC 6902 JSON Patch implementation with Pydantic validation"
+          },
+          "children": {
+            "json_patch_format": {
+              "id": "json_patch_format",
+              "label": "JSON Patch Format",
+              "type": "Doc",
+              "metadata": {
+                "standard": "RFC 6902",
+                "description": "JSON Patch standard for describing modifications to JSON documents. Operations are submitted as a JSON array of operation objects.",
+                "operations": [
+                  "add - Insert or replace value",
+                  "remove - Delete value at path",
+                  "replace - Replace value at path",
+                  "move - Move value from one path to another",
+                  "copy - Copy value from one path to another",
+                  "test - Assert value equals expected before applying"
+                ],
+                "operation_structure": {
+                  "required_fields": [
+                    "op",
+                    "path"
+                  ],
+                  "optional_fields": [
+                    "value",
+                    "from"
+                  ],
+                  "op": "Operation type (add, remove, replace, move, copy, test)",
+                  "path": "JSON Pointer to target location",
+                  "value": "New value for add/replace/test operations",
+                  "from": "Source path for move/copy operations"
+                },
+                "example": "[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"new_label\"}, {\"op\": \"add\", \"path\": \"/children/new_id\", \"value\": {...}}]"
+              }
+            }
           }
         },
         "errors": {

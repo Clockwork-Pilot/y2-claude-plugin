@@ -61,6 +61,26 @@ API-first design with JSON Patch operations
   - apply_json_patch.py
 RFC 6902 JSON Patch implementation with Pydantic validation
 
+#### JSON Patch Format
+
+**Standard:** RFC 6902
+JSON Patch standard for describing modifications to JSON documents. Operations are submitted as a JSON array of operation objects.
+**Operations:**
+  - add - Insert or replace value
+  - remove - Delete value at path
+  - replace - Replace value at path
+  - move - Move value from one path to another
+  - copy - Copy value from one path to another
+  - test - Assert value equals expected before applying
+**Operation Structure:**
+  - Required Fields: ['op', 'path']
+  - Optional Fields: ['value', 'from']
+  - Op: Operation type (add, remove, replace, move, copy, test)
+  - Path: JSON Pointer to target location
+  - Value: New value for add/replace/test operations
+  - From: Source path for move/copy operations
+**Example:** [{"op": "replace", "path": "/label", "value": "new_label"}, {"op": "add", "path": "/children/new_id", "value": {...}}]
+
 ### Error Handling
 
 **Files:**
