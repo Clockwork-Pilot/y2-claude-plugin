@@ -116,7 +116,7 @@
               "metadata": {
                 "file": "apply_json_patch.py",
                 "description": "Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.",
-                "usage": "python3 apply_json_patch.py <document_path> <json_patch>",
+                "usage": "python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>",
                 "arguments": [
                   "document_path (str): Path to Doc JSON file",
                   "json_patch (str): RFC 6902 JSON Patch operations as JSON string"
@@ -126,7 +126,8 @@
                   "1": "Error - JSON returned with error details"
                 },
                 "output": "Success: \u2713 Patch applied to <path>. Error: JSON error response",
-                "code": "python3 apply_json_patch.py <document_path> <json_patch>\npython3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"Updated\"}]'"
+                "code": "python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>\npython3 -m knowledge_base.tools.apply_json_patch knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"Updated\"}]'",
+                "note": "Requires knowledge_base to be a proper Python package (with __init__.py). Use -m flag for module invocation. This ensures proper import resolution and is the Pythonic standard for running packages."
               },
               "children": {
                 "script_example": {
@@ -136,7 +137,7 @@
                   "metadata": {
                     "description": "Complete example of script invocation",
                     "expected_output": "\u2713 Patch applied to knowledge_base/knowledge_tool.json",
-                    "code": "python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'"
+                    "code": "python3 -m knowledge_base.tools.apply_json_patch knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'"
                   }
                 }
               }

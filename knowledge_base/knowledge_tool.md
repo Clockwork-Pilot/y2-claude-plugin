@@ -30,13 +30,13 @@ Command-line script interfaces
 Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.
 
 ```
-python3 apply_json_patch.py <document_path> <json_patch>
-python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "Updated"}]'
+python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>
+python3 -m knowledge_base.tools.apply_json_patch knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "Updated"}]'
 ```
 
 **File:** apply_json_patch.py
 
-**Usage:** python3 apply_json_patch.py <document_path> <json_patch>
+**Usage:** python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>
 
 **Arguments:**
   - document_path (str): Path to Doc JSON file
@@ -48,11 +48,13 @@ python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace
 
 **Output:** Success: ✓ Patch applied to <path>. Error: JSON error response
 
+**Note:** Requires knowledge_base to be a proper Python package (with __init__.py). Use -m flag for module invocation. This ensures proper import resolution and is the Pythonic standard for running packages.
+
 ##### Script Example
 Complete example of script invocation
 
 ```
-python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "New Label"}]'
+python3 -m knowledge_base.tools.apply_json_patch knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "New Label"}]'
 ```
 
 **Expected Output:** ✓ Patch applied to knowledge_base/knowledge_tool.json

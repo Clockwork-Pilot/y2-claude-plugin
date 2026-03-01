@@ -182,7 +182,7 @@ How task operations generate and apply JSON Patch operations
 ### Patch Helpers
 Functions in knowledge_base/tools/common/task_helpers.py that generate RFC 6902 operations
 
-**File:** task_helpers.py
+**File:** tasks_lifecycle/tools/common/task_helpers.py
 
 **Functions:**
   - patch_advance_phase(current_phase) - Generate next phase creation
@@ -206,9 +206,9 @@ How patches are applied to task.json
 How task management integrates with knowledge base system
 
 ### Data Models
-Task-specific Pydantic models in knowledge_base/tools/common/
+Task-specific Pydantic models in tasks_lifecycle/tools/common/
 
-**Location:** knowledge_base/tools/common/task_model.py
+**Location:** tasks_lifecycle/tools/common/task_model.py
 
 **Models:**
   - TaskDocument - Complete task representation
@@ -219,7 +219,7 @@ Task-specific Pydantic models in knowledge_base/tools/common/
   - MetricsFile - Structured metrics by phase
 
 ### State Module (task_state.py)
-Central module for task operations in tasks_scripts/
+Central module for task operations in tasks_lifecycle/tools/
 
 **Functions:**
   - load_task_document(path) - Read task.json, convert to TaskDocument
@@ -234,11 +234,11 @@ Central module for task operations in tasks_scripts/
 ### Rendering
 Automatic markdown generation from task.json
 
-**Handler:** apply_json_patch + _render_doc_internal from knowledge_base
+**Handler:** apply_json_patch from knowledge_base (via sys.path integration) + _render_doc_internal
 
 **Flow:** task.json (Doc model) → apply_json_patch → auto-render task.md
 
-**Note:** No custom renderers - uses generic Doc markdown rendering
+**Note:** Auto-renders via knowledge_base apply_json_patch - no custom renderers needed
 
 ## Examples
 Usage examples for task operations

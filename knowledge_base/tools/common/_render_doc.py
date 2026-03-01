@@ -221,11 +221,11 @@ def _format_key(key: str) -> str:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: render_doc.py <path_to_doc.json>", file=sys.stderr)
+        print("Usage: _render_doc.py <path_to_doc.json>", file=sys.stderr)
         sys.exit(1)
 
     doc_path = sys.argv[1]
-    result = render_doc(doc_path)
+    result = _render_doc_internal(doc_path)
 
     if result:
         print(result)

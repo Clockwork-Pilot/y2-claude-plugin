@@ -228,7 +228,7 @@
           "type": "Doc",
           "metadata": {
             "description": "Functions in knowledge_base/tools/common/task_helpers.py that generate RFC 6902 operations",
-            "file": "task_helpers.py",
+            "file": "tasks_lifecycle/tools/common/task_helpers.py",
             "functions": [
               "patch_advance_phase(current_phase) - Generate next phase creation",
               "patch_add_scoring_entry(phase_name, entry) - Add metrics entry",
@@ -268,8 +268,8 @@
           "label": "Data Models",
           "type": "Doc",
           "metadata": {
-            "description": "Task-specific Pydantic models in knowledge_base/tools/common/",
-            "location": "knowledge_base/tools/common/task_model.py",
+            "description": "Task-specific Pydantic models in tasks_lifecycle/tools/common/",
+            "location": "tasks_lifecycle/tools/common/task_model.py",
             "models": [
               "TaskDocument - Complete task representation",
               "Phase - Single phase with header, content, entries",
@@ -285,7 +285,7 @@
           "label": "State Module (task_state.py)",
           "type": "Doc",
           "metadata": {
-            "description": "Central module for task operations in tasks_scripts/",
+            "description": "Central module for task operations in tasks_lifecycle/tools/",
             "functions": [
               "load_task_document(path) - Read task.json, convert to TaskDocument",
               "advance_phase(path) - Advance to next phase via JSON Patch",
@@ -304,9 +304,9 @@
           "type": "Doc",
           "metadata": {
             "description": "Automatic markdown generation from task.json",
-            "handler": "apply_json_patch + _render_doc_internal from knowledge_base",
+            "handler": "apply_json_patch from knowledge_base (via sys.path integration) + _render_doc_internal",
             "flow": "task.json (Doc model) \u2192 apply_json_patch \u2192 auto-render task.md",
-            "note": "No custom renderers - uses generic Doc markdown rendering"
+            "note": "Auto-renders via knowledge_base apply_json_patch - no custom renderers needed"
           }
         }
       }
