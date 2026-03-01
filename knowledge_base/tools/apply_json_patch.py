@@ -249,4 +249,3 @@ if __name__ == "__main__":
         action = "Created" if create else "Patched"
         print(f"✓ {action} {document_path}")
         sys.exit(0)
-
