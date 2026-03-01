@@ -8,18 +8,18 @@ from typing import Any, Dict, List, Optional
 from jsonpatch import JsonPatch, JsonPatchException
 from pydantic import ValidationError
 
-from common.doc_model import Doc
-from common.response_model import ApplyPatchErrorResponse
-from common.file_ops import write_protected_file
-from common._render_doc import _render_doc_internal
+from .models.doc_model import Doc
+from .models.response_model import ApplyPatchErrorResponse
+from .common.file_ops import write_protected_file
+from .common._render_doc import _render_doc_internal
 
 
-def apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatchErrorResponse]:
+def apply_json_patch(document_path: str, json_patch: str, create: bool = False) -> Optional[ApplyPatchErrorResponse]:
     """
     Apply JSON Patch to document file with validation and automatic markdown rendering.
 
     Process:
-    1. Read document from file
+    1. Read document from file (or create if create=True and document doesn't exist)
     2. Parse and validate JSON Patch (RFC 6902)
     3. Apply patch in memory
     4. Validate against Pydantic Doc schema
@@ -29,25 +29,30 @@ def apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatch
     Args:
         document_path: Path to document JSON file
         json_patch: JSON Patch operations as JSON string (RFC 6902 format)
+        create: If True, create document with patch as initial state (default: False)
 
     Returns:
-        Dict with success status, data/error, and operation metadata
+        None on success, ApplyPatchErrorResponse on error
     """
     operation = "apply_json_patch"
     doc_path = Path(document_path)
 
-    # 1. Read document
+    # 1. Read document or initialize empty
     if not doc_path.exists():
-        return ApplyPatchErrorResponse(
-            error=f"Document not found: {document_path}",
-            operation=operation
-        )
-
-    try:
-        doc_content = doc_path.read_text(encoding="utf-8")
-        doc_dict = json.loads(doc_content)
-    except (json.JSONDecodeError, IOError) as e:
-        return ApplyPatchErrorResponse(
+        if not create:
+            return ApplyPatchErrorResponse(
+                error=f"Document not found: {document_path}",
+                operation=operation,
+                hint="Use create=True flag to create new documents"
+            )
+        # Start with empty doc dict for creation
+        doc_dict = {}
+    else:
+        try:
+            doc_content = doc_path.read_text(encoding="utf-8")
+            doc_dict = json.loads(doc_content)
+        except (json.JSONDecodeError, IOError) as e:
+            return ApplyPatchErrorResponse(
             error=f"Failed to read document: {str(e)}",
             operation=operation
         )
@@ -208,20 +213,31 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 3:
         print(
-            "Usage: python3 apply_json_patch.py <document_path> <json_patch>",
+            "Usage: python3 apply_json_patch.py [--create] <document_path> <json_patch>",
             file=sys.stderr,
         )
-        print("\nExample:", file=sys.stderr)
+        print("\nExamples:", file=sys.stderr)
         print(
             '  python3 apply_json_patch.py doc.json \'[{"op": "replace", "path": "/label", "value": "new"}]\'',
             file=sys.stderr,
         )
+        print(
+            '  python3 apply_json_patch.py --create doc.json \'[{"op": "add", "path": "/id", "value": "doc1"}]\'',
+            file=sys.stderr,
+        )
         sys.exit(1)
 
-    document_path = sys.argv[1]
-    json_patch = sys.argv[2]
+    # Parse arguments
+    create = False
+    if sys.argv[1] == "--create":
+        create = True
+        document_path = sys.argv[2]
+        json_patch = sys.argv[3]
+    else:
+        document_path = sys.argv[1]
+        json_patch = sys.argv[2]
 
-    result = apply_json_patch(document_path, json_patch)
+    result = apply_json_patch(document_path, json_patch, create=create)
 
     if result:
         # Error occurred
@@ -230,6 +246,6 @@ if __name__ == "__main__":
         sys.exit(1)
     else:
         # Success
-        print(f"✓ Patch applied to {document_path}")
+        action = "Created" if create else "Patched"
+        print(f"✓ {action} {document_path}")
         sys.exit(0)
-
