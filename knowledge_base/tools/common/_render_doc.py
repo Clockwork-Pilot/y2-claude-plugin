@@ -161,14 +161,23 @@ def _render_metadata(metadata: Dict[str, Any]) -> list:
     """
     lines = []
     description = metadata.get("description")
+    code = metadata.get("code")
     first_field = True
 
     if description:
         lines.append(str(description))
         first_field = False
 
+    if code:
+        if not first_field:
+            lines.append("")
+        lines.append("```")
+        lines.append(str(code))
+        lines.append("```")
+        first_field = False
+
     for key, value in metadata.items():
-        if key == "description":
+        if key in ("description", "code"):
             continue
 
         # Add empty line before each field (except right after description)

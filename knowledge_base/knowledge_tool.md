@@ -29,8 +29,9 @@ Command-line script interfaces
 #### apply_json_patch.py
 Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.
 
-```bash
+```
 python3 apply_json_patch.py <document_path> <json_patch>
+python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "Updated"}]'
 ```
 
 **File:** apply_json_patch.py
@@ -50,7 +51,9 @@ python3 apply_json_patch.py <document_path> <json_patch>
 ##### Script Example
 Complete example of script invocation
 
-**Command:** python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "New Label"}]'
+```
+python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "New Label"}]'
+```
 
 **Expected Output:** ✓ Patch applied to knowledge_base/knowledge_tool.json
 
@@ -60,7 +63,9 @@ Python function interfaces for programmatic use
 #### apply_json_patch()
 Apply JSON Patch to document file with validation and automatic markdown rendering.
 
-**Signature:** apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatchErrorResponse]
+```
+apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatchErrorResponse]
+```
 
 **Parameters:**
   - document_path (str): Path to Doc JSON file
@@ -106,6 +111,10 @@ RFC 6902 JSON Patch standard for describing modifications to JSON documents.
 - copy - Copy value from one path to another
 - test - Assert value equals expected before applying
 
+```
+[{"op": "replace", "path": "/label", "value": "new_label"}, {"op": "add", "path": "/children/new_id", "value": {...}}]
+```
+
 **Operation Structure:**
   - Required Fields: ['op', 'path']
   - Optional Fields: ['value', 'from']
@@ -113,8 +122,6 @@ RFC 6902 JSON Patch standard for describing modifications to JSON documents.
   - Path: JSON Pointer to target location
   - Value: New value for add/replace/test operations
   - From: Source path for move/copy operations
-
-**Example:** [{"op": "replace", "path": "/label", "value": "new_label"}, {"op": "add", "path": "/children/new_id", "value": {...}}]
 
 ### Document Rendering
 Internal automatic markdown generation on patch application (not a public API)
@@ -149,12 +156,7 @@ remove read-only → exclusive write → atomic rename → restore read-only
 ## Testing
 Comprehensive test suite with 18 tests covering all functionality.
 
-**Run tests:**
-```bash
-pytest knowledge_base/tools/ -v
 ```
-
-**From project root:**
-```bash
+pytest knowledge_base/tools/ -v
 pytest
 ```

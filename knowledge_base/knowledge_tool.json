@@ -39,7 +39,7 @@
               "value": "New value for add/replace/test operations",
               "from": "Source path for move/copy operations"
             },
-            "example": "[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"new_label\"}, {\"op\": \"add\", \"path\": \"/children/new_id\", \"value\": {...}}]"
+            "code": "[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"new_label\"}, {\"op\": \"add\", \"path\": \"/children/new_id\", \"value\": {...}}]"
           }
         },
         "rendering": {
@@ -81,7 +81,8 @@
       "label": "Testing",
       "type": "Doc",
       "metadata": {
-        "description": "Comprehensive test suite with 18 tests covering all functionality.\n\n**Run tests:**\n```bash\npytest knowledge_base/tools/ -v\n```\n\n**From project root:**\n```bash\npytest\n```"
+        "description": "Comprehensive test suite with 18 tests covering all functionality.",
+        "code": "pytest knowledge_base/tools/ -v\npytest"
       }
     },
     "api": {
@@ -114,7 +115,7 @@
               "type": "Doc",
               "metadata": {
                 "file": "apply_json_patch.py",
-                "description": "Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.\n\n```bash\npython3 apply_json_patch.py <document_path> <json_patch>\n```",
+                "description": "Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.",
                 "usage": "python3 apply_json_patch.py <document_path> <json_patch>",
                 "arguments": [
                   "document_path (str): Path to Doc JSON file",
@@ -124,7 +125,8 @@
                   "0": "Success - patch applied",
                   "1": "Error - JSON returned with error details"
                 },
-                "output": "Success: \u2713 Patch applied to <path>. Error: JSON error response"
+                "output": "Success: \u2713 Patch applied to <path>. Error: JSON error response",
+                "code": "python3 apply_json_patch.py <document_path> <json_patch>\npython3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"Updated\"}]'"
               },
               "children": {
                 "script_example": {
@@ -133,8 +135,8 @@
                   "type": "Doc",
                   "metadata": {
                     "description": "Complete example of script invocation",
-                    "command": "python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'",
-                    "expected_output": "\u2713 Patch applied to knowledge_base/knowledge_tool.json"
+                    "expected_output": "\u2713 Patch applied to knowledge_base/knowledge_tool.json",
+                    "code": "python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'"
                   }
                 }
               }
@@ -155,7 +157,6 @@
               "type": "Doc",
               "metadata": {
                 "description": "Apply JSON Patch to document file with validation and automatic markdown rendering.",
-                "signature": "apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatchErrorResponse]",
                 "parameters": [
                   "document_path (str): Path to Doc JSON file",
                   "json_patch (str): RFC 6902 JSON Patch operations as JSON string"
@@ -169,7 +170,8 @@
                 ],
                 "behavior": "All exceptions caught and returned as ApplyPatchErrorResponse with helpful hints",
                 "safety": "Atomic operations, in-memory validation before write, file protection workflow, read-only file management",
-                "rendering": "Every successful patch automatically generates markdown: document.json \u2192 document.md with identical file protection"
+                "rendering": "Every successful patch automatically generates markdown: document.json \u2192 document.md with identical file protection",
+                "code": "apply_json_patch(document_path: str, json_patch: str) -> Optional[ApplyPatchErrorResponse]"
               },
               "children": {}
             },
