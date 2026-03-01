@@ -2,9 +2,10 @@
   "type": "Doc",
   "id": "knowledge_tools",
   "label": "Knowledge Tools",
+  "description": "Knowledge Base API documentation with apply_json_patch operations, error handling, and file protection",
   "metadata": {
-    "description": "Knowledge storage system with JSON Patch API and Pydantic validation",
-    "version": "1.0.0"
+    "version": "2.0.0",
+    "backend": "knowledge_base_system"
   },
   "opts": {
     "render_priority": false,
@@ -15,16 +16,15 @@
       "type": "Doc",
       "id": "architecture",
       "label": "Architecture",
-      "metadata": {
-        "description": "API-first design with JSON Patch operations"
-      },
+      "description": "API-first design with JSON Patch operations",
+      "metadata": {},
       "children": {
         "api": {
           "type": "Doc",
           "id": "api",
           "label": "Json Patch",
+          "description": "RFC 6902 JSON Patch standard for describing modifications to JSON documents.\n\n**File:** apply_json_patch.py\n\n**Standard:** RFC 6902\n\n**Operations:**\n- add - Insert or replace value\n- remove - Delete value at path\n- replace - Replace value at path\n- move - Move value from one path to another\n- copy - Copy value from one path to another\n- test - Assert value equals expected before applying",
           "metadata": {
-            "description": "RFC 6902 JSON Patch standard for describing modifications to JSON documents.\n\n**File:** apply_json_patch.py\n\n**Standard:** RFC 6902\n\n**Operations:**\n- add - Insert or replace value\n- remove - Delete value at path\n- replace - Replace value at path\n- move - Move value from one path to another\n- copy - Copy value from one path to another\n- test - Assert value equals expected before applying",
             "operation_structure": {
               "required_fields": [
                 "op",
@@ -46,18 +46,18 @@
           "type": "Doc",
           "id": "rendering",
           "label": "Document Rendering",
+          "description": "Internal automatic markdown generation on patch application (not a public API)",
           "metadata": {
             "file": "render_doc.py",
-            "status": "complete_internal_only",
-            "description": "Internal automatic markdown generation on patch application (not a public API)"
+            "status": "complete_internal_only"
           }
         },
         "workflow": {
           "type": "Doc",
           "id": "workflow",
           "label": "Workflow",
+          "description": "Complete knowledge tool operation workflow from API call to markdown generation.\n\n**Main Flow:**\nread JSON \u2192 validate patch \u2192 apply in memory \u2192 validate schema \u2192 write with protection \u2192 render markdown\n\n**File Protection (within Write step):**\nremove read-only \u2192 exclusive write \u2192 atomic rename \u2192 restore read-only",
           "metadata": {
-            "description": "Complete knowledge tool operation workflow from API call to markdown generation.\n\n**Main Flow:**\nread JSON \u2192 validate patch \u2192 apply in memory \u2192 validate schema \u2192 write with protection \u2192 render markdown\n\n**File Protection (within Write step):**\nremove read-only \u2192 exclusive write \u2192 atomic rename \u2192 restore read-only",
             "main_steps": [
               "1. Read Document - Load and parse JSON file",
               "2. Parse & Validate Patch - Validate RFC 6902 format",
@@ -80,8 +80,8 @@
       "type": "Doc",
       "id": "testing",
       "label": "Testing",
+      "description": "Comprehensive test suite with 18 tests covering all functionality.",
       "metadata": {
-        "description": "Comprehensive test suite with 18 tests covering all functionality.",
         "code": "pytest knowledge_base/tools/ -v\npytest"
       }
     },
@@ -89,9 +89,8 @@
       "type": "Doc",
       "id": "api",
       "label": "API",
-      "metadata": {
-        "description": "Public interfaces for knowledge tools: command-line scripts and Python functions"
-      },
+      "description": "Public interfaces for knowledge tools: command-line scripts and Python functions",
+      "metadata": {},
       "opts": {
         "render_priority": true,
         "render_toc": false
@@ -101,9 +100,8 @@
           "type": "Doc",
           "id": "scripts",
           "label": "Scripts",
-          "metadata": {
-            "description": "Command-line script interfaces"
-          },
+          "description": "Command-line script interfaces",
+          "metadata": {},
           "opts": {
             "render_priority": true,
             "render_toc": false
@@ -113,29 +111,15 @@
               "type": "Doc",
               "id": "apply_json_patch_script",
               "label": "apply_json_patch.py",
-              "metadata": {
-                "file": "apply_json_patch.py",
-                "description": "Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.",
-                "usage": "python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>",
-                "arguments": [
-                  "document_path (str): Path to Doc JSON file",
-                  "json_patch (str): RFC 6902 JSON Patch operations as JSON string"
-                ],
-                "exit_codes": {
-                  "0": "Success - patch applied",
-                  "1": "Error - JSON returned with error details"
-                },
-                "output": "Success: \u2713 Patch applied to <path>. Error: JSON error response",
-                "code": "python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>\npython3 -m knowledge_base.tools.apply_json_patch knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"Updated\"}]'",
-                "note": "Requires knowledge_base to be a proper Python package (with __init__.py). Use -m flag for module invocation. This ensures proper import resolution and is the Pythonic standard for running packages."
-              },
+              "description": "Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.",
+              "metadata": {},
               "children": {
                 "script_example": {
                   "type": "Doc",
                   "id": "script_example",
                   "label": "Script Example",
+                  "description": "Complete example of script invocation",
                   "metadata": {
-                    "description": "Complete example of script invocation",
                     "expected_output": "\u2713 Patch applied to knowledge_base/knowledge_tool.json",
                     "code": "python3 -m knowledge_base.tools.apply_json_patch knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'"
                   }
@@ -148,16 +132,15 @@
           "type": "Doc",
           "id": "functions",
           "label": "Functions",
-          "metadata": {
-            "description": "Python function interfaces for programmatic use"
-          },
+          "description": "Python function interfaces for programmatic use",
+          "metadata": {},
           "children": {
             "apply_json_patch_func": {
               "type": "Doc",
               "id": "apply_json_patch_func",
               "label": "apply_json_patch()",
+              "description": "Apply JSON Patch to document file with validation and automatic markdown rendering.",
               "metadata": {
-                "description": "Apply JSON Patch to document file with validation and automatic markdown rendering.",
                 "parameters": [
                   "document_path (str): Path to Doc JSON file",
                   "json_patch (str): RFC 6902 JSON Patch operations as JSON string"
@@ -180,17 +163,16 @@
               "type": "Doc",
               "id": "opts_configuration",
               "label": "Opts Configuration",
-              "metadata": {
-                "description": "Non-displayable rendering options for document nodes"
-              },
+              "description": "Non-displayable rendering options for document nodes",
+              "metadata": {},
               "children": {
                 "render_priority_field": {
                   "type": "Doc",
                   "id": "render_priority_field",
                   "label": "render_priority Field",
+                  "description": "When true, renders node before siblings with render_priority=false",
                   "metadata": {
-                    "type": "bool",
-                    "description": "When true, renders node before siblings with render_priority=false"
+                    "type": "bool"
                   }
                 }
               }

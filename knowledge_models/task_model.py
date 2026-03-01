@@ -1,91 +1,136 @@
 #!/usr/bin/env python3
-"""
-Task management models for the knowledge base system.
+"""Task and Iteration models for knowledge-based task management."""
 
-Defines the data structures used to represent tasks, phases, metrics, and rollback entries.
-These models are shared between tasks_scripts and the knowledge_base system.
-"""
-from datetime import datetime
-from typing import List, Optional, Dict, Any
+import json
+from typing import Any, Dict, Optional, Literal
 from pydantic import BaseModel, Field
 
-
-class PhaseHeader(BaseModel):
-    """Represents a phase header with name and timestamp."""
-    phase_name: str = Field(..., description="Phase name (e.g., TASK_PLAN.DEFINE)")
-    timestamp: datetime = Field(..., description="RFC 3339 timestamp")
+from .base_model import RenderableModel
+from .doc_model import Doc
 
 
-class ScoringEntry(BaseModel):
-    """Represents a metrics scoring entry with results."""
-    timestamp: datetime = Field(..., description="RFC 3339 timestamp of scoring")
-    metrics: Dict[str, Any] = Field(default_factory=dict, description="Technical metrics dict")
-    test_results: Optional[List[str]] = Field(None, description="List of test result items")
-    coverage: Optional[Dict[str, Any]] = Field(None, description="Extended coverage metrics per file")
-    coverage_summary: Optional[Dict[str, Any]] = Field(None, description="Cumulative coverage summary")
+class CodeStats(BaseModel):
+    """Statistics about code changes in an iteration."""
+
+    added_lines: int = Field(default=0, description="Number of lines added")
+    removed_lines: int = Field(default=0, description="Number of lines removed")
+    files_changed: int = Field(default=0, description="Number of files changed")
 
 
-class RollbackEntry(BaseModel):
-    """Represents a rollback entry documenting an issue and revert."""
-    from_phase: str = Field(..., description="Phase being rolled back from")
-    timestamp: datetime = Field(..., description="RFC 3339 timestamp of rollback")
-    issue_type: str = Field(..., description="Issue type: 'loop' or 'metrics_regression'")
-    problem_description: str = Field(..., description="Description of the problem")
+class TaskTestMetrics(BaseModel):
+    """Statistics about test execution in an iteration."""
+
+    passed: int = Field(default=0, description="Number of tests passed")
+    total: int = Field(default=0, description="Total number of tests")
+
+    @property
+    def pass_rate(self) -> float:
+        """Calculate pass rate as percentage."""
+        if self.total == 0:
+            return 0.0
+        return (self.passed / self.total) * 100.0
 
 
-class Phase(BaseModel):
-    """Represents a complete phase section with all its content."""
-    header: PhaseHeader = Field(..., description="Phase header")
-    content: str = Field(default="", description="Phase body content")
-    scoring_entries: List[ScoringEntry] = Field(default_factory=list, description="Scoring entries in this phase")
-    rollback_entries: List[RollbackEntry] = Field(default_factory=list, description="Rollback entries in this phase")
+class Iteration(RenderableModel):
+    """Represents a single iteration of a task with metrics."""
+
+    id: str = Field(..., description="Unique iteration identifier")
+    type: Literal["Iteration"] = "Iteration"
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Iteration metadata (created_at, updated_at, etc.)"
+    )
+    code_stats: Optional[CodeStats] = Field(None, description="Code change statistics")
+    tests_stats: Optional[TaskTestMetrics] = Field(None, description="Test execution statistics")
+    coverage_stats_by_tests: Optional[Dict[str, int]] = Field(
+        None, description="Coverage metrics per test (test_name -> lines_covered)"
+    )
+
+    def render(self) -> str:
+        """Render Iteration to markdown string.
+
+        Returns:
+            Formatted markdown string representation.
+        """
+        lines = []
+        lines.append(f"### {self.id}")
+        lines.append("")
+
+        # Render metadata
+        if self.metadata:
+            lines.append("**Metadata:**")
+            lines.append("")
+            for key, value in self.metadata.items():
+                lines.append(f"- {key}: {value}")
+            lines.append("")
+
+        # Render code stats
+        if self.code_stats:
+            lines.append("**Code Stats:**")
+            lines.append(f"- Added lines: {self.code_stats.added_lines}")
+            lines.append(f"- Removed lines: {self.code_stats.removed_lines}")
+            lines.append(f"- Files changed: {self.code_stats.files_changed}")
+            lines.append("")
+
+        # Render test stats
+        if self.tests_stats:
+            lines.append("**Test Stats:**")
+            lines.append(f"- Passed: {self.tests_stats.passed}/{self.tests_stats.total}")
+            if self.tests_stats.total > 0:
+                lines.append(f"- Pass rate: {self.tests_stats.pass_rate:.1f}%")
+            lines.append("")
+
+        # Render coverage stats
+        if self.coverage_stats_by_tests:
+            lines.append("**Coverage by Test:**")
+            lines.append("")
+            for test_name, coverage in self.coverage_stats_by_tests.items():
+                lines.append(f"- {test_name}: {coverage} lines")
+            lines.append("")
+
+        return "\n".join(lines).strip()
 
 
-class TaskDocument(BaseModel):
-    """Represents a complete task document."""
-    phases: List[Phase] = Field(default_factory=list, description="All phases in document")
-    current_phase: str = Field(..., description="Current phase name")
-    created_at: datetime = Field(..., description="RFC 3339 timestamp of task creation")
+class Task(RenderableModel):
+    """Represents a task with plan and iterations."""
+
+    id: str = Field(..., description="Unique task identifier")
+    type: Literal["Task"] = "Task"
+    plan: Doc = Field(..., description="Task plan as a Doc with metadata (created_at, updated_at)")
+    iterations: Optional[Dict[str, Iteration]] = Field(
+        None, description="Iterations indexed by iteration ID"
+    )
+
+    def render(self) -> str:
+        """Render Task to markdown string.
+
+        Returns:
+            Formatted markdown string representation.
+        """
+        lines = []
+        lines.append(f"# Task: {self.id}")
+        lines.append("")
+
+        # Render plan section
+        lines.append("## Plan")
+        lines.append("")
+        plan_markdown = self.plan.render()
+        lines.append(plan_markdown)
+        lines.append("")
+
+        # Render iterations section
+        if self.iterations:
+            lines.append("## Iterations")
+            lines.append("")
+            # Sort iterations by ID (assuming they follow iteration_1, iteration_2 pattern)
+            sorted_iterations = sorted(
+                self.iterations.items(), key=lambda x: (len(x[0]), x[0])
+            )
+            for iter_id, iteration in sorted_iterations:
+                lines.append(iteration.render())
+                lines.append("")
+
+        return "\n".join(lines).strip()
 
 
-class MetricsFile(BaseModel):
-    """Represents metrics storage."""
-    model_config = {"extra": "allow"}
-
-    TEST_PLAN: Optional[Dict[str, Any]] = Field(None, description="TEST_PLAN phase metrics")
-    CODING: Optional[Dict[str, Any]] = Field(None, description="CODING phase metrics")
-    TESTING: Optional[Dict[str, Any]] = Field(None, description="TESTING phase metrics")
-
-
-# Phase workflow constant
-PHASE_WORKFLOW = [
-    "TASK_PLAN.DEFINE",
-    "TASK_PLAN.REFINE_CONTEXT",
-    "TASK_PLAN.DESIGN",
-    "TASK_PLAN.DECOMPOSE",
-    "EXEC_EVAL.TEST_PLAN",
-    "EXEC_EVAL.CODING",
-    "EXEC_EVAL.TESTING",
-]
-
-
-def get_next_phase(current_phase: str) -> str:
-    """Get the next phase in the workflow."""
-    try:
-        current_index = PHASE_WORKFLOW.index(current_phase)
-        if current_index >= len(PHASE_WORKFLOW) - 1:
-            raise ValueError(f"No next phase after {current_phase}")
-        return PHASE_WORKFLOW[current_index + 1]
-    except ValueError as e:
-        raise ValueError(f"Invalid phase: {current_phase}") from e
-
-
-def get_previous_phase(current_phase: str) -> str:
-    """Get the previous phase in the workflow."""
-    try:
-        current_index = PHASE_WORKFLOW.index(current_phase)
-        if current_index <= 0:
-            raise ValueError(f"No previous phase before {current_phase}")
-        return PHASE_WORKFLOW[current_index - 1]
-    except ValueError as e:
-        raise ValueError(f"Invalid phase: {current_phase}") from e
+Task.model_rebuild()
+Iteration.model_rebuild()

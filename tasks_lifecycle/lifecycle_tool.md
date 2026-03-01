@@ -4,281 +4,220 @@
 
 - [Overview](#overview)
   - [Purpose](#purpose)
-  - [Phase Workflow](#phase-workflow)
-- [Storage](#storage)
-  - [task.json](#task-json)
-  - [task.md](#task-md)
-  - [.metrics](#metrics)
+  - [Iteration Workflow](#iteration-workflow)
+    - [Evolution](#evolution)
+      - [Linear Progression](#linear-progression)
+      - [Decision Flow](#decision-flow)
+    - [Process Steps](#process-steps)
+- [Metrics Collection](#metrics-collection)
 - [Task Scripts](#task-scripts)
   - [task_create.py](#task-create-py)
   - [task_roll.py](#task-roll-py)
   - [task_metrics.py](#task-metrics-py)
-  - [task_roll_back.py](#task-roll-back-py)
   - [task_archive.py](#task-archive-py)
-- [JSON Patch Operations](#json-patch-operations)
-  - [Patch Helpers](#patch-helpers)
-  - [Execution Flow](#execution-flow)
-- [Integration](#integration)
-  - [Data Models](#data-models)
-  - [State Module (task_state.py)](#state-module--task-state-py)
+- [Task Model](#task-model)
+  - [Iteration](#iteration)
+  - [CodeStats](#codestats)
+  - [TaskTestMetrics](#tasktestmetrics)
+- [State & Integration](#state---integration)
+  - [State Storage](#state-storage)
   - [Rendering](#rendering)
 - [Examples](#examples)
   - [Create Task](#create-task)
-  - [Advance Phase](#advance-phase)
-  - [Record Metrics](#record-metrics)
-  - [Rollback Phase](#rollback-phase)
+  - [First Iteration](#first-iteration)
+  - [Metrics Collection](#metrics-collection)
+  - [Second Iteration](#second-iteration)
   - [Archive Task](#archive-task)
 
-Task lifecycle management system for tracking execution through phases with metrics collection and rollback support
+Iteration-based task management system for tracking task execution through numbered iterations with metrics collection
 
-**Version:** 2.0.0
+**Version:** 1.0.0
 
 **Backend:** knowledge_base_system
 
 ## Overview
-High-level overview of the task management system
+High-level overview of the iteration-based task management system
 
 ### Purpose
-The task management system tracks task execution through a 7-phase workflow, collecting metrics at evaluation phases and supporting rollback when issues are detected. All state is stored in task.json using the Doc model with JSON Patch operations for mutations.
+The task management system uses the knowledge base as its state store, persisting task.json with Task model (RenderableModel). Tasks progress through iterations, collecting code and test metrics at each iteration. Iterations stop when metrics no longer change. All state mutations use Pydantic models for validation, and markdown is auto-rendered for human readability.
 
-### Phase Workflow
-Tasks progress through 7 phases in strict order
+### Iteration Workflow
+Tasks progress through iterations, each collecting metrics. Stop when metrics no longer change.
 
-**Phases:**
-  - TASK_PLAN.DEFINE - Initial task definition
-  - TASK_PLAN.REFINE_CONTEXT - Refine context and requirements
-  - TASK_PLAN.DESIGN - Design solution approach
-  - TASK_PLAN.DECOMPOSE - Decompose into subtasks
-  - EXEC_EVAL.TEST_PLAN - Create and execute test plan
-  - EXEC_EVAL.CODING - Implement solution
-  - EXEC_EVAL.TESTING - Execute final testing
+#### Evolution
+Task state progression through iterations
 
-## Storage
-How task state is stored and managed
+##### Linear Progression
+```
+task.json → [Plan] → iteration_1 → iteration_2 → ... → iteration_n → archive
+```
 
-### task.json
-Primary state storage using Doc model (JSON). Contains all phase information, content, scoring entries, and rollback history.
+##### Decision Flow
+```
+[Create] → [Iteration] → [Metrics] → [Changed?] → YES: [Work] | NO: [Archive]
+```
 
-**Format:** JSON (Doc model)
-
-**Structure:**
-  - Id: task_id
-  - Label: Task Label
-  - Type: Doc
-  - Metadata: {'description': 'Task metadata', 'created_at': 'RFC 3339 timestamp', 'current_phase': 'Current phase name'}
-  - Children: {'phases': 'Dict of phase nodes by phase_id'}
-
-### task.md
-Auto-rendered markdown from task.json for human readability. Generated automatically by apply_json_patch after every mutation.
-
-**Format:** Markdown (auto-generated)
-
-**Note:** Do not edit manually - always regenerated from task.json
-
-### .metrics
-Separate JSON file storing structured metrics for programmatic comparison across phases
-
-**Format:** JSON
-
-**Structure:**
-  - Test Plan: Metrics object from EXEC_EVAL.TEST_PLAN phase
-  - Coding: Metrics object from EXEC_EVAL.CODING phase
-  - Testing: Metrics object from EXEC_EVAL.TESTING phase
-
-## Task Scripts
-Five scripts handle core task operations
-
-### task_create.py
-Initialize a new task with TASK_PLAN.DEFINE phase
-
-**Usage:** python task_create.py [path]
-
-**Default Path:** task.json
-
-**Creates:**
-  - task.json
-  - task.md (auto-rendered)
-
-**Process:**
-  1. Generate initial Doc structure with create_initial_task_doc()
-  2. Write task.json to disk
-  3. Apply empty JSON Patch to trigger rendering
-  4. Auto-render task.md from task.json
-
-### task_roll.py
-Advance task to next phase in workflow
-
-**Usage:** python task_roll.py [path]
-
-**Default Path:** task.json
-
-**Process:**
-  1. Load task.json and validate current phase
-  2. Calculate next phase (fail if already final)
-  3. Generate JSON Patch via patch_advance_phase()
-  4. Apply patch with apply_json_patch()
-  5. Auto-render task.md
-
-**Concurrency:** Uses exclusive lock file to detect concurrent writes
-
-### task_metrics.py
-Collect and record metrics at current phase
-
-**Usage:** python task_metrics.py [path] [metrics_json]
-
-**Default Path:** task.json
-
-**Input:** JSON dict with metrics, test_results, coverage, coverage_summary
-
-**Process:**
-  1. Parse incoming metrics JSON
-  2. Create ScoringEntry with timestamp and metrics
-  3. Generate JSON Patch via patch_add_scoring_entry()
-  4. Apply patch to task.json
-  5. Update .metrics file for programmatic comparison
-  6. Auto-render task.md
-
-### task_roll_back.py
-Revert task to previous phase with issue documentation
-
-**Usage:** python task_roll_back.py [path] [target_phase] [reason]
-
-**Default Path:** task.json
-
-**Parameters:**
-  - target_phase: Phase to rollback to (default: previous phase)
-  - reason: Issue description (loop, metrics_regression, etc.)
-
-**Process:**
-  1. Load task and determine target phase
-  2. Create RollbackEntry with issue type and description
-  3. Generate JSON Patch via patch_add_rollback_entry()
-  4. Apply patch to add rollback to target phase
-  5. Update current_phase in metadata via JSON Patch
-  6. Auto-render task.md
-
-### task_archive.py
-Archive completed task to .tasks_history/ with naming convention
-
-**Usage:** python task_archive.py [path] [task_id] [--github] [--failure]
-
-**Default Path:** task.json
-
-**Naming Convention:**
-  - Regular Success: TASK_#####_DESCRIPTION
-  - Regular Failure: TASK_#####__FAILURE__DESCRIPTION
-  - Github Success: GITHUB_ISSUE_#####_DESCRIPTION
-  - Github Failure: GITHUB_ISSUE_#####__FAILURE__DESCRIPTION
-
-**Process:**
-  1. Load task.json and extract description
-  2. Determine archive folder name based on task ID and status
-  3. Create folder in .tasks_history/
-  4. Move task.json, task.md, .metrics to folder
-
-## JSON Patch Operations
-How task operations generate and apply JSON Patch operations
-
-### Patch Helpers
-Functions in knowledge_base/tools/common/task_helpers.py that generate RFC 6902 operations
-
-**File:** tasks_lifecycle/tools/common/task_helpers.py
-
-**Functions:**
-  - patch_advance_phase(current_phase) - Generate next phase creation
-  - patch_add_scoring_entry(phase_name, entry) - Add metrics entry
-  - patch_add_rollback_entry(phase_name, entry) - Add rollback record
-  - patch_update_phase_content(phase_name, content) - Update phase body
-  - create_initial_task_doc(task_id) - Bootstrap initial structure
-
-### Execution Flow
-How patches are applied to task.json
+#### Process Steps
+How each iteration progresses
 
 **Steps:**
-  1. Generate patch operations via task_helpers functions
-  2. Serialize to JSON string (RFC 6902 format)
-  3. Call apply_json_patch(path, patch_json, create=False)
-  4. apply_json_patch handles: validation, atomic write, rendering
+  1. Create task.json with plan Doc
+  2. Complete work: code changes, run tests
+  3. Run task_roll.py: collects metrics, creates iteration_N
+  4. Check: did metrics change from previous iteration?
+  5. If YES: go to step 2 | If NO: archive task
 
-**Note:** create=True flag enables creating new documents during initialization
+## Metrics Collection
+Metrics are collected automatically at each iteration via task_metrics.py
 
-## Integration
-How task management integrates with knowledge base system
+**Metrics Types:**
+  - Code Stats: Files changed, lines added/removed from git diff
+  - Tests Stats: Number of passed tests vs total tests
+  - Coverage Stats By Tests: Lines covered per test
 
-### Data Models
-Task-specific Pydantic models in tasks_lifecycle/tools/common/
+**Stopping Condition:** Task stops iterating when metrics do not change from previous iteration
 
-**Location:** tasks_lifecycle/tools/common/task_model.py
+## Task Scripts
+Four scripts handle core task lifecycle operations: create, roll iterations, collect metrics, and archive
 
-**Models:**
-  - TaskDocument - Complete task representation
-  - Phase - Single phase with header, content, entries
-  - PhaseHeader - Phase name and timestamp
-  - ScoringEntry - Metrics, test results, coverage
-  - RollbackEntry - Issue documentation
-  - MetricsFile - Structured metrics by phase
+### task_create.py
+Initialize task.json with plan Doc
 
-### State Module (task_state.py)
-Central module for task operations in tasks_lifecycle/tools/
+**Process:**
+  - Fail if task.json exists
+  - Create Task with initial Doc plan
+  - Add created_at, updated_at metadata
+  - Write task.json and auto-render task.md
 
-**Functions:**
-  - load_task_document(path) - Read task.json, convert to TaskDocument
-  - advance_phase(path) - Advance to next phase via JSON Patch
-  - append_scoring(path, phase, entry) - Add metrics via JSON Patch
-  - append_rollback_entry(path, phase, entry) - Add rollback via JSON Patch
-  - append_to_phase(path, phase, content) - Append content via JSON Patch
-  - validate_document_structure(path) - Verify task.json validity
-  - load_metrics(path) - Load .metrics file
-  - save_metrics(path, metrics) - Save .metrics file
+### task_roll.py
+Record iteration completion with metrics
+
+**Process:**
+  - Load task.json and parse as Task model
+  - Collect metrics (git diff + pytest)
+  - Create iteration_N with code_stats, tests_stats
+  - Write updated task.json
+
+### task_metrics.py
+Collect code and test metrics
+
+**Sources:**
+  - Code metrics from git diff (added/removed lines, files changed)
+  - Test metrics from pytest (passed/total tests)
+  - Coverage metrics per test
+
+### task_archive.py
+Archive completed task to tasks_history/
+
+**Naming Format:** YYYYMMDD-HHMMSS-task-ID.json and .md
+
+## Task Model
+Root task container with plan and iterations
+
+### Iteration
+Single iteration tracking code and test metrics
+
+**Fields:**
+  - Id: str - iteration_1, iteration_2, ...
+  - Metadata: Dict - created_at, updated_at
+  - Code Stats: CodeStats - lines added/removed, files changed
+  - Tests Stats: TaskTestMetrics - passed/total tests
+  - Coverage Stats By Tests: Dict - lines covered per test
+
+### CodeStats
+Code change metrics from git
+
+**Fields:**
+  - Added Lines: int
+  - Removed Lines: int
+  - Files Changed: int
+
+### TaskTestMetrics
+Test execution metrics from pytest
+
+**Fields:**
+  - Passed: int - tests passed
+  - Total: int - total tests
+  - Pass Rate: float - calculated (passed/total)*100
+
+## State & Integration
+How task state is stored and managed using knowledge base system
+
+### State Storage
+Task state persisted in knowledge base
+
+**Format:** task.json - JSON using Task/Iteration models
+
+**Rendering:** task.md - Auto-rendered markdown from task.json
+
+**Validation:** Pydantic models validate on load/save
 
 ### Rendering
-Automatic markdown generation from task.json
+Task and Iteration models render to markdown
 
-**Handler:** apply_json_patch from knowledge_base (via sys.path integration) + _render_doc_internal
+**Approach:** Pure abstraction - models handle rendering logic only
 
-**Flow:** task.json (Doc model) → apply_json_patch → auto-render task.md
+**Methods:** Task.render() and Iteration.render() return markdown strings
 
-**Note:** Auto-renders via knowledge_base apply_json_patch - no custom renderers needed
+**File Io:** Separate from models - handled by scripts
 
 ## Examples
 Usage examples for task operations
 
 ### Create Task
 ```
-python task_create.py task.json
+python3 -m tasks_lifecycle.tools.create_task
 ```
 
-**Result:** ✓ Created task.json
-Creates task.json with TASK_PLAN.DEFINE phase and auto-renders task.md
+**Result:** ✓ Created task file: task.json
 
-### Advance Phase
-```
-python task_roll.py task.json
-```
+**Creates:** task.json with Task model (plan Doc + empty iterations)
 
-**Result:** ✓ Advanced to phase: TASK_PLAN.REFINE_CONTEXT
-Adds new phase section to task.json, updates current_phase, renders task.md
-
-### Record Metrics
+### First Iteration
 ```
-python task_metrics.py task.json '{"coverage": 85, "tests_passed": 42, "test_results": ["test_1", "test_2"]}'
+python3 -m tasks_lifecycle.tools.task_roll
 ```
 
-**Result:** ✓ Metrics collected at EXEC_EVAL.TEST_PLAN
-Adds ScoringEntry to phase, updates .metrics file, renders task.md
+**Result:** ✓ Rolled task with iteration iteration_1
+  Code: +42 -5 (3 files)
+  Tests: 10/12 passed (83.3%)
 
-### Rollback Phase
+**Creates:** iteration_1 entry in task.json with metrics
+
+### Metrics Collection
+Metrics are collected automatically by task_roll.py
+
 ```
-python task_roll_back.py task.json EXEC_EVAL.CODING 'loop detected'
+python3 -m tasks_lifecycle.tools.task_metrics
 ```
 
-**Result:** ✓ Rolled back to EXEC_EVAL.CODING
-Adds RollbackEntry to target phase, updates current_phase, renders task.md
+**Output:** {
+  "code_stats": {"added_lines": 42, "removed_lines": 5, "files_changed": 3},
+  "tests_stats": {"passed": 10, "total": 12},
+  "coverage_stats_by_tests": {"test_1": 45, "test_2": 38}
+}
+
+### Second Iteration
+Run another iteration after changes
+
+```
+# Make changes to code
+python3 -m tasks_lifecycle.tools.task_roll
+```
+
+**Result:** ✓ Rolled task with iteration iteration_2
+  Code: +15 -2 (2 files)
+  Tests: 11/12 passed (91.7%)
+
+**Note:** Process repeats until metrics no longer change
 
 ### Archive Task
 ```
-python task_archive.py task.json --github --github-id 12345 --failure
+python3 -m tasks_lifecycle.tools.task_archive
 ```
 
-**Result:** ✓ Task archived to: .tasks_history/GITHUB_ISSUE_12345__FAILURE__DESCRIPTION/
-Moves task.json, task.md, .metrics to timestamped folder
+**Result:** ✓ Archived task task_1
+  JSON: tasks_history/20260301-153021-task-task_1.json
+  MD:   tasks_history/20260301-153021-task-task_1.md
+
+**Creates:** Timestamped files in tasks_history/ directory

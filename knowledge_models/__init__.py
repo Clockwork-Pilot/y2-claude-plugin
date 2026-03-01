@@ -2,13 +2,24 @@
 
 from .base_model import RenderableModel
 from .doc_model import Doc, Opts
+from .task_model import Task, Iteration, CodeStats, TaskTestMetrics
 
-# Registry mapping model type string to model class
+# Registry mapping model type string to model class.
+# Add all RenderableModel subclasses that can be root nodes in knowledge documents.
+# These are used by render.py for polymorphic instantiation and rendering.
 MODEL_REGISTRY = {
     "Doc": Doc,
-    # Add future models here:
-    # "Task": Task,
-    # "Iteration": Iteration,
+    "Task": Task,
+    "Iteration": Iteration,
 }
 
-__all__ = ["RenderableModel", "Doc", "Opts", "MODEL_REGISTRY"]
+__all__ = [
+    "RenderableModel",
+    "Doc",
+    "Opts",
+    "Task",
+    "Iteration",
+    "CodeStats",
+    "TaskTestMetrics",
+    "MODEL_REGISTRY",
+]

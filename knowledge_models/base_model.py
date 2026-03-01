@@ -22,3 +22,11 @@ class RenderableModel(BaseModel, ABC):
             Formatted markdown string representation of the model.
         """
         pass
+
+    def tips(self) -> list:
+        """Return list of best practice tips/warnings for this model.
+
+        Returns:
+            List of tip strings, or empty list if no tips. Override in subclasses.
+        """
+        return []

@@ -23,6 +23,7 @@ class Doc(RenderableModel):
     id: str
     label: str
     type: Literal["Doc"] = "Doc"
+    description: Optional[str] = None
     metadata: Dict[str, Any] = {}
     opts: Optional[Opts] = None
     children: Optional[Dict[str, "Doc"]] = None
@@ -42,11 +43,20 @@ class Doc(RenderableModel):
         if opts.get("render_toc", False):
             toc_lines = self._generate_toc(doc_dict)
             if toc_lines:
-                lines.insert(1, "")
-                lines.insert(2, "## Table of Contents")
-                lines.insert(3, "")
-                lines[4:4] = toc_lines
-                lines.insert(4 + len(toc_lines), "")
+                # Find where to insert TOC (after heading and description)
+                toc_insert_pos = 1
+                # Skip past heading and any description
+                for i, line in enumerate(lines[1:], 1):
+                    if line.startswith("#") or line == "":
+                        continue
+                    toc_insert_pos = i
+                    break
+
+                lines.insert(toc_insert_pos, "")
+                lines.insert(toc_insert_pos + 1, "## Table of Contents")
+                lines.insert(toc_insert_pos + 2, "")
+                lines[toc_insert_pos + 3:toc_insert_pos + 3] = toc_lines
+                lines.insert(toc_insert_pos + 3 + len(toc_lines), "")
 
         markdown_content = "\n".join(lines)
         return markdown_content
@@ -64,6 +74,12 @@ class Doc(RenderableModel):
         label = node.get("label", "Untitled")
         heading = "#" * level + " " + label
         lines.append(heading)
+
+        # Add description if present (right after heading)
+        description = node.get("description")
+        if description:
+            lines.append(description)
+            lines.append("")
 
         # Add metadata information (skip opts field - non-displayable)
         metadata = node.get("metadata", {})
@@ -210,6 +226,51 @@ class Doc(RenderableModel):
             Formatted key
         """
         return key.replace("_", " ").title()
+
+    def tips(self, json_path: str = "") -> list:
+        """Check for best practice violations and return tips recursively.
+
+        Checks this document and all children for best practice violations.
+
+        Args:
+            json_path: Current JSON path in document tree (e.g., /children/scripts/children/task_create)
+
+        Returns:
+            List of tip strings about best practices.
+        """
+        tips = []
+
+        # Build current JSON path
+        current_json_path = f"{json_path}/children/{self.id}" if json_path else f"/{self.id}"
+
+        # Check this document's metadata
+        if self.metadata:
+            metadata_lower = {k.lower(): k for k, v in self.metadata.items()}  # Map to original key
+
+            # Check for usage/command in metadata - should be in code attr
+            for key_lower, key_orig in metadata_lower.items():
+                if key_lower in ("usage", "command"):
+                    full_path = f"{current_json_path}/metadata/{key_orig}"
+                    tips.append(
+                        f'⚠️  {full_path}: Found "{key_lower}" in metadata. '
+                        'Move to top-level "code" attribute.'
+                    )
+
+            # Check for description in metadata - should use top-level field
+            if "description" in metadata_lower:
+                key_orig = metadata_lower["description"]
+                full_path = f"{current_json_path}/metadata/{key_orig}"
+                tips.append(
+                    f'⚠️  {full_path}: Found "description" in metadata. '
+                    'Use top-level "description" attribute instead.'
+                )
+
+        # Recursively check children
+        if self.children:
+            for child in self.children.values():
+                tips.extend(child.tips(json_path=current_json_path))
+
+        return tips
 
 
 Doc.model_rebuild()

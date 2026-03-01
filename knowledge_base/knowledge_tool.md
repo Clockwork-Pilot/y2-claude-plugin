@@ -16,9 +16,11 @@
   - [Workflow](#workflow)
 - [Testing](#testing)
 
-Knowledge storage system with JSON Patch API and Pydantic validation
+Knowledge Base API documentation with apply_json_patch operations, error handling, and file protection
 
-**Version:** 1.0.0
+**Version:** 2.0.0
+
+**Backend:** knowledge_base_system
 
 ## API
 Public interfaces for knowledge tools: command-line scripts and Python functions
@@ -28,27 +30,6 @@ Command-line script interfaces
 
 #### apply_json_patch.py
 Apply JSON Patch operations to knowledge documents from command line with automatic markdown rendering.
-
-```
-python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>
-python3 -m knowledge_base.tools.apply_json_patch knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "Updated"}]'
-```
-
-**File:** apply_json_patch.py
-
-**Usage:** python3 -m knowledge_base.tools.apply_json_patch <document_path> <json_patch>
-
-**Arguments:**
-  - document_path (str): Path to Doc JSON file
-  - json_patch (str): RFC 6902 JSON Patch operations as JSON string
-
-**Exit Codes:**
-  - 0: Success - patch applied
-  - 1: Error - JSON returned with error details
-
-**Output:** Success: ✓ Patch applied to <path>. Error: JSON error response
-
-**Note:** Requires knowledge_base to be a proper Python package (with __init__.py). Use -m flag for module invocation. This ensures proper import resolution and is the Pythonic standard for running packages.
 
 ##### Script Example
 Complete example of script invocation

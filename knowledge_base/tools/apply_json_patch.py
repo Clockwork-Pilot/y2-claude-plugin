@@ -97,6 +97,13 @@ def apply_json_patch(document_path: str, json_patch: Optional[str] = None, creat
 
         validated_model = ModelClass(**patched_dict)
         patched_dict = json.loads(validated_model.model_dump_json(exclude_none=True))
+
+        # Check for tips from the model
+        model_tips = validated_model.tips()
+        if model_tips:
+            for tip in model_tips:
+                print(tip)
+
     except ValidationError as e:
         return _error_pydantic_validation(e, operation)
     except Exception as e:
