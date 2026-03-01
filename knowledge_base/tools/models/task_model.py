@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 """
-Pydantic models for task management system.
+Task management models for the knowledge base system.
 
-Defines the data structures used to parse and represent task documents,
-phases, metrics, and rollback entries.
+Defines the data structures used to represent tasks, phases, metrics, and rollback entries.
+These models are shared between tasks_scripts and the knowledge_base system.
 """
 from datetime import datetime
 from typing import List, Optional, Dict, Any
@@ -40,15 +41,15 @@ class Phase(BaseModel):
     rollback_entries: List[RollbackEntry] = Field(default_factory=list, description="Rollback entries in this phase")
 
 
-class TaskDocument(BaseModel):
-    """Represents a complete task document (.TASK.md)."""
+class (BaseModel):
+    """Represents a complete task document."""
     phases: List[Phase] = Field(default_factory=list, description="All phases in document")
     current_phase: str = Field(..., description="Current phase name")
     created_at: datetime = Field(..., description="RFC 3339 timestamp of task creation")
 
 
 class MetricsFile(BaseModel):
-    """Represents metrics storage (.metrics JSON)."""
+    """Represents metrics storage."""
     model_config = {"extra": "allow"}
 
     TEST_PLAN: Optional[Dict[str, Any]] = Field(None, description="TEST_PLAN phase metrics")

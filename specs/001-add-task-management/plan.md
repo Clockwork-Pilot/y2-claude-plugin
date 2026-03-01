@@ -75,7 +75,7 @@ hooks/
 
 tasks_scripts/
 ├── __init__.py
-├── models.py            # Pydantic models (PhaseHeader, ScoringEntry, RollbackEntry, Phase, TaskDocument, MetricsFile)
+├── models.py            # Pydantic models (PhaseHeader, ScoringEntry, RollbackEntry, Phase, , MetricsFile)
 ├── task_state.py        # Shared: task document parsing, writing, validation (uses models.py)
 ├── task_create.py       # Script: Initialize .TASK.md
 ├── task_roll.py         # Script: Advance phase
@@ -171,7 +171,7 @@ class Phase(BaseModel):
     scoring_entries: List[ScoringEntry] = Field(default_factory=list)
     rollback_entries: List[RollbackEntry] = Field(default_factory=list)
 
-class TaskDocument(BaseModel):
+class (BaseModel):
     phases: List[Phase]
     current_phase: str
     created_at: datetime
@@ -218,7 +218,7 @@ Every phase section ends with an HTML comment marker containing the phase ID:
 This enables atomic regex-based updates: `re.sub(rf'(<!-- {phase_id} -->)', f'{content}\n\1', doc)`
 
 **Core responsibilities**:
-- **Parse**: Load .TASK.md → Pydantic TaskDocument (regex extraction + validation)
+- **Parse**: Load .TASK.md → Pydantic  (regex extraction + validation)
 - **Validate**: Detect malformed headers, missing/duplicate markers, invalid phase sequences
 - **Write**: Append content/rollbacks/scoring via atomic regex before section markers
 - **Serialize**: Convert Pydantic models back to markdown format
@@ -226,16 +226,16 @@ This enables atomic regex-based updates: `re.sub(rf'(<!-- {phase_id} -->)', f'{c
 
 **Key methods**:
 ```python
-def load_task_document(filepath: str) -> TaskDocument:
-    """Parse .TASK.md into Pydantic TaskDocument"""
+def load_task_document(filepath: str) -> :
+    """Parse .TASK.md into Pydantic """
 
 def parse_phase_section(markdown_text: str) -> Phase:
     """Extract phase header, content, scoring, rollbacks as Phase model"""
 
-def append_to_phase(doc: TaskDocument, phase_id: str, content: str) -> str:
+def append_to_phase(doc: , phase_id: str, content: str) -> str:
     """Update markdown: insert content before phase marker (atomic regex)"""
 
-def append_scoring(doc: TaskDocument, phase_id: str, entry: ScoringEntry) -> str:
+def append_scoring(doc: , phase_id: str, entry: ScoringEntry) -> str:
     """Append SCORING entry before phase end marker"""
 
 def load_metrics(filepath: str) -> MetricsFile:
@@ -270,15 +270,15 @@ Test structure by responsibility:
    - Test parse SCORING section → List[ScoringEntry] with metrics dict
    - Test parse test results list → ScoringEntry.test_results (List[str])
    - Test parse rollback entry → RollbackEntry model
-   - Test full document parse → TaskDocument model
+   - Test full document parse →  model
    - Test parse invalid timestamps → Pydantic validation error
    - Test parse malformed metrics JSON → Pydantic validation error
-   - Test roundtrip: markdown → TaskDocument → markdown (content unchanged)
+   - Test roundtrip: markdown →  → markdown (content unchanged)
    - Test metrics parsing → MetricsFile model with TEST_PLAN, CODING, TESTING
 
 1. **test_task_state.py** (core parsing/writing logic with Pydantic assertions)
-   - Test load_task_document() returns valid TaskDocument model
-   - Test TaskDocument.phases list populated correctly for multi-phase documents
+   - Test load_task_document() returns valid  model
+   - Test .phases list populated correctly for multi-phase documents
    - Test Phase.header contains correct phase_name and timestamp
    - Test Phase.scoring_entries parsed as List[ScoringEntry]
    - Test Phase.rollback_entries parsed as List[RollbackEntry]
@@ -286,9 +286,9 @@ Test structure by responsibility:
    - Test load corrupted (missing header) → Pydantic validation error
    - Test load corrupted (invalid timestamp) → Pydantic validation error
    - Test load corrupted (missing section markers) → error detection
-   - Test append_to_phase() preserves TaskDocument model validity
+   - Test append_to_phase() preserves  model validity
    - Test append_scoring() creates valid ScoringEntry with metrics dict
-   - Test round-trip: TaskDocument → markdown → TaskDocument (equivalence)
+   - Test round-trip:  → markdown →  (equivalence)
 
 2. **test_task_create.py**
    - Test create new .TASK.md with TASK_PLAN.DEFINE header
@@ -328,7 +328,7 @@ Test structure by responsibility:
    - Test load_task_document() finds .TASK.md in current directory
    - Test load_task_document() searches parent directories
    - Test load_task_document() returns None if no .TASK.md found
-   - Test load_task_document() returns valid TaskDocument model
+   - Test load_task_document() returns valid  model
    - Test get_task_context() extracts correct task metadata
    - Test get_task_context() returns None when task_doc is None
    - Test handler logging pattern includes "task" key with context
@@ -377,18 +377,18 @@ Error: Exit 1 if archival fails
 
 **Responsibilities**:
 - Load current .TASK.md from execution directory (or parent directories)
-- Return TaskDocument Pydantic model or None if no task found
+- Return  Pydantic model or None if no task found
 - Add task context to logging structure
 
 **Key functions**:
 ```python
-def load_task_document(start_dir: Optional[str] = None) -> Optional[TaskDocument]:
+def load_task_document(start_dir: Optional[str] = None) -> Optional[]:
     """
     Search for .TASK.md in start_dir, then parent directories up to repo root.
-    Returns TaskDocument model if found and valid, None otherwise.
+    Returns  model if found and valid, None otherwise.
     """
 
-def get_task_context(task_doc: Optional[TaskDocument]) -> Optional[dict]:
+def get_task_context(task_doc: Optional[]) -> Optional[dict]:
     """
     Extract task metadata for logging.
     Returns: {"task_name": str, "current_phase": str, "created_at": str} or None

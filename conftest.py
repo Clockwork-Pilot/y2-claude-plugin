@@ -3,8 +3,14 @@ Root conftest.py for pytest configuration and shared fixtures.
 Enables TEST_LOG environment variable for test log isolation.
 """
 import os
+import sys
 from io import StringIO
+from pathlib import Path
 import pytest
+
+# Add knowledge_base/tools to sys.path for relative imports
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root / "knowledge_base" / "tools"))
 
 
 @pytest.fixture(scope="session", autouse=True)

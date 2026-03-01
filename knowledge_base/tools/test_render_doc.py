@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 import pytest
 
-from common._render_doc import _render_doc_internal
+from .common._render_doc import _render_doc_internal
 
 
 class TestRenderDoc:

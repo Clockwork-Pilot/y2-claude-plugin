@@ -36,12 +36,12 @@
 
 ### Pydantic Data Models
 
-- [x] T007 [P] Create tasks_scripts/models.py with Pydantic models: PhaseHeader, ScoringEntry, RollbackEntry, Phase, TaskDocument, MetricsFile
+- [x] T007 [P] Create tasks_scripts/models.py with Pydantic models: PhaseHeader, ScoringEntry, RollbackEntry, Phase, , MetricsFile
   - PhaseHeader: phase_name (str), timestamp (datetime)
   - ScoringEntry: timestamp (datetime), metrics (dict), test_results (Optional[List[str]])
   - RollbackEntry: from_phase (str), timestamp (datetime), issue_type (str), problem_description (str)
   - Phase: header (PhaseHeader), content (str), scoring_entries (List[ScoringEntry]), rollback_entries (List[RollbackEntry])
-  - TaskDocument: phases (List[Phase]), current_phase (str), created_at (datetime)
+  - : phases (List[Phase]), current_phase (str), created_at (datetime)
   - MetricsFile: TEST_PLAN (Optional[dict]), CODING (Optional[dict]), TESTING (Optional[dict])
 
 ### Parser Tests (Write FIRST)
@@ -61,18 +61,18 @@
 ### Shared Task State Module
 
 - [x] T009 Create tasks_scripts/task_state.py with core functions (uses models.py)
-  - load_task_document(filepath: str) -> TaskDocument
+  - load_task_document(filepath: str) -> 
   - parse_phase_section(markdown_text: str) -> Phase
-  - append_to_phase(doc: TaskDocument, phase_id: str, content: str) -> str (atomic regex with <!-- phase_id --> marker)
-  - append_scoring(doc: TaskDocument, phase_id: str, entry: ScoringEntry) -> str
-  - append_rollback_entry(doc: TaskDocument, phase_id: str, entry: RollbackEntry) -> str
+  - append_to_phase(doc: , phase_id: str, content: str) -> str (atomic regex with <!-- phase_id --> marker)
+  - append_scoring(doc: , phase_id: str, entry: ScoringEntry) -> str
+  - append_rollback_entry(doc: , phase_id: str, entry: RollbackEntry) -> str
   - load_metrics(filepath: str) -> MetricsFile
   - save_metrics(filepath: str, metrics: MetricsFile) -> None
-  - validate_document_structure(doc: TaskDocument) -> List[str] (returns list of errors if any)
+  - validate_document_structure(doc: ) -> List[str] (returns list of errors if any)
 
 - [x] T010 [P] Create tasks_scripts/tests/test_task_state.py - Unit tests for task_state.py (parsing, writing, validation with Pydantic assertions)
-  - Test load_task_document() returns valid TaskDocument model
-  - Test TaskDocument.phases list populated correctly
+  - Test load_task_document() returns valid  model
+  - Test .phases list populated correctly
   - Test Phase.header contains correct phase_name and timestamp
   - Test Phase.scoring_entries parsed as List[ScoringEntry]
   - Test Phase.rollback_entries parsed as List[RollbackEntry]
@@ -80,19 +80,19 @@
   - Test load corrupted (missing header) → Pydantic validation error
   - Test load corrupted (invalid timestamp) → Pydantic validation error
   - Test load corrupted (missing section markers) → error detection
-  - Test append_to_phase() preserves TaskDocument model validity (atomic regex)
+  - Test append_to_phase() preserves  model validity (atomic regex)
   - Test append_scoring() creates valid ScoringEntry with metrics dict
-  - Test round-trip: TaskDocument → markdown → TaskDocument (equivalence)
+  - Test round-trip:  → markdown →  (equivalence)
   - Confirm ALL tests FAIL before implementation
 
 ### Hook Integration
 
 - [x] T011 Create hooks/common.py with task loading utilities (NO external imports beyond pydantic and pathlib)
-  - load_task_document(start_dir: Optional[str] = None) -> Optional[TaskDocument]
+  - load_task_document(start_dir: Optional[str] = None) -> Optional[]
     - Search for .TASK.md in start_dir, then parent directories up to repo root
-    - Return TaskDocument model if found and valid, None otherwise
+    - Return  model if found and valid, None otherwise
     - Graceful error handling if file not found or corrupted
-  - get_task_context(task_doc: Optional[TaskDocument]) -> Optional[dict]
+  - get_task_context(task_doc: Optional[]) -> Optional[dict]
     - Extract task metadata for logging
     - Return: {"task_name": str, "current_phase": str, "created_at": str} or None
 
@@ -120,7 +120,7 @@
 
 - [x] T019 Create tasks_scripts/tests/conftest.py - Pytest fixtures for:
   - temp_task_dir (pytest tmpdir)
-  - sample_task_document (TaskDocument factory)
+  - sample_task_document ( factory)
   - sample_phase (Phase factory)
   - sample_metrics (MetricsFile factory)
   - TEST_LOG environment variable setup
@@ -149,11 +149,11 @@
 ### Implementation for User Story 1
 
 - [x] T021 [P] [US1] Implement tasks_scripts/task_create.py script
-  - Main function: create_task(output_path: str = ".TASK.md") -> TaskDocument
-  - Create initial TaskDocument with phase=TASK_PLAN.DEFINE, timestamp=now (RFC 3339)
+  - Main function: create_task(output_path: str = ".TASK.md") -> 
+  - Create initial  with phase=TASK_PLAN.DEFINE, timestamp=now (RFC 3339)
   - Write to markdown file with proper header: "# PHASE TASK_PLAN.DEFINE at [timestamp]"
   - Add section marker: <!-- TASK_PLAN.DEFINE -->
-  - Return TaskDocument model
+  - Return  model
   - Exit code 0 on success, 1 on error (e.g., file exists)
   - Clear error messages to stdout
 
@@ -194,13 +194,13 @@
   - Helper function: get_next_phase(current: str) -> str
 
 - [x] T026 [US2] Implement tasks_scripts/task_roll.py script
-  - Main function: advance_phase(task_path: str = ".TASK.md") -> TaskDocument
-  - Load current TaskDocument from task_path
+  - Main function: advance_phase(task_path: str = ".TASK.md") -> 
+  - Load current  from task_path
   - Get next phase from workflow
   - Create new phase header with timestamp (RFC 3339)
   - Update document using atomic regex with section markers
   - Use exclusive file mode (O_EXCL) for concurrent write detection
-  - Return updated TaskDocument model
+  - Return updated  model
   - Exit code 0 on success, 1 on error
   - Error cases: invalid phase sequence, concurrent write, file not found
 
@@ -238,15 +238,15 @@
 ### Implementation for User Story 3
 
 - [x] T030 [US3] Implement tasks_scripts/task_metrics.py script
-  - Main function: collect_metrics(task_path: str = ".TASK.md", metrics_json: str = "{}") -> (TaskDocument, MetricsFile)
+  - Main function: collect_metrics(task_path: str = ".TASK.md", metrics_json: str = "{}") -> (, MetricsFile)
   - Parse incoming metrics JSON (dict with coverage, tests_passed, tests_failed, test_results: List[str])
-  - Load current TaskDocument
+  - Load current 
   - Create ScoringEntry with timestamp, metrics dict, test_results list
   - Load or create .metrics JSON file
   - Update .metrics[current_phase] with metrics
   - Append ScoringEntry to current phase in .TASK.md
   - Use atomic regex to insert before phase marker
-  - Return updated TaskDocument and MetricsFile models
+  - Return updated  and MetricsFile models
   - Exit code 0 on success, 1 on error
 
 - [x] T031 [US3] Add test results list parsing to task_metrics.py
@@ -282,15 +282,15 @@
 ### Implementation for User Story 4
 
 - [x] T034 [US4] Implement tasks_scripts/task_roll_back.py script
-  - Main function: rollback_phase(task_path: str = ".TASK.md", target_phase: Optional[str] = None, reason: str = "loop detected") -> TaskDocument
-  - Load current TaskDocument
+  - Main function: rollback_phase(task_path: str = ".TASK.md", target_phase: Optional[str] = None, reason: str = "loop detected") -> 
+  - Load current 
   - If target_phase not specified: use get_previous_phase(current) from PHASE_WORKFLOW
   - Validate target_phase is earlier in workflow than current phase
   - Create RollbackEntry: from_phase=current, timestamp=now, issue_type=reason, problem_description provided
   - Append RollbackEntry to target_phase section before phase marker
   - Use atomic regex to insert
   - Use exclusive file mode (O_EXCL) for concurrent write detection
-  - Return updated TaskDocument
+  - Return updated 
   - Exit code 0 on success, 1 on error
 
 - [x] T035 [US4] Add rollback entry formatting to task_state.py
@@ -333,8 +333,8 @@
   - Identify current phase (last phase header)
   - Parse sections using section markers: <!-- phase_id -->
   - Validate structure: all markers match phase names
-  - Create Pydantic TaskDocument model with full validation
-  - Return TaskDocument or raise Pydantic ValidationError
+  - Create Pydantic  model with full validation
+  - Return  or raise Pydantic ValidationError
   - Collect errors: missing headers, invalid markers, malformed sections
   - Report errors with line numbers
 
@@ -372,7 +372,7 @@
 ### Implementation for User Story 6
 
 - [x] T042 [US6] Enhance task_state.py append_to_phase() function (already defined in T009)
-  - Load TaskDocument from markdown
+  - Load  from markdown
   - Identify current phase ID
   - Use atomic regex: `re.sub(rf'(<!-- {phase_id} -->)', f'{new_content}\n\1', markdown)`
   - Verify content inserted before phase marker
@@ -417,7 +417,7 @@
 
 - [x] T046 [US7] Implement tasks_scripts/task_archive.py script
   - Main function: archive_task(task_path: str = ".TASK.md", task_id: Optional[int] = None, is_github_issue: bool = False, github_id: Optional[int] = None, failure: bool = False) -> str
-  - Load TaskDocument
+  - Load 
   - Extract task name/description from first phase content or user input
   - If is_github_issue and github_id provided: use "GITHUB_ISSUE_{github_id:05d}"
   - Else: use "TASK_{task_id:05d}" with auto-increment if task_id not provided
