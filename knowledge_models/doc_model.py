@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
-"""Document model with self-contained rendering logic."""
+"""Document model with pure rendering logic."""
 
 import json
 import re
-import sys
-from pathlib import Path
 from typing import Any, Dict, Optional, Literal
 
 from pydantic import BaseModel
 
 from .base_model import RenderableModel
-from ..common.file_ops import write_protected_file
 
 
 class Opts(BaseModel):
@@ -31,7 +28,7 @@ class Doc(RenderableModel):
     children: Optional[Dict[str, "Doc"]] = None
 
     def render(self) -> str:
-        """Render Doc to markdown string and save to .md file.
+        """Render Doc to markdown string.
 
         Returns:
             Formatted markdown string representation.
@@ -53,18 +50,6 @@ class Doc(RenderableModel):
 
         markdown_content = "\n".join(lines)
         return markdown_content
-
-    def save_rendered(self, document_path: str) -> Optional[str]:
-        """Render and save to .md file with protection."""
-        try:
-            markdown = self.render()
-            doc_path = Path(document_path)
-            md_path = doc_path.with_suffix(".md")
-            write_protected_file(md_path, markdown)
-            return markdown
-        except Exception as e:
-            print(f"Error rendering document: {str(e)}", file=sys.stderr)
-            return None
 
     @staticmethod
     def _render_node(node: Dict[str, Any], lines: list, level: int = 1) -> None:

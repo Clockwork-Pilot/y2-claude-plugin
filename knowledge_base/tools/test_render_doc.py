@@ -6,7 +6,8 @@ import tempfile
 from pathlib import Path
 import pytest
 
-from .models.doc_model import Doc
+from knowledge_models import Doc
+from .common.render import render
 
 
 class TestDocRender:
@@ -38,8 +39,8 @@ class TestDocRender:
         assert "A test document" in result
         assert "1.0" in result
 
-    def test_save_rendered_writes_md_file(self):
-        """Test that save_rendered() creates a .md file."""
+    def test_render_writes_md_file(self):
+        """Test that render() function creates a .md file from JSON."""
         doc = Doc(
             id="test",
             label="Test Document",
@@ -53,8 +54,10 @@ class TestDocRender:
             temp_path = f.name
 
         try:
-            doc.save_rendered(temp_path)
+            # Use render() function which handles file I/O
+            result = render(temp_path)
 
+            assert result is not None
             md_path = Path(temp_path).with_suffix(".md")
             assert md_path.exists()
 

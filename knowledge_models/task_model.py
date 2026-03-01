@@ -41,7 +41,7 @@ class Phase(BaseModel):
     rollback_entries: List[RollbackEntry] = Field(default_factory=list, description="Rollback entries in this phase")
 
 
-class (BaseModel):
+class TaskDocument(BaseModel):
     """Represents a complete task document."""
     phases: List[Phase] = Field(default_factory=list, description="All phases in document")
     current_phase: str = Field(..., description="Current phase name")

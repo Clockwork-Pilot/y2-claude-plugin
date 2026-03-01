@@ -3,12 +3,15 @@
 
 Works with any model type (Doc, Task, etc.) by reading the JSON file,
 determining the model type, and delegating rendering to the model's render() method.
+Handles file I/O separately from model logic.
 """
 
 import json
 import sys
 from pathlib import Path
 from typing import Optional
+
+from .file_ops import write_protected_file
 
 
 def render(document_path: str) -> Optional[str]:
@@ -22,7 +25,7 @@ def render(document_path: str) -> Optional[str]:
     Returns:
         Markdown string on success, None on error
     """
-    from ..models import MODEL_REGISTRY
+    from knowledge_models import MODEL_REGISTRY
 
     doc_path = Path(document_path)
 
@@ -52,9 +55,11 @@ def render(document_path: str) -> Optional[str]:
         print(f"Error validating {model_type}: {str(e)}", file=sys.stderr)
         return None
 
-    # Render and save to .md file
+    # Render to markdown and save to .md file
     try:
-        markdown = model_instance.save_rendered(str(doc_path))
+        markdown = model_instance.render()
+        md_path = doc_path.with_suffix(".md")
+        write_protected_file(md_path, markdown)
         return markdown
     except Exception as e:
         print(f"Error rendering document: {str(e)}", file=sys.stderr)

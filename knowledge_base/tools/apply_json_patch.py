@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from jsonpatch import JsonPatch, JsonPatchException
 from pydantic import ValidationError
 
-from .models import Doc, MODEL_REGISTRY
+from knowledge_models import Doc, MODEL_REGISTRY
 from .common.response import ApplyPatchErrorResponse
 from .common.file_ops import write_protected_file
 from .common.render import render
