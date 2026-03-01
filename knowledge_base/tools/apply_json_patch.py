@@ -203,3 +203,33 @@ def _get_path_value(doc: Dict, path: str) -> Any:
     return current
 
 
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) < 3:
+        print(
+            "Usage: python3 apply_json_patch.py <document_path> <json_patch>",
+            file=sys.stderr,
+        )
+        print("\nExample:", file=sys.stderr)
+        print(
+            '  python3 apply_json_patch.py doc.json \'[{"op": "replace", "path": "/label", "value": "new"}]\'',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    document_path = sys.argv[1]
+    json_patch = sys.argv[2]
+
+    result = apply_json_patch(document_path, json_patch)
+
+    if result:
+        # Error occurred
+        error_data = result.model_dump(exclude_none=True)
+        print(json.dumps(error_data, indent=2))
+        sys.exit(1)
+    else:
+        # Success
+        print(f"✓ Patch applied to {document_path}")
+        sys.exit(0)
+

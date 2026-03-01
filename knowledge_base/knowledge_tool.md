@@ -13,7 +13,12 @@ Public API functions for knowledge tools
 Apply JSON Patch operations to knowledge documents with automatic markdown rendering.
 
 ```bash
-python3 -c "from apply_json_patch import apply_json_patch; apply_json_patch(document_path, json_patch)"
+python3 apply_json_patch.py <document_path> <json_patch>
+```
+
+Example:
+```bash
+python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "Updated"}]'
 ```
 
 #### Function Signature
@@ -31,8 +36,8 @@ python3 -c "from apply_json_patch import apply_json_patch; apply_json_patch(docu
 **Behavior:** All exceptions caught and returned as ApplyPatchErrorResponse with helpful hints
 **Safety:** Atomic operations, in-memory validation before write, file protection workflow, read-only file management
 **Rendering:** Every successful patch automatically generates markdown: document.json → document.md with identical file protection
-**Script Call Convention:** python3 -c "from apply_json_patch import apply_json_patch; apply_json_patch(document_path, json_patch)"
-**Call Example:** python3 -c "from apply_json_patch import apply_json_patch; result = apply_json_patch('/path/to/doc.json', '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"new_label\"}]'); print(result)"
+**Script Call Convention:** python3 apply_json_patch.py <document_path> <json_patch>
+**Call Example:** python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{"op": "replace", "path": "/label", "value": "New Label"}]'
 **Parameters Explanation:**
   - Document Path: Full or relative path to JSON document file
   - Json Patch: RFC 6902 JSON Patch as JSON string - array of operation objects

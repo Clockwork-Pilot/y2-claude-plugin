@@ -329,7 +329,7 @@
           "type": "Doc",
           "metadata": {
             "file": "apply_json_patch.py",
-            "description": "Apply JSON Patch operations to knowledge documents with automatic markdown rendering.\n\n```bash\npython3 -c \"from apply_json_patch import apply_json_patch; apply_json_patch(document_path, json_patch)\"\n```"
+            "description": "Apply JSON Patch operations to knowledge documents with automatic markdown rendering.\n\n```bash\npython3 apply_json_patch.py <document_path> <json_patch>\n```\n\nExample:\n```bash\npython3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"Updated\"}]'\n```"
           },
           "opts": {
             "render_priority": true
@@ -355,8 +355,8 @@
                 "behavior": "All exceptions caught and returned as ApplyPatchErrorResponse with helpful hints",
                 "safety": "Atomic operations, in-memory validation before write, file protection workflow, read-only file management",
                 "rendering": "Every successful patch automatically generates markdown: document.json \u2192 document.md with identical file protection",
-                "script_call_convention": "python3 -c \"from apply_json_patch import apply_json_patch; apply_json_patch(document_path, json_patch)\"",
-                "call_example": "python3 -c \"from apply_json_patch import apply_json_patch; result = apply_json_patch('/path/to/doc.json', '[{\\\"op\\\": \\\"replace\\\", \\\"path\\\": \\\"/label\\\", \\\"value\\\": \\\"new_label\\\"}]'); print(result)\"",
+                "script_call_convention": "python3 apply_json_patch.py <document_path> <json_patch>",
+                "call_example": "python3 apply_json_patch.py knowledge_base/knowledge_tool.json '[{\"op\": \"replace\", \"path\": \"/label\", \"value\": \"New Label\"}]'",
                 "parameters_explanation": {
                   "document_path": "Full or relative path to JSON document file",
                   "json_patch": "RFC 6902 JSON Patch as JSON string - array of operation objects"
