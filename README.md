@@ -10,6 +10,9 @@ Build & Run docker container as specified in their readme.
 mkdir $(pwd)/.credentials -p && \
   docker run -it --rm  \
     --user 1000:1000  \
+    -w /project \
+    -v $SSH_AUTH_SOCK:/ssh-agent \
+    -e SSH_AUTH_SOCK=/ssh-agent \
     -v $(pwd)/.credentials:/home/node/:Z  \
     -v $(pwd):/project y2-coder
 
@@ -19,7 +22,7 @@ cd /project && \
 
 # Inside of container - run claude
 cd /project && \
-  cd /project && source .venv/bin/activate &&   claude --model claude-haiku-4-5 --debug --plugin-dir /project
+  source .venv/bin/activate &&   claude --model claude-haiku-4-5 --debug --plugin-dir /project
 ```
 
 ## Features
