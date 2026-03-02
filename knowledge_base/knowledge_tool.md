@@ -4,16 +4,17 @@
 
 - [API](#api)
   - [Scripts](#scripts)
-    - [apply_json_patch.py](#apply-json-patch-py)
+    - [apply_json_patch.py](#apply_json_patchpy)
       - [Script Example](#script-example)
   - [Functions](#functions)
-    - [apply_json_patch()](#apply-json-patch)
+    - [apply_json_patch()](#apply_json_patch)
     - [Opts Configuration](#opts-configuration)
-      - [render_priority Field](#render-priority-field)
+      - [render_priority Field](#render_priority-field)
 - [Architecture](#architecture)
   - [Json Patch](#json-patch)
   - [Document Rendering](#document-rendering)
   - [Workflow](#workflow)
+  - [File Protection Purpose](#file-protection-purpose)
 - [Testing](#testing)
 
 Knowledge Base API documentation with apply_json_patch operations, error handling, and file protection
@@ -107,9 +108,9 @@ RFC 6902 JSON Patch standard for describing modifications to JSON documents.
   - From: Source path for move/copy operations
 
 ### Document Rendering
-Internal automatic markdown generation on patch application (not a public API)
+Automatic markdown generation on patch application using pluggable RenderableModel classes. Handles file I/O for all model types (not a public API)
 
-**File:** render_doc.py
+**File:** common/render.py
 
 **Status:** complete_internal_only
 
@@ -135,6 +136,26 @@ remove read-only → exclusive write → atomic rename → restore read-only
   - Exclusive write to temp file
   - Atomic rename to target
   - Restore read-only/archive attribute
+
+### File Protection Purpose
+Files are protected with read-only attributes after writing to prevent accidental corruption or modification. This applies to both JSON knowledge documents and their auto-rendered markdown pairs.
+
+```
+knowledge_base/knowledge_tool.json
+knowledge_base/knowledge_tool.md
+```
+
+**Purpose:**
+  - Prevent accidental overwrites of validated JSON data
+  - Ensure JSON and MD files always stay in sync (both locked together)
+  - Protect against race conditions when multiple processes access files
+  - Maintain document integrity as the source of truth for knowledge
+
+**File Locking Strategy:**
+  - Both .json and .md files are set to read-only after successful write
+  - Any modification requires removing read-only attribute first
+  - Atomic write operations ensure files are never in partial state
+  - Read-only flag restored immediately after write completes
 
 ## Testing
 Comprehensive test suite with 18 tests covering all functionality.

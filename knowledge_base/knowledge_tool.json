@@ -46,9 +46,9 @@
           "type": "Doc",
           "id": "rendering",
           "label": "Document Rendering",
-          "description": "Internal automatic markdown generation on patch application (not a public API)",
+          "description": "Automatic markdown generation on patch application using pluggable RenderableModel classes. Handles file I/O for all model types (not a public API)",
           "metadata": {
-            "file": "render_doc.py",
+            "file": "common/render.py",
             "status": "complete_internal_only"
           }
         },
@@ -71,6 +71,27 @@
               "Exclusive write to temp file",
               "Atomic rename to target",
               "Restore read-only/archive attribute"
+            ]
+          }
+        },
+        "file_protection": {
+          "type": "Doc",
+          "id": "file_protection",
+          "label": "File Protection Purpose",
+          "description": "Files are protected with read-only attributes after writing to prevent accidental corruption or modification. This applies to both JSON knowledge documents and their auto-rendered markdown pairs.",
+          "metadata": {
+            "code": "knowledge_base/knowledge_tool.json\nknowledge_base/knowledge_tool.md",
+            "purpose": [
+              "Prevent accidental overwrites of validated JSON data",
+              "Ensure JSON and MD files always stay in sync (both locked together)",
+              "Protect against race conditions when multiple processes access files",
+              "Maintain document integrity as the source of truth for knowledge"
+            ],
+            "file_locking_strategy": [
+              "Both .json and .md files are set to read-only after successful write",
+              "Any modification requires removing read-only attribute first",
+              "Atomic write operations ensure files are never in partial state",
+              "Read-only flag restored immediately after write completes"
             ]
           }
         }

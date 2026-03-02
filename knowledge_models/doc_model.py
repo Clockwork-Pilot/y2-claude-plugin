@@ -126,8 +126,10 @@ class Doc(RenderableModel):
 
             for child_id, child_node in sorted_children:
                 label = child_node.get("label", child_id)
+                # Generate anchor matching standard markdown: lowercase, spaces→hyphens, remove other special chars
                 anchor = label.lower()
-                anchor = "".join(c if c.isalnum() else "-" for c in anchor).strip("-")
+                anchor = anchor.replace(' ', '-')  # Convert spaces to hyphens first
+                anchor = re.sub(r'[^\w-]', '', anchor)  # Then remove other special chars
 
                 indent = "  " * (level - 1)
                 toc_lines.append(f"{indent}- [{label}](#{anchor})")
@@ -171,23 +173,23 @@ class Doc(RenderableModel):
         code = metadata.get("code")
         first_field = True
 
-        if description:
-            lines.append(str(description))
-            first_field = False
-
         if code:
-            if not first_field:
-                lines.append("")
             lines.append("```")
             lines.append(str(code))
             lines.append("```")
+            first_field = False
+
+        if description:
+            if not first_field:
+                lines.append("")
+            lines.append(str(description))
             first_field = False
 
         for key, value in metadata.items():
             if key in ("description", "code"):
                 continue
 
-            # Add empty line before each field (except right after description)
+            # Add empty line before each field
             if not first_field:
                 lines.append("")
             first_field = False
@@ -248,13 +250,13 @@ class Doc(RenderableModel):
             metadata_lower = {k.lower(): k for k, v in self.metadata.items()}  # Map to original key
 
             # Check for usage/command in metadata - should be in code attr
-            for key_lower, key_orig in metadata_lower.items():
-                if key_lower in ("usage", "command"):
-                    full_path = f"{current_json_path}/metadata/{key_orig}"
-                    tips.append(
-                        f'⚠️  {full_path}: Found "{key_lower}" in metadata. '
-                        'Move to top-level "code" attribute.'
-                    )
+            # for key_lower, key_orig in metadata_lower.items():
+            #     if key_lower in ("usage", "command"):
+            #         full_path = f"{current_json_path}/metadata/{key_orig}"
+            #         tips.append(
+            #             f'⚠️  {full_path}: Found "{key_lower}" in metadata. '
+            #             'Move to top-level "code" attribute.'
+            #         )
 
             # Check for description in metadata - should use top-level field
             if "description" in metadata_lower:

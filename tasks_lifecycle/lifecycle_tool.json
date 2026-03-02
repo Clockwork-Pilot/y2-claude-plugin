@@ -75,7 +75,8 @@
                   "4. Check: did metrics change from previous iteration?",
                   "5. If YES: go to step 2 | If NO: archive task"
                 ]
-              }
+              },
+              "children": {}
             }
           }
         }
