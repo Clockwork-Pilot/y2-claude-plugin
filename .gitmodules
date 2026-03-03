@@ -1,3 +1,6 @@
-[submodule "y2_pycov"]
-	path = y2_pycov
+[submodule "pycov"]
+	path = pycov
 	url = git@github.com:YuraLitvinov/y2-pycov.git
+[submodule "knowledge_tool"]
+	path = knowledge_tool
+	url = git@github.com:YaroslavLitvinov/y2-knowledge-tool.git

@@ -14,7 +14,7 @@ from shutil import move
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from knowledge_models import Task
+from tasks_lifecycle.knowledge_models.task_model import Task
 
 
 def archive_task(task_file: str = "task.json") -> int:

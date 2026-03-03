@@ -5,8 +5,7 @@ import json
 from typing import Any, Dict, Optional, Literal
 from pydantic import BaseModel, Field
 
-from .base_model import RenderableModel
-from .doc_model import Doc
+from knowledge_tool.models import RenderableModel, Doc
 
 
 class CodeStats(BaseModel):

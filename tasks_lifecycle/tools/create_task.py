@@ -13,7 +13,8 @@ from datetime import datetime
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from knowledge_models import Task, Doc
+from tasks_lifecycle.knowledge_models.task_model import Task
+from knowledge_tool.models import Doc
 
 
 def create_task():

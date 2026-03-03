@@ -16,7 +16,7 @@ from typing import Dict, Tuple, Optional
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from knowledge_models import CodeStats, TaskTestMetrics
+from tasks_lifecycle.knowledge_models.task_model import CodeStats, TaskTestMetrics
 
 
 def get_code_stats(

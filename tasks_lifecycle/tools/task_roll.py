@@ -14,7 +14,7 @@ from typing import Optional
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from knowledge_models import Task, Iteration, CodeStats, TaskTestMetrics
+from tasks_lifecycle.knowledge_models.task_model import Task, Iteration, CodeStats, TaskTestMetrics
 from .task_metrics import collect_metrics
 
 

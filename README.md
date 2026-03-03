@@ -2,6 +2,23 @@
 
 A minimal Claude plugin written in Python that implements hook handlers and logs all hook invocations.
 
+## Submodules
+
+This project includes the following Git submodules:
+
+- **y2_pycov** - Python coverage utilities (https://github.com/YuraLitvinov/y2-pycov)
+- **knowledge_tool** - Knowledge tool system (https://github.com/YaroslavLitvinov/y2-knowledge-tool)
+
+To clone with submodules:
+```bash
+git clone --recurse-submodules <repository-url>
+```
+
+To update submodules after cloning:
+```bash
+git submodule update --init --recursive
+```
+
 ## Run in docker
 Use docker image from this repo: github.com:YuraLitvinov/y2-docker-claude
 Build & Run docker container as specified in their readme.
@@ -40,6 +57,15 @@ cd /project && \
 cd /project && \
   source .venv/bin/activate &&   claude --model claude-haiku-4-5 --debug --plugin-dir /project
 ```
+
+## Workflow
+1. Run Claude with --worktree option so it makes changes in separate worktree, in folder .claude/worktrees/
+2. Commit changes in worktree
+3. Run `git rebase worktree-test` to apply changes from worktree to main branch (Resolve conflicts if any)
+4. `git worktree remove .claude/worktrees/test` - remove worktree
+5. `git worktree list` - list all worktrees
+6. `git branch -d worktree-test` - remove branch
+7. `git branch` - list all branches
 
 ## Features
 

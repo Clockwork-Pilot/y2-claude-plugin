@@ -11,7 +11,8 @@ from unittest.mock import patch
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from knowledge_models import Task, Doc, Iteration, CodeStats, TaskTestMetrics
+from tasks_lifecycle.knowledge_models.task_model import Task, Iteration, CodeStats, TaskTestMetrics
+from knowledge_tool.models import Doc
 from .create_task import create_task
 from .task_roll import roll_task
 from .task_archive import archive_task

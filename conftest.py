@@ -8,9 +8,9 @@ from io import StringIO
 from pathlib import Path
 import pytest
 
-# Add knowledge_base/tools to sys.path for relative imports
+# Add knowledge_tool submodule to sys.path for imports
 project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root / "knowledge_base" / "tools"))
+sys.path.insert(0, str(project_root / "knowledge_tool"))
 
 
 @pytest.fixture(scope="session", autouse=True)
