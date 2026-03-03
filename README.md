@@ -48,6 +48,14 @@ cd /project && \
 - Separate handler configuration for each hook type
 - Uses absolute paths for both interpreter and handlers
 
+## Core Tools
+
+### Knowledge Base Tool
+API-first knowledge base system using JSON Patch operations (RFC 6902) with automatic markdown rendering. Features atomic file writes, file protection with read-only attributes, and pluggable RenderableModel classes for document rendering. Provides both command-line scripts and Python functions for applying patches to knowledge documents.
+
+### Task Lifecycle Tool
+Iteration-based task management system for tracking task execution through numbered iterations with automatic metrics collection. Collects code metrics from git diff (files changed, lines added/removed) and test metrics from pytest (pass rate, coverage). Tasks progress through iterations until metrics stabilize, then archive to history.
+
 ## Multiple Handlers
 
 The plugin uses a modular handler structure with separate handler files in the `hooks/` directory:
