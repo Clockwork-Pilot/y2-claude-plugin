@@ -4,3 +4,6 @@
 [submodule "knowledge_tool"]
 	path = knowledge_tool
 	url = git@github.com:YaroslavLitvinov/y2-knowledge-tool.git
+[submodule "lifecycle_tool"]
+	path = lifecycle_tool
+	url = git@github.com:YaroslavLitvinov/y2-task-lifecycle.git
