@@ -19,6 +19,8 @@ HOOKS_DIR = PLUGIN_ROOT / "hooks"
 
 # Files
 CLAUDE_HOOKS_CONFIG_FILE = HOOKS_DIR / "hooks.json"
+# By convention we use just this path, so knowledge tools just hardocded the same path
+KNOWN_KNOWLEDGE_FILES = PLUGIN_ROOT / "protected_files.txt"
 
 # Logging - write to consuming project's .claude directory
 HOOKS_LOG_FILE = CLAUDE_DIR / "hooks.log"
@@ -30,6 +32,7 @@ __all__ = [
     "CLAUDE_DIR",
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
+    "KNOWN_KNOWLEDGE_FILES",
     "HOOKS_LOG_FILE",
     "HOOKS_LOG_LEVEL"
 ]

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Handler for Edit tool execution."""
+"""Handler for Edit tool execution.
+
+Blocks edits to registered knowledge files. If a file is registered in
+protected_files.txt, exits with code 2 to prevent direct modification.
+Knowledge files should only be updated via apply_json_patch.
+"""
 
 import sys
 import json
@@ -9,6 +14,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
+from hooks import is_knowledge_file, send_error
 
 logger = setup_logger(__name__)
 
@@ -17,6 +23,15 @@ def main():
     try:
         input_data = sys.stdin.read()
         hook_input = json.loads(input_data) if input_data else {}
+
+        # Check if the file being edited is a registered knowledge file
+        # Hook input has file_path in tool_input (actual structure from hook data)
+        file_path = hook_input.get('tool_input', {}).get('file_path')
+        if file_path and is_knowledge_file(file_path):
+            error_msg = f"Cannot edit knowledge document: {file_path}\n\nKnowledge documents should only be modified using apply_json_patch.py to ensure proper validation and automatic markdown rendering."
+            send_error(error_msg, file_path)
+            logger.error(f"Attempted to edit registered knowledge file: {file_path}")
+            sys.exit(2)
 
         log_message = {
             'timestamp': datetime.now().isoformat(),

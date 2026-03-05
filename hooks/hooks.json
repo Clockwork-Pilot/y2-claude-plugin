@@ -2,18 +2,7 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "tool",
-        "tool": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_bash.py"
-          }
-        ]
-      },
-      {
-        "matcher": "tool",
-        "tool": "Edit",
+        "matcher": "Edit",
         "hooks": [
           {
             "type": "command",
@@ -22,8 +11,7 @@
         ]
       },
       {
-        "matcher": "tool",
-        "tool": "Write",
+        "matcher": "Write",
         "hooks": [
           {
             "type": "command",
@@ -32,36 +20,29 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_edit.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_write.py"
+          }
+        ]
+      }
+    ],    
     "SessionStart": [
       {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_start.py"
-          }
-        ]
-      },
-      {
-        "matcher": "resume",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_start.py"
-          }
-        ]
-      },
-      {
-        "matcher": "clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_start.py"
-          }
-        ]
-      },
-      {
-        "matcher": "compact",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -72,43 +53,7 @@
     ],
     "SessionEnd": [
       {
-        "matcher": "clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_end.py"
-          }
-        ]
-      },
-      {
-        "matcher": "logout",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_end.py"
-          }
-        ]
-      },
-      {
-        "matcher": "prompt_input_exit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_end.py"
-          }
-        ]
-      },
-      {
-        "matcher": "bypass_permissions_disabled",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_end.py"
-          }
-        ]
-      },
-      {
-        "matcher": "other",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -171,53 +116,6 @@
           {
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_pre_compact.py"
-          }
-        ]
-      }
-    ],
-    "ConfigChange": [
-      {
-        "matcher": "user_settings",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_config_change.py"
-          }
-        ]
-      },
-      {
-        "matcher": "project_settings",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_config_change.py"
-          }
-        ]
-      },
-      {
-        "matcher": "local_settings",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_config_change.py"
-          }
-        ]
-      },
-      {
-        "matcher": "policy_settings",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_config_change.py"
-          }
-        ]
-      },
-      {
-        "matcher": "skills",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_config_change.py"
           }
         ]
       }
