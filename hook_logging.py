@@ -4,6 +4,7 @@ import logging
 import json
 import os
 from io import StringIO
+from pathlib import Path
 from config import HOOKS_LOG_FILE, HOOKS_LOG_LEVEL
 
 
@@ -31,8 +32,14 @@ def setup_logger(name: str, output=None) -> logging.Logger:
         if os.getenv('TEST_LOG'):
             handler = logging.StreamHandler(StringIO())
         else:
+            # Ensure parent directory exists
+            log_path = Path(HOOKS_LOG_FILE)
+            log_path.parent.mkdir(parents=True, exist_ok=True)
             handler = logging.FileHandler(str(HOOKS_LOG_FILE))
     elif isinstance(output, str):
+        # Ensure parent directory exists
+        log_path = Path(output)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
         handler = logging.FileHandler(str(output))
     else:
         handler = logging.StreamHandler(output)
