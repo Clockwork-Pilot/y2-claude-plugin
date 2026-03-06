@@ -1,3 +1,5 @@
+protected_files.txt
+
 *~
 *.pyc
 __pycache__/
