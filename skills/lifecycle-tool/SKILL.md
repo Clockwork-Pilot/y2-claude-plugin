@@ -11,7 +11,7 @@ description: |
 ## Creating task.json,
 Create task if not exists explicitely using script
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/lifecycle_tool/task_lifecycle/cli/create_task.py
+python scripts/create_task.py
 ```
 
 ## Updating task.json
