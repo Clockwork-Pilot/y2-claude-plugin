@@ -2,11 +2,15 @@
 
 ## protected_files.txt
 
-Files listed in `protected_files.txt` (root and `/knowledge_tool/`) are auto-protected (read-only) by hooks.
+**Auto-generated file** - Do not edit manually.
 
-These are auto-generated files: `task.json`, `task.md`, `knowledge_tool.json`, `knowledge_tool.md`, etc.
+Located in:
+- `/project/protected_files.txt` (main project)
+- `/project/knowledge_tool/protected_files.txt` (plugin root)
 
-To modify: remove from `protected_files.txt`, edit, then re-add if needed.
+Files listed in `protected_files.txt` are auto-protected (read-only) by hooks.
+
+Protected files: `task.json`, `task.md`, `knowledge_tool.json`, `knowledge_tool.md`, etc.
 
 ## Tools
 

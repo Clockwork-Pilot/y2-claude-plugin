@@ -1,0 +1,143 @@
+{
+  "type": "Task",
+  "id": "task_1",
+  "project": {
+    "type": "Doc",
+    "id": "project",
+    "label": "Project Description",
+    "description": "Claude Code Plugin - A Python-based plugin system that extends Claude Code with advanced document management and task lifecycle tracking capabilities.\n\nKey Components:\n1. Knowledge Base Tool: API-first knowledge base system using JSON Patch operations (RFC 6902) with automatic markdown rendering. Features atomic file writes, file protection with read-only attributes, and pluggable RenderableModel classes for document rendering.\n\n2. Task Lifecycle Tool: Iteration-based task management system for tracking task execution through numbered iterations with automatic metrics collection. Collects code metrics from git diff (files changed, lines added/removed) and test metrics from pytest (pass rate, coverage). Tasks progress through iterations until metrics stabilize.\n\n3. Hook System: Implements comprehensive hook handlers for Claude Code lifecycle events, logging all invocations for debugging and monitoring.\n\nProject Structure:\n- knowledge_tool (Git submodule): Core knowledge base system\n- pycov (Git submodule): Python coverage utilities\n- lifecycle_tool: Task lifecycle management with knowledge models\n- Configurable hook handlers for extensibility\n\nFeatures:\n- Atomic JSON Patch operations with automatic validation\n- Automatic markdown document generation\n- Read-only file protection to prevent accidental modifications\n- Iteration-based metrics collection and analysis\n- Plugin-friendly architecture with modular handlers",
+    "metadata": {
+      "created_at": "2026-03-02T11:57:57.644681",
+      "updated_at": "2026-03-05T00:00:00.000000"
+    },
+    "children": {
+      "overview": {
+        "type": "Doc",
+        "id": "overview",
+        "label": "Overview",
+        "description": "Claude Code Plugin is a Python-based plugin system that extends Claude Code with enterprise-grade capabilities for knowledge base management and task lifecycle tracking.",
+        "metadata": {}
+      },
+      "components": {
+        "type": "Doc",
+        "id": "components",
+        "label": "Key Components",
+        "metadata": {},
+        "children": {
+          "knowledge_base_tool": {
+            "type": "Doc",
+            "id": "knowledge_base_tool",
+            "label": "Knowledge Base Tool",
+            "description": "API-first knowledge base system using JSON Patch operations (RFC 6902) with automatic markdown rendering. Features atomic file writes, file protection, and pluggable RenderableModel classes.",
+            "metadata": {},
+            "children": {
+              "configuration": {
+                "type": "Doc",
+                "id": "configuration",
+                "label": "Knowledge Tool Configuration",
+                "description": "Configuration guide for the Knowledge Base Tool pluggable model system.",
+                "metadata": {
+                  "configuration_file": "knowledge_config.yaml",
+                  "location": "Same directory as apply_json_patch.py script"
+                },
+                "children": {
+                  "overview": {
+                    "type": "Doc",
+                    "id": "overview",
+                    "label": "Overview",
+                    "description": "This file configures pluggable model directories for the knowledge tool. Place this file in the same directory as apply_json_patch.py script, or set KNOWLEDGE_TOOL_CONFIG_ROOT environment variable to override the config location.\n\nThe knowledge tool always loads built-in models. External models from pluggable_models_dirs are merged with built-in models.",
+                    "metadata": {}
+                  },
+                  "pluggable_models_dirs": {
+                    "type": "Doc",
+                    "id": "pluggable_models_dirs",
+                    "label": "Pluggable Models Directories",
+                    "description": "List of directories containing custom/pluggable knowledge models. Paths are relative to this config file location.",
+                    "metadata": {
+                      "format": "List of directory paths",
+                      "examples": [
+                        "./models",
+                        "./custom_models",
+                        "/absolute/path/to/models"
+                      ]
+                    }
+                  },
+                  "built_in_models": {
+                    "type": "Doc",
+                    "id": "built_in_models",
+                    "label": "Built-in Models",
+                    "description": "The knowledge tool always loads the following built-in models: Doc (default document model), Task (task with plan and iterations), Iteration (task iteration with metrics).",
+                    "metadata": {}
+                  },
+                  "model_merging": {
+                    "type": "Doc",
+                    "id": "model_merging",
+                    "label": "Model Merging",
+                    "description": "External models from pluggable_models_dirs are merged with built-in models. If a custom model has the same name as a built-in model, the custom model takes precedence.",
+                    "metadata": {}
+                  },
+                  "environment_variable": {
+                    "type": "Doc",
+                    "id": "environment_variable",
+                    "label": "Environment Variable Override",
+                    "description": "Set KNOWLEDGE_TOOL_CONFIG_ROOT environment variable to specify a custom config file location. This overrides the default location (same directory as apply_json_patch.py).",
+                    "metadata": {
+                      "variable_name": "KNOWLEDGE_TOOL_CONFIG_ROOT",
+                      "usage": "export KNOWLEDGE_TOOL_CONFIG_ROOT=/path/to/config"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "task_lifecycle_tool": {
+            "type": "Doc",
+            "id": "task_lifecycle_tool",
+            "label": "Task Lifecycle Tool",
+            "description": "Iteration-based task management system with automatic metrics collection from git and pytest. Tasks progress through iterations until metrics stabilize, then archive to history.",
+            "metadata": {}
+          },
+          "hook_system": {
+            "type": "Doc",
+            "id": "hook_system",
+            "label": "Hook System",
+            "description": "Comprehensive hook handlers for Claude Code lifecycle events with modular handler structure and event logging for debugging and monitoring.",
+            "metadata": {}
+          }
+        }
+      },
+      "architecture": {
+        "type": "Doc",
+        "id": "architecture",
+        "label": "Architecture",
+        "description": "Multi-component architecture with Git submodules (knowledge_tool, pycov) and local modules (lifecycle_tool, hooks). Pluggable models with RenderableModel base class for custom document rendering.",
+        "metadata": {}
+      },
+      "features": {
+        "type": "Doc",
+        "id": "features",
+        "label": "Key Features",
+        "description": "Atomic JSON Patch operations with automatic validation, automatic markdown document generation from JSON source, read-only file protection, iteration-based metrics collection and analysis, plugin-friendly modular architecture, filtering of temporary files from knowledge registry, task-based knowledge document management.",
+        "metadata": {}
+      },
+      "technology": {
+        "type": "Doc",
+        "id": "technology",
+        "label": "Technology Stack",
+        "description": "Python 3.11+, Pydantic for data validation, RFC 6902 JSON Patch for document operations, Markdown auto-generation from JSON, Integration with Git, pytest, and fastmcp.",
+        "metadata": {}
+      }
+    }
+  },
+  "plan": {
+    "type": "Doc",
+    "id": "plan",
+    "label": "Task Plan",
+    "description": "Updated task plan with project description",
+    "metadata": {
+      "created_at": "2026-03-02T11:57:57.644681",
+      "updated_at": "2026-03-02T11:57:57.644681",
+      "test": "1"
+    }
+  }
+}
