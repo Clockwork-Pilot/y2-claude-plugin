@@ -7,6 +7,7 @@ prints a message and exits without modifying the file.
 
 import json
 import sys
+import argparse
 from pathlib import Path
 from datetime import datetime
 import importlib.util
@@ -33,9 +34,14 @@ spec.loader.exec_module(knowledge_tool_module)
 from knowledge_tool.models import Doc, Task
 
 
-def create_task():
-    """Create task.json at project root if it doesn't already exist."""
-    task_file = Path("task.json")
+def create_task(project_root):
+    """Create task.json at project root if it doesn't already exist.
+
+    Args:
+        project_root: Path to project root where task.json will be created.
+    """
+    project_root = Path(project_root)
+    task_file = project_root / "task.json"
 
     # Check if task file already exists
     if task_file.exists():
@@ -69,4 +75,14 @@ def create_task():
 
 
 if __name__ == "__main__":
-    create_task()
+    parser = argparse.ArgumentParser(
+        description="Create a new task.json knowledge document at project root."
+    )
+    parser.add_argument(
+        "--project-root",
+        type=str,
+        required=True,
+        help="Path to project root where task.json will be created.",
+    )
+    args = parser.parse_args()
+    create_task(project_root=args.project_root)
