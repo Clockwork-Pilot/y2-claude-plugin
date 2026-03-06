@@ -8,12 +8,10 @@ description: |
 
 # Use apply_patch_json.py for:
 
-## Creating task.json,
+## Creating task knowledge document: task.json
 Create task if not exists explicitely using script
-```bash
-python scripts/create_task.py
-```
+`python ${CLAUDE_PLUGIN_ROOT}/skills/lifecycle-tool/scripts/create_task.py`
 
-## Updating task.json
+## Updating task knowledge document: task.json
 To make updates to task lifecycle document use knowledge tool: apply_json_patch.py
-
+`python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/apply_json_patch.py task.json '[{"op": "replace", "path": "/label", "value": "New Label"}]'`
