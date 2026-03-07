@@ -3,7 +3,7 @@
 
 Blocks edits to registered knowledge files. If a file is registered in
 protected_files.txt, exits with code 2 to prevent direct modification.
-Knowledge files should only be updated via apply_json_patch.
+Knowledge files should only be updated via patch_knowledge_document.
 """
 
 import sys
@@ -28,7 +28,7 @@ def main():
         # Hook input has file_path in tool_input (actual structure from hook data)
         file_path = hook_input.get('tool_input', {}).get('file_path')
         if file_path and is_knowledge_file(file_path):
-            error_msg = f"Cannot edit knowledge document: {file_path}\n\nKnowledge documents should only be modified using apply_json_patch.py to ensure proper validation and automatic markdown rendering."
+            error_msg = f"Cannot edit knowledge document: {file_path}\n\nKnowledge documents should only be modified using patch_knowledge_document.py to ensure proper validation and automatic markdown rendering."
             send_error(error_msg, file_path)
             logger.error(f"Attempted to edit registered knowledge file: {file_path}")
             sys.exit(2)
