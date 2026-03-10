@@ -15,7 +15,7 @@ sys.path.insert(0, str(_knowledge_tool_src))
 sys.path.insert(0, str(_script_dir))
 
 from models import (
-    Feature, FeaturesScope, Tests, FeatureResult,
+    Feature, FeaturesScope, TestResults, FeatureResult,
     ConstraintBash, ConstraintPrompt,
     ConstraintBashResult, ConstraintPromptResult
 )
@@ -97,22 +97,22 @@ def check_feature(feature: Feature) -> FeatureResult:
 def execute_constraints(
     constraints_json_path: str,
     output_tests_path: str = None
-) -> Tests:
+) -> TestResults:
     """Execute all constraints from a constraints.json file.
 
     Workflow:
     1. Load constraints.json as FeaturesScope or Feature document
     2. For each feature, call check_feature() to execute its constraints
-    3. Aggregate results into Tests document
-    4. Optionally update Tests knowledge file using patch_knowledge_document
+    3. Aggregate results into TestResults document
+    4. Optionally update TestResults knowledge file using patch_knowledge_document
 
     Args:
         constraints_json_path: Path to constraints.json file (FeaturesScope or Feature document)
-        output_tests_path: Optional path to Tests knowledge file (tests.json)
+        output_tests_path: Optional path to TestResults knowledge file (tests.json)
                           Features are appended/updated, not replaced
 
     Returns:
-        Tests document with all execution results
+        TestResults document with all execution results
     """
     constraints_path = Path(constraints_json_path)
 
@@ -157,9 +157,9 @@ def execute_constraints(
                 if feature_result.constraints_results:
                     features_results[feature_id] = feature_result
 
-    # Create Tests document from results
+    # Create TestResults document from results
     print("📊 Aggregating results...")
-    tests = Tests(
+    test_results = TestResults(
         features_results=features_results if features_results else None
     )
 
@@ -189,7 +189,7 @@ def execute_constraints(
         else:
             print("ℹ️  No results to update")
 
-    return tests
+    return test_results
 
 
 def main():
