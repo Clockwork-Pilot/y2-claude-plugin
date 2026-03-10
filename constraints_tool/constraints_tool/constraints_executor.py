@@ -10,15 +10,19 @@ from typing import Union
 # Add parent directory to path for imports
 _script_dir = Path(__file__).parent
 _knowledge_tool_src = Path(__file__).parent.parent.parent / "knowledge_tool" / "knowledge_tool" / "src"
+_knowledge_tool_root = Path(__file__).parent.parent.parent / "knowledge_tool" / "knowledge_tool"
 sys.path.insert(0, str(_knowledge_tool_src))
 sys.path.insert(0, str(_script_dir))
 
 from models import (
-    Feature, Constraints, Tests,
+    Feature, FeaturesScope, Tests, FeatureResult,
     ConstraintBash, ConstraintPrompt,
-    ConstraintBashResult, ConstraintPromptResult,
-    Constraint
+    ConstraintBashResult, ConstraintPromptResult
 )
+
+# Import patch_knowledge_document for protected file updates
+sys.path.insert(0, str(_knowledge_tool_root))
+from patch_knowledge_document import apply_json_patch
 
 
 def execute_constraint(
@@ -59,6 +63,37 @@ def execute_constraint(
         raise TypeError(f"Unknown constraint type: {type(constraint)}")
 
 
+def check_feature(feature: Feature) -> FeatureResult:
+    """Execute all constraints in a feature and return aggregated results.
+
+    Args:
+        feature: Feature with embedded constraints to execute
+
+    Returns:
+        FeatureResult with constraint execution results indexed by constraint ID
+    """
+    constraint_results = {}
+
+    if feature.constraints:
+        print(f"🎯 Checking feature '{feature.id}': {len(feature.constraints)} constraints")
+        for constraint_id, constraint in feature.constraints.items():
+            try:
+                print(f"  → Executing: {constraint_id}")
+                result = execute_constraint(constraint)
+                constraint_results[constraint_id] = result
+                if isinstance(result, ConstraintBashResult):
+                    print(f"     Result: {'✓ PASS' if result.verdict else '✗ FAIL'}")
+                else:
+                    print(f"     Result: {result.verdict or '(empty)'}")
+            except Exception as e:
+                print(f"  ✗ Error: {e}")
+
+    return FeatureResult(
+        feature_id=feature.id,
+        constraints_results=constraint_results if constraint_results else None
+    )
+
+
 def execute_constraints(
     constraints_json_path: str,
     output_tests_path: str = None
@@ -66,16 +101,15 @@ def execute_constraints(
     """Execute all constraints from a constraints.json file.
 
     Workflow:
-    1. Load constraints.json as Constraints or Feature document
-    2. Extract all constraints from features
-    3. Execute bash constraints directly using subprocess
-    4. Create empty results for prompt constraints
-    5. Aggregate results into Tests document
-    6. Optionally write Tests to tests.json
+    1. Load constraints.json as FeaturesScope or Feature document
+    2. For each feature, call check_feature() to execute its constraints
+    3. Aggregate results into Tests document
+    4. Optionally update Tests knowledge file using patch_knowledge_document
 
     Args:
-        constraints_json_path: Path to constraints.json file (Constraints or Feature document)
-        output_tests_path: Optional path to write Tests document (tests.json)
+        constraints_json_path: Path to constraints.json file (FeaturesScope or Feature document)
+        output_tests_path: Optional path to Tests knowledge file (tests.json)
+                          Features are appended/updated, not replaced
 
     Returns:
         Tests document with all execution results
@@ -91,9 +125,9 @@ def execute_constraints(
     with open(constraints_path, 'r') as f:
         data = json.load(f)
 
-    # Parse document (can be Constraints or Feature)
-    doc_type = data.get("type", "Constraints")
-    all_results = {}
+    # Parse document (can be FeaturesScope or Feature)
+    doc_type = data.get("type", "FeaturesScope")
+    features_results = {}
 
     if doc_type == "Feature":
         # Single Feature document with embedded constraints
@@ -103,79 +137,57 @@ def execute_constraints(
         except Exception as e:
             raise ValueError(f"Invalid Feature format: {e}")
 
-        if feature.constraints:
-            print(f"🎯 Found {len(feature.constraints)} constraints in feature '{feature.id}'")
-            for c_id, constraint in feature.constraints.items():
-                try:
-                    print(f"  → Executing: {c_id}")
-                    result = execute_constraint(constraint)
-                    all_results[c_id] = result
-                    if isinstance(result, ConstraintBashResult):
-                        print(f"     Result: {'✓ PASS' if result.verdict else '✗ FAIL'}")
-                    else:
-                        print(f"     Result: {result.verdict or '(empty)'}")
-                except Exception as e:
-                    print(f"  ✗ Error: {e}")
+        feature_result = check_feature(feature)
+        if feature_result.constraints_results:
+            features_results[feature.id] = feature_result
 
     else:
-        # Constraints document with features
-        print("📄 Detected Constraints document")
+        # FeaturesScope document with features
+        print("📄 Detected FeaturesScope document")
         try:
-            constraints = Constraints.model_validate(data)
+            features_scope = FeaturesScope.model_validate(data)
         except Exception as e:
-            raise ValueError(f"Invalid constraints format: {e}")
+            raise ValueError(f"Invalid FeaturesScope format: {e}")
 
         # Process features
-        if constraints.features:
-            print(f"🎯 Found {len(constraints.features)} features")
-            for feature_id, feature in constraints.features.items():
-                if feature.constraints:
-                    print(f"  Feature '{feature_id}': {len(feature.constraints)} constraints")
-                    for c_id, constraint in feature.constraints.items():
-                        try:
-                            print(f"    → Executing: {c_id}")
-                            result = execute_constraint(constraint)
-                            all_results[c_id] = result
-                            if isinstance(result, ConstraintBashResult):
-                                print(f"       Result: {'✓ PASS' if result.verdict else '✗ FAIL'}")
-                            else:
-                                print(f"       Result: {result.verdict or '(empty)'}")
-                        except Exception as e:
-                            print(f"    ✗ Error: {e}")
-
-        # Process standalone Constraint objects
-        if constraints.constraints:
-            print(f"🔍 Found {len(constraints.constraints)} standalone constraints")
-            for constraint_id, constraint in constraints.constraints.items():
-                try:
-                    print(f"  → Executing: {constraint_id}")
-                    if constraint.constraint_bash:
-                        result = execute_constraint(constraint.constraint_bash)
-                    elif constraint.constraint_prompt:
-                        result = execute_constraint(constraint.constraint_prompt)
-                    else:
-                        raise ValueError(f"Constraint {constraint_id} has no bash or prompt")
-                    all_results[constraint_id] = result
-                    if isinstance(result, ConstraintBashResult):
-                        print(f"     Result: {'✓ PASS' if result.verdict else '✗ FAIL'}")
-                    else:
-                        print(f"     Result: {result.verdict or '(empty)'}")
-                except Exception as e:
-                    print(f"  ✗ Error: {e}")
+        if features_scope.features:
+            print(f"🎯 Found {len(features_scope.features)} features (scope: {features_scope.scope})")
+            for feature_id, feature in features_scope.features.items():
+                feature_result = check_feature(feature)
+                if feature_result.constraints_results:
+                    features_results[feature_id] = feature_result
 
     # Create Tests document from results
     print("📊 Aggregating results...")
     tests = Tests(
-        constraints_results=all_results if all_results else None
+        features_results=features_results if features_results else None
     )
 
-    # Write output if specified
+    # Update Tests knowledge file if specified
     if output_tests_path:
         output_path = Path(output_tests_path)
-        print(f"💾 Writing tests to {output_tests_path}")
-        with open(output_path, 'w') as f:
-            json.dump(tests.model_dump(), f, indent=2, default=str)
-        print("✓ Done!")
+        print(f"💾 Updating tests at {output_tests_path}")
+
+        # Build JSON Patch to add each feature result
+        # Features are merged, not replaced
+        patch_ops = []
+        for feature_id, feature_result in features_results.items():
+            patch_ops.append({
+                "op": "add",
+                "path": f"/features_results/{feature_id}",
+                "value": json.loads(feature_result.model_dump_json(exclude_none=True))
+            })
+
+        if patch_ops:
+            # Apply patch using knowledge_tool API
+            patch_json = json.dumps(patch_ops)
+            error = apply_json_patch(str(output_path), patch_json)
+            if error:
+                print(f"⚠️  Warning: {error.error}")
+            else:
+                print("✓ Tests updated!")
+        else:
+            print("ℹ️  No results to update")
 
     return tests
 
