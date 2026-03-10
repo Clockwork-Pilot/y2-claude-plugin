@@ -1,4 +1,6 @@
 protected_files.txt
+.claude.local.json
+.credentials/
 
 *~
 *.pyc
@@ -17,4 +19,4 @@ venv/
 .DS_Store
 .idea/
 .vscode/
-.credentials/
+

@@ -24,6 +24,7 @@ Use docker image from this repo: github.com:YuraLitvinov/y2-docker-claude
 Build & Run docker container as specified in their readme.
 
 ```
+touch $(pwd)/.claude.local.json && \
 mkdir $(pwd)/.credentials -p && \
   docker run -it --rm  \
     --user 1000:1000  \
@@ -31,12 +32,13 @@ mkdir $(pwd)/.credentials -p && \
     -v $HOME/.ssh/id_ed25519.pub:/home/node/.ssh/id_ed25519.pub:ro \
     -v $SSH_AUTH_SOCK:/ssh-agent \
     -e SSH_AUTH_SOCK=/ssh-agent \
-    -v $(pwd)/.credentials:/home/node/:Z  \
+    -v $(pwd)/.credentials:/home/node/.claude:Z \
+    -v $(pwd)/.claude.local.json:/home/node/.claude.json:Z \
     -v $(pwd):/project y2-coder
 
 # Use forwarded SSH Key Inside of container
 ssh-add -l
-ssh-add ~/.ssh/id_ed25519
+# ssh-add ~/.ssh/id_ed25519
 
 # test signature
 echo "test" | ssh-keygen -Y sign     -f ~/.ssh/id_ed25519     -n file
