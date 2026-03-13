@@ -18,6 +18,142 @@
         "updated_at": "2026-03-06T12:12:53.859554"
       }
     },
+    "features": {
+      "forbid_task_status_downgrade": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "forbid_task_status_downgrade",
+        "description": "Prevent Task status from downgrading from executing/failed/succeed back to planning. Implementation: Use Edit/Write hooks in PLUGIN_ROOT/hooks/ directory to validate Task knowledge document changes. Verify that status transitions are allowed (forward only) and reject attempts to change from executing/failed/succeed states back to planning.",
+        "constraints": {
+          "constraint_status_validation_exists": {
+            "id": "constraint_status_validation_exists",
+            "cmd": "grep -r 'forbid.*downgrade\\|status.*validation\\|executing.*planning\\|failed.*planning\\|succeed.*planning' /home/yaroslav/git/y2-claude-plugin/hooks/ && echo 'Hook validation found'",
+            "description": "Verify status validation code exists in hooks directory",
+            "scope": "local"
+          },
+          "constraint_status_logic_review": {
+            "id": "constraint_status_logic_review",
+            "prompt": "Review the Edit/Write hooks implementation in PLUGIN_ROOT/hooks/ to ensure it properly prevents Task status downgrades. Verify: 1) Hooks intercept knowledge document changes, 2) Status downgrade attempts (executing->planning, failed->planning, succeed->planning) are rejected with clear error messages, 3) Edge cases are handled, 4) Hook integrates with knowledge tool patch mechanism",
+            "verdict_expect_rule": "PASS",
+            "description": "Code review of hook-based status downgrade prevention logic",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "validation",
+          "implementation": "hooks",
+          "priority": "high",
+          "status": "planned"
+        }
+      },
+      "render_spec_features_in_task": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "render_spec_features_in_task",
+        "description": "Render Task spec features and their constraints in the markdown output. Task.render() should include a 'Features' section that displays all features from spec.features with their descriptions and embedded constraints (bash commands and prompt validations).",
+        "constraints": {
+          "constraint_feature_section_in_markdown": {
+            "id": "constraint_feature_section_in_markdown",
+            "cmd": "grep -q '## Features\\|### .*:' /home/yaroslav/git/y2-claude-plugin/task.md && echo '\u2713 Features section found in markdown' || echo '\u26a0 Features section not found'",
+            "description": "Verify that 'Features' section is rendered in task.md markdown output",
+            "scope": "local"
+          },
+          "constraint_constraint_details_in_markdown": {
+            "id": "constraint_constraint_details_in_markdown",
+            "cmd": "grep -q 'Bash\\|Prompt\\|constraint\\|cmd\\|prompt' /home/yaroslav/git/y2-claude-plugin/task.md && echo '\u2713 Constraint details found' || echo '\u26a0 Constraint details not found'",
+            "description": "Verify that constraint details (bash commands, prompt validations) are rendered in markdown",
+            "scope": "local"
+          },
+          "constraint_rendering_implementation_review": {
+            "id": "constraint_rendering_implementation_review",
+            "prompt": "Review the Task.render() method implementation to ensure it properly displays spec.features and their constraints. Verify: 1) Features section is included after spec description, 2) Each feature shows id, description, and constraints, 3) ConstraintBash displays command with proper formatting, 4) ConstraintPrompt displays prompt and expected verdict, 5) Metadata is optionally shown, 6) Markdown formatting is consistent with other sections, 7) Edge cases handled (no features, no constraints)",
+            "verdict_expect_rule": "PASS",
+            "description": "Code review of Task.render() feature/constraint rendering implementation",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "rendering",
+          "implementation": "task_model",
+          "priority": "high",
+          "status": "planned",
+          "depends_on": [
+            "forbid_task_status_downgrade"
+          ]
+        }
+      },
+      "task_features_checker_tool": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "task_features_checker_tool",
+        "description": "Create task_features_checker.py script in constraints_tool/ directory. Script should: 1) Accept path to task document (task.json), 2) Accept optional --features argument with comma-separated list of feature IDs to check, 3) Accept optional --output-checks-path argument for ChecksResults.json path to save results, 4) If --features not provided, check all features in spec.features, 5) Execute constraints for selected features similar to constraints_executor.py, 6) Write results to ChecksResults model containing feature_results with constraint execution outcomes, 7) Save ChecksResults to path specified in --output-checks-path if provided, 8) Support both ConstraintBash and ConstraintPrompt types, 9) Return results showing which constraints passed/failed",
+        "constraints": {
+          "constraint_tool_exists": {
+            "id": "constraint_tool_exists",
+            "cmd": "test -f /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 tool exists' || echo '\u2717 tool missing'",
+            "description": "Verify task_features_checker.py exists in constraints_tool/",
+            "scope": "local"
+          },
+          "constraint_tool_accepts_task_path": {
+            "id": "constraint_tool_accepts_task_path",
+            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'task' && echo '\u2713 accepts task path' || echo '\u2717 help missing'",
+            "description": "Verify tool accepts task document path argument",
+            "scope": "local"
+          },
+          "constraint_tool_accepts_features_arg": {
+            "id": "constraint_tool_accepts_features_arg",
+            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'features\\|--features' && echo '\u2713 --features arg supported' || echo '\u2717 --features arg missing'",
+            "description": "Verify tool accepts optional --features argument to filter feature IDs",
+            "scope": "local"
+          },
+          "constraint_tool_accepts_output_checks_path_arg": {
+            "id": "constraint_tool_accepts_output_checks_path_arg",
+            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'output\\|checks\\|--output-checks-path' && echo '\u2713 --output-checks-path arg supported' || echo '\u2717 --output-checks-path arg missing'",
+            "description": "Verify tool accepts optional --output-checks-path argument for ChecksResults file path",
+            "scope": "local"
+          },
+          "constraint_tool_returns_checks_results": {
+            "id": "constraint_tool_returns_checks_results",
+            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'ChecksResults\\|results\\|output' && echo '\u2713 returns results' || echo '\u26a0 results behavior'",
+            "description": "Verify tool returns results in ChecksResults model format",
+            "scope": "local"
+          },
+          "constraint_tool_execution_on_task": {
+            "id": "constraint_tool_execution_on_task",
+            "cmd": "python3 constraints_tool/constraints_tool/task_features_checker.py task.json 2>&1 | grep -q 'forbid_task_status_downgrade\\|render_spec_features_in_task\\|task_features_checker_tool\\|constraint\\|Feature' && echo '\u2713 executes on task' || echo '\u26a0 execution check'",
+            "description": "Verify tool can execute constraints from task.json features and display results",
+            "scope": "local"
+          },
+          "constraint_tool_saves_results_to_file": {
+            "id": "constraint_tool_saves_results_to_file",
+            "cmd": "python3 constraints_tool/constraints_tool/task_features_checker.py task.json --output-checks-path checks_results.json 2>&1 && test -f checks_results.json && echo '\u2713 results saved' || echo '\u26a0 save failed'",
+            "description": "Verify tool saves ChecksResults to file when --output-checks-path provided",
+            "scope": "local"
+          },
+          "constraint_tool_implementation_review": {
+            "id": "constraint_tool_implementation_review",
+            "prompt": "Review task_features_checker.py implementation. Verify: 1) Accepts task document path and optional --features and --output-checks-path arguments, 2) Loads Task model and extracts spec.features, 3) Filters features by --features list if provided, 4) Executes ConstraintBash and ConstraintPrompt for each feature, 5) Creates ChecksResults model with feature_results containing constraint outcomes, 6) Saves ChecksResults to file path specified in --output-checks-path if provided using patch_knowledge_document, 7) Returns ChecksResults object, 8) Similar structure to constraints_executor.py, 9) Proper error handling for missing files/invalid features/save failures",
+            "verdict_expect_rule": "PASS",
+            "description": "Code review of task_features_checker.py tool including ChecksResults integration",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "tooling",
+          "implementation": "constraints_tool",
+          "priority": "high",
+          "status": "planned",
+          "depends_on": [
+            "render_spec_features_in_task"
+          ],
+          "returns_model": "ChecksResults",
+          "output_argument": "--output-checks-path"
+        }
+      }
+    },
     "metadata": {}
   }
 }
