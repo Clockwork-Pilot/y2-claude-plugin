@@ -23,16 +23,27 @@ CLAUDE_HOOKS_CONFIG_FILE = HOOKS_DIR / "hooks.json"
 KNOWN_KNOWLEDGE_FILES = PLUGIN_ROOT / "protected_files.txt"
 
 # Logging - write to consuming project's .claude directory
-HOOKS_LOG_FILE = CLAUDE_DIR / "hooks.log"
+# Base directory for logs across multiple consuming projects
+# If defined, logs go to <HOOK_LOGS_BASE_DIR>/<CONSUMING_PROJECT_NAME>/.claude/hooks.log
+# If None, logs go to consuming project's .claude directory (default behavior)
+HOOK_LOGS_BASE_DIR = os.getenv("CLAUDE_DOCKER_HOOK_LOGS_BASE_DIR", None)
+if HOOK_LOGS_BASE_DIR is not None:
+    CONSUMING_PROJECT_NAME = CONSUMING_PROJECT_ROOT.name
+    HOOKS_LOG_FILE = Path(HOOK_LOGS_BASE_DIR) / CONSUMING_PROJECT_NAME / ".claude" / "hooks.log"
+else:
+    HOOKS_LOG_FILE = CLAUDE_DIR / "hooks.log"
+
 HOOKS_LOG_LEVEL = "INFO"  # Can be: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 
 __all__ = [
-    "PROJECT_ROOT",
+    "PLUGIN_ROOT",
+    "CONSUMING_PROJECT_ROOT",
     "CLAUDE_DIR",
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
     "KNOWN_KNOWLEDGE_FILES",
+    "HOOK_LOGS_BASE_DIR",
     "HOOKS_LOG_FILE",
     "HOOKS_LOG_LEVEL"
 ]

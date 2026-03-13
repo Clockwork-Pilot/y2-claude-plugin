@@ -1,6 +1,6 @@
 # Task: task_1
 
-## Plan
+## Specification (v1)
 
 # Task Plan
 ### Project Summary
@@ -19,6 +19,8 @@
 
 **Technology**: Python 3.11+, Pydantic, RFC 6902, Git submodules
 
-**Created At:** 2026-03-06T12:12:53.859554
+## Created At
+2026-03-06T12:12:53.859554
 
-**Updated At:** 2026-03-06T12:12:53.859554
+## Updated At
+2026-03-06T12:12:53.859554
