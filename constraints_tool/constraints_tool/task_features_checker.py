@@ -235,6 +235,15 @@ def check_task_features(
         output_path = Path(output_checks_path)
         print(f"💾 Saving results to {output_checks_path}")
 
+        # Initialize ChecksResults structure if file doesn't exist
+        if not output_path.exists():
+            initial_structure = {
+                "type": "ChecksResults",
+                "model_version": 1,
+                "features_results": {}
+            }
+            output_path.write_text(json.dumps(initial_structure, indent=2))
+
         # Build JSON Patch to add each feature result
         # Features are merged, not replaced
         patch_ops = []
@@ -295,7 +304,7 @@ Examples:
         '--output-checks-path',
         help='Path to save ChecksResults document',
         type=str,
-        default=None
+        default='checks_results.json'
     )
 
     args = parser.parse_args()
