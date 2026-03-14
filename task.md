@@ -4,6 +4,10 @@
 
 - [Specification (v1)](#specification-v1)
 - [Features](#features)
+    - [Feature: add_constraint_validation_requirement_skill](#feature-add_constraint_validation_requirement_skill)
+      - [constraint_requirement_section_exists](#constraint_requirement_section_exists)
+      - [constraint_results_interpretation_guide](#constraint_results_interpretation_guide)
+      - [constraint_when_to_run_documented](#constraint_when_to_run_documented)
     - [Feature: constraint_rendering_capability](#feature-constraint_rendering_capability)
       - [constraint_bash_render_method](#constraint_bash_render_method)
       - [constraint_bash_render_toc_method](#constraint_bash_render_toc_method)
@@ -15,6 +19,10 @@
       - [constraint_scripts_directory_exists](#constraint_scripts_directory_exists)
       - [constraint_scripts_documented](#constraint_scripts_documented)
       - [constraint_scripts_readme_exists](#constraint_scripts_readme_exists)
+    - [Feature: enhance_constraint_bash_result_output](#feature-enhance_constraint_bash_result_output)
+      - [constraint_output_populated_on_failure](#constraint_output_populated_on_failure)
+      - [constraint_output_rendered_in_markdown](#constraint_output_rendered_in_markdown)
+      - [constraint_shrunken_output_field_exists](#constraint_shrunken_output_field_exists)
     - [Feature: feature_goals_field](#feature-feature_goals_field)
       - [constraint_goals_field_exists](#constraint_goals_field_exists)
       - [constraint_goals_field_in_task](#constraint_goals_field_in_task)
@@ -54,6 +62,16 @@
       - [constraint_toc_indentation](#constraint_toc_indentation)
       - [constraint_toc_links_format](#constraint_toc_links_format)
       - [constraint_toc_section_exists](#constraint_toc_section_exists)
+    - [Feature: update_iteration_with_features_stats](#feature-update_iteration_with_features_stats)
+      - [constraint_feature_result_constraints_required](#constraint_feature_result_constraints_required)
+      - [constraint_features_stats_generated](#constraint_features_stats_generated)
+      - [constraint_features_stats_in_iteration](#constraint_features_stats_in_iteration)
+      - [constraint_features_stats_model_exists](#constraint_features_stats_model_exists)
+      - [constraint_features_stats_rendered](#constraint_features_stats_rendered)
+      - [constraint_skill_documentation_updated](#constraint_skill_documentation_updated)
+      - [constraint_stats_displayed_on_iteration](#constraint_stats_displayed_on_iteration)
+- [Iterations](#iterations)
+    - [iteration_1](#iteration_1)
 
 ## Specification (v1)
 
@@ -82,6 +100,37 @@
 
 
 ## Features
+
+### Feature: add_constraint_validation_requirement_skill
+**Add constraint validation requirement to features-checks-tool skill documentation. Require that coding agents check constraints upon work completion and ensure all features pass before marking work as done. Document mandatory constraint checking scenarios, provide command examples, and guide agents on interpreting results and addressing failures.**
+
+**Goals:**
+- Add ⚠️ REQUIREMENT section stating constraint checks MUST run upon work completion
+- Document REQUIRED scenarios: after implementation, before iteration completion, before merging
+- Specify result expectation: all constraints must PASS before work completion
+- Provide clear command examples for running constraint checks with default output path
+- Add Interpreting Results section with success/failure examples and output format
+- Add Addressing Failures troubleshooting workflow for failed constraints
+- Emphasize constraint validation is MANDATORY not optional
+
+#### constraint_requirement_section_exists
+**Description:** Verify requirement section exists in skill documentation
+**Command:** `grep -q 'MUST RUN\|Requirement.*Constraint\|Constraint.*Checks.*MUST' skills/features-checks-tool/SKILL.md && echo 'Requirement section found' || echo 'Missing'`
+
+#### constraint_results_interpretation_guide
+**Description:** Verify guide for interpreting constraint results is documented
+**Command:** `grep -q 'Interpreting\|Success.*PASS\|Failure.*FAIL' skills/features-checks-tool/SKILL.md && echo 'Interpretation guide exists' || echo 'Missing'`
+
+#### constraint_when_to_run_documented
+**Description:** Verify documentation on when to run constraint checks
+**Command:** `grep -q 'When to Run\|REQUIRED scenarios' skills/features-checks-tool/SKILL.md && echo 'When section documented' || echo 'Not documented'`
+
+**Metadata:**
+- created_at: 2026-03-14T00:00:00
+- feature_type: documentation
+- implementation: skill
+- priority: high
+- status: completed
 
 ### Feature: constraint_rendering_capability
 **Make ConstraintBash and ConstraintPrompt classes renderable with render() and render_toc() methods. Enable constraints to be rendered as markdown independently and integrated into parent objects' TOC generation. This improves modularity and allows constraints to manage their own representation.**
@@ -150,6 +199,36 @@
 - implementation: file_structure
 - priority: high
 - status: planned
+
+### Feature: enhance_constraint_bash_result_output
+**Enhance ConstraintBashResult model to always include shrunken_output field that captures command output when constraint check fails or succeeds. Shrunken_output is required (not optional) and stores up to 500 characters of truncated stdout/stderr. This provides visibility into why constraints fail by preserving the command output for debugging purposes.**
+
+**Goals:**
+- Add shrunken_output: str field to ConstraintBashResult (required, not optional)
+- Populate shrunken_output with command output truncated to 500 characters
+- Ensure output is captured for both passed and failed constraints
+- Display failed output in ChecksResults markdown rendering
+- Include output in checks_results.json for full constraint result tracking
+- Improve debugging capability by preserving command output in results
+
+#### constraint_output_populated_on_failure
+**Description:** Verify shrunken_output is populated when constraint fails
+**Command:** `grep -q 'shrunken_output=output\|verdict.*False' constraints_tool/constraints_tool/task_features_checker.py && echo 'Output captured on failure' || echo 'Not captured'`
+
+#### constraint_output_rendered_in_markdown
+**Description:** Verify shrunken_output is displayed in ChecksResults markdown
+**Command:** `grep -q 'if result.shrunken_output\|Output:' knowledge_tool/knowledge_tool/src/models/results_model.py && echo 'Output rendered' || echo 'Not rendered'`
+
+#### constraint_shrunken_output_field_exists
+**Description:** Verify ConstraintBashResult has shrunken_output: str field (required, not optional)
+**Command:** `grep -A 3 'class ConstraintBashResult' knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q 'shrunken_output.*str' && echo 'shrunken_output required field' || echo 'Field missing or optional'`
+
+**Metadata:**
+- created_at: 2026-03-14T00:00:00
+- feature_type: enhancement
+- implementation: results_model
+- priority: high
+- status: completed
 
 ### Feature: feature_goals_field
 **Add goals field to Feature model. Feature should have optional goals: List[str] field to track feature objectives. Goals should be rendered in markdown output with Goals section.**
@@ -381,3 +460,88 @@
 - priority: high
 - status: planned
 - depends_on: ['task_toc_includes_constraints']
+
+### Feature: update_iteration_with_features_stats
+**Update Iteration model and task lifecycle tool to track feature constraint validation results. Add features_stats field containing complete feature validation status and failed feature details. FeaturesStats model includes: features_checks (Dict[str, bool] with all task features), failed (Dict[str, FeatureResult] with only features having failed constraints). FeatureResult.constraints_results field is required (Dict, not optional). Display iteration stats every time iteration is added or rendered.**
+
+**Goals:**
+- Create FeaturesStats pydantic model with features_checks and failed Dict fields
+- Add features_stats: Optional[FeaturesStats] field to Iteration model
+- Make FeatureResult.constraints_results field required (Dict, not Optional)
+- Update task_features_checker.py to generate FeaturesStats from ChecksResults
+- Update Iteration.render() to display feature validation stats with pass/fail summary
+- Update task lifecycle tool skill documentation with FeaturesStats schema details
+- Ensure iteration stats display including passed/failed feature counts when rendered
+
+#### constraint_feature_result_constraints_required
+**Description:** Verify FeatureResult.constraints_results field is required (Dict, not Optional)
+**Command:** `grep -A 3 'class FeatureResult' knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q 'constraints_results.*Dict.*Union\|constraints_results.*\.\.\.' && echo 'constraints_results required' || echo 'Still optional'`
+
+#### constraint_features_stats_generated
+**Description:** Verify task_features_checker.py generates FeaturesStats
+**Command:** `grep -q 'generate_features_stats\|FeaturesStats(' constraints_tool/constraints_tool/task_features_checker.py && echo 'Generation implemented' || echo 'Not implemented'`
+
+#### constraint_features_stats_in_iteration
+**Description:** Verify features_stats field exists in Iteration model
+**Command:** `grep -q 'features_stats.*FeaturesStats' knowledge_tool/knowledge_tool/src/models/task_model.py && echo 'Field in Iteration' || echo 'Not found'`
+
+#### constraint_features_stats_model_exists
+**Description:** Verify FeaturesStats model exists with features_checks (Dict[str,bool]) and failed (Dict[str,FeatureResult]) fields
+**Command:** `grep -q 'class FeaturesStats' knowledge_tool/knowledge_tool/src/models/results_model.py && grep -q 'features_checks.*Dict' knowledge_tool/knowledge_tool/src/models/results_model.py && echo 'FeaturesStats with proper fields' || echo 'Model incomplete'`
+
+#### constraint_features_stats_rendered
+**Description:** Verify Iteration.render() displays features_stats
+**Command:** `grep -q 'Feature Constraint Validation\|features_stats' knowledge_tool/knowledge_tool/src/models/task_model.py && echo 'Rendering implemented' || echo 'Not implemented'`
+
+#### constraint_skill_documentation_updated
+**Description:** Verify task lifecycle tool skill documents features_stats
+**Command:** `grep -q 'features_stats.*Feature Constraint\|Iteration.*features_stats' skills/task-lifecycle-tool/SKILL.md && echo 'Skill docs updated' || echo 'Not updated'`
+
+#### constraint_stats_displayed_on_iteration
+**Description:** Verify iteration contains features_stats in task document
+**Command:** `grep -q 'iteration_1' task.json && jq '.iterations.iteration_1.features_stats' task.json | grep -q 'features_checks' && echo 'Stats in iteration' || echo 'Not in iteration'`
+
+**Metadata:**
+- created_at: 2026-03-14T00:00:00
+- feature_type: enhancement
+- implementation: task_model, results_model, task_features_checker, skills
+- priority: high
+- status: completed
+
+## Iterations
+
+### iteration_1
+
+**Metadata:**
+
+- created_at: 2026-03-14T00:00:00
+- description: Enhanced features with FeaturesStats tracking and constraint validation requirements
+
+**Code Stats:**
+- Added lines: 287
+- Removed lines: 12
+- Files changed: 8
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 6/9 features passed
+- **Failed:** 3 features with constraint violations
+
+**Feature Status:**
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- feature_goals_field: ✓ PASS
+- forbid_task_status_downgrade: ✓ PASS
+- render_spec_features_in_task: ✗ FAIL
+- task_default_render_toc: ✓ PASS
+- task_features_checker_tool: ✗ FAIL
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✗ FAIL
+
+**Failed Feature Details:**
+
+**render_spec_features_in_task:**
+
+**task_features_checker_tool:**
+
+**task_toc_rendering_and_links:**

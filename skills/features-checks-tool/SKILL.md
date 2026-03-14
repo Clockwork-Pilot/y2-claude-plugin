@@ -16,6 +16,18 @@ This skill validates feature constraints embedded in task documents:
 - Aggregate results into a ChecksResults document
 - Track constraint execution history and outcomes with full output details
 
+## ⚠️ Requirement: Constraint Checks Upon Work Completion
+
+**CODING AGENTS MUST RUN CONSTRAINT CHECKS WHEN TASK WORK IS COMPLETED**
+
+Before marking an iteration as complete or merging code changes:
+1. Execute constraint checks on all or specific features
+2. Verify **ALL feature constraints PASS**
+3. Address any failing constraints before completion
+4. Generate ChecksResults document with validation proof
+
+This ensures code changes meet feature requirements and constraints are satisfied.
+
 ## How It Works
 
 The skill uses task_features_checker.py to validate constraints from task documents:
@@ -54,6 +66,20 @@ Executor reads:
 ```
 
 ## Usage
+
+### When to Run Constraint Checks
+
+**REQUIRED scenarios:**
+- ✅ After completing implementation work on any task
+- ✅ Before marking iteration as complete
+- ✅ When merging code changes that affect features
+- ✅ When validating feature requirements are met
+- ✅ Before considering work "done" on any iteration
+
+**Result expectation:**
+- All constraints for targeted features must PASS
+- If any constraint fails, fix the issue and re-run checks
+- Failed constraints block iteration/merge completion
 
 ### Command Pattern
 ```bash
@@ -199,6 +225,37 @@ Results are captured in a ChecksResults document with:
 }
 ```
 
+## Interpreting Constraint Results
+
+### Success (PASS) ✅
+```
+→ Executing: constraint_name
+   Result: ✓ PASS
+```
+Constraint passed. Feature requirement is met.
+
+### Failure (FAIL) ❌
+```
+→ Executing: constraint_name
+   Result: ✗ FAIL
+   Output: (reason why it failed)
+```
+**Action required**: Fix the code/implementation and re-run checks.
+
+### Understanding Failed Output
+Failed constraint output is truncated to 500 characters in `shrunken_output` field.
+For full output or debugging:
+1. Run constraint manually: `{constraint_cmd}`
+2. Check `checks_results.json` for captured output
+3. Read task.md constraint description for requirements
+
+### Addressing Failures
+1. Read constraint description - understand what's required
+2. Run the constraint command manually to debug
+3. Fix the underlying issue in code
+4. Re-run `task_features_checker.py` to validate
+5. Repeat until all constraints pass
+
 ## Notes
 
 - Bash constraints execute immediately with `$PROJECT_ROOT` substitution support
@@ -208,3 +265,4 @@ Results are captured in a ChecksResults document with:
 - Results can be rendered to markdown via knowledge_tool skill with patch_knowledge_document.py
 - Feature filtering with --features allows selective constraint validation
 - ChecksResults output includes metadata about substitutions and execution details
+- **Constraint validation is MANDATORY before iteration completion** - coding agents must verify all constraints pass

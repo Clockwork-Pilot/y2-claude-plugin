@@ -20,7 +20,7 @@ from models import (
     Task, Feature,
     ConstraintBash, ConstraintPrompt,
     ConstraintBashResult, ConstraintPromptResult,
-    FeatureResult, ChecksResults
+    FeatureResult, ChecksResults, FeaturesStats
 )
 
 # Import patch_knowledge_document for protected file updates
@@ -159,11 +159,56 @@ def check_feature(feature: Feature) -> FeatureResult:
     )
 
 
+def generate_features_stats(
+    task: Task,
+    checks_results: ChecksResults
+) -> FeaturesStats:
+    """Generate FeaturesStats from ChecksResults for iteration tracking.
+
+    Args:
+        task: Task document containing all features
+        checks_results: ChecksResults with constraint execution results
+
+    Returns:
+        FeaturesStats with features_checks status and failed features details
+    """
+    # Initialize features_checks with all features set to True (passing)
+    features_checks = {}
+    for feature_id in task.spec.features.keys():
+        features_checks[feature_id] = True
+
+    # Build failed features dict and update features_checks for failures
+    failed_features = {}
+    if checks_results.features_results:
+        for feature_id, feature_result in checks_results.features_results.items():
+            if feature_result.constraints_results:
+                # Check if any constraint failed
+                has_failure = False
+                for constraint_id, result in feature_result.constraints_results.items():
+                    # Check if constraint failed (bash has verdict bool, prompt has verdict str)
+                    if isinstance(result, ConstraintBashResult) and not result.verdict:
+                        has_failure = True
+                        break
+                    elif isinstance(result, ConstraintPromptResult) and not result.verdict:
+                        has_failure = True
+                        break
+
+                # Mark feature as failed and add to failed dict
+                if has_failure:
+                    features_checks[feature_id] = False
+                    failed_features[feature_id] = feature_result
+
+    return FeaturesStats(
+        features_checks=features_checks,
+        failed=failed_features
+    )
+
+
 def check_task_features(
     task_json_path: str,
     feature_ids: Optional[list] = None,
     output_checks_path: Optional[str] = None
-) -> ChecksResults:
+) -> tuple[ChecksResults, Optional[FeaturesStats]]:
     """Execute constraints for features in a Task document.
 
     Workflow:
@@ -202,7 +247,7 @@ def check_task_features(
     # Extract features from spec
     if not task.spec.features:
         print("⚠️  No features found in task spec")
-        return ChecksResults.create_default()
+        return ChecksResults.create_default(), None
 
     # Filter features if specified
     features_to_check = task.spec.features
@@ -213,7 +258,7 @@ def check_task_features(
         }
         if not features_to_check:
             print(f"⚠️  No matching features found for: {feature_ids}")
-            return ChecksResults.create_default()
+            return ChecksResults.create_default(), None
 
     # Execute constraints for each feature
     features_results = {}
@@ -229,6 +274,9 @@ def check_task_features(
     checks_results = ChecksResults(
         features_results=features_results if features_results else None
     )
+
+    # Generate FeaturesStats for iteration tracking
+    features_stats = generate_features_stats(task, checks_results)
 
     # Save ChecksResults if specified
     if output_checks_path:
@@ -262,7 +310,7 @@ def check_task_features(
             else:
                 print(f"✓ Results saved to {output_checks_path}")
 
-    return checks_results
+    return checks_results, features_stats
 
 
 def main():
@@ -316,7 +364,7 @@ Examples:
 
     try:
         # Execute constraint checks
-        results = check_task_features(
+        checks_results, features_stats = check_task_features(
             args.task_path,
             feature_ids=feature_ids,
             output_checks_path=args.output_checks_path
@@ -324,15 +372,27 @@ Examples:
 
         # Print results summary
         print("\n📊 Execution Summary:")
-        if results.features_results:
+        if checks_results.features_results:
             total_constraints = 0
-            for feature_id, feature_result in results.features_results.items():
+            for feature_id, feature_result in checks_results.features_results.items():
                 constraint_count = len(feature_result.constraints_results or {})
                 total_constraints += constraint_count
                 print(f"  {feature_id}: {constraint_count} constraints")
             print(f"Total: {total_constraints} constraints executed")
         else:
             print("  No results")
+
+        # Print features stats summary
+        if features_stats:
+            print("\n📈 Feature Validation Stats:")
+            passing = sum(1 for v in features_stats.features_checks.values() if v)
+            failing = sum(1 for v in features_stats.features_checks.values() if not v)
+            total = len(features_stats.features_checks)
+            print(f"  Overall: {passing}/{total} features passed")
+            if failing > 0:
+                print(f"  Failed: {failing} features")
+                for feature_id in sorted(features_stats.failed.keys()):
+                    print(f"    - {feature_id}")
 
         print("\n✓ Task features check completed successfully")
         return 0
