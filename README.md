@@ -52,12 +52,10 @@ git config --global commit.gpgsign true
 git config --global --list
 
 # Inside of container - init specify for project
-cd /project && \
-  specify init --here --ai claude
+specify init --here --ai claude
 
 # Inside of container - run claude
-cd /project && \
-  source .venv/bin/activate &&   claude --model claude-haiku-4-5 --debug --plugin-dir /project
+source .venv/bin/activate && claude --model claude-haiku-4-5 --plugin-dir /project
 ```
 
 ## Workflow

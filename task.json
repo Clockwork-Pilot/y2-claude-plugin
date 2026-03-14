@@ -2,7 +2,7 @@
   "type": "Task",
   "model_version": 2,
   "id": "task_1",
-  "status": "planning",
+  "status": "executing",
   "spec": {
     "type": "Spec",
     "model_version": 1,
@@ -23,11 +23,11 @@
         "type": "Feature",
         "model_version": 1,
         "id": "forbid_task_status_downgrade",
-        "description": "Prevent Task status from downgrading from executing/failed/succeed back to planning. Implementation: Use Edit/Write hooks in PLUGIN_ROOT/hooks/ directory to validate Task knowledge document changes. Verify that status transitions are allowed (forward only) and reject attempts to change from executing/failed/succeed states back to planning.",
+        "description": "Prevent Task status changes once in executing state. Implementation: Use validation in PLUGIN_ROOT/hooks/ or patch_knowledge_document to ensure: 1) Status can only transition: planning \u2192 executing, 2) Once in executing state, no further status changes are allowed (locked state), 3) Reject any attempts to manually change status from executing/failed/succeed with clear error messages",
         "constraints": {
           "constraint_status_validation_exists": {
             "id": "constraint_status_validation_exists",
-            "cmd": "grep -r 'forbid.*downgrade\\|status.*validation\\|executing.*planning\\|failed.*planning\\|succeed.*planning' /home/yaroslav/git/y2-claude-plugin/hooks/ && echo 'Hook validation found'",
+            "cmd": "grep -r 'forbid.*downgrade\\|status.*validation\\|executing.*planning\\|failed.*planning\\|succeed.*planning' $PROJECT_ROOT/hooks/ && echo 'Hook validation found'",
             "description": "Verify status validation code exists in hooks directory",
             "scope": "local"
           },
@@ -36,6 +36,12 @@
             "prompt": "Review the Edit/Write hooks implementation in PLUGIN_ROOT/hooks/ to ensure it properly prevents Task status downgrades. Verify: 1) Hooks intercept knowledge document changes, 2) Status downgrade attempts (executing->planning, failed->planning, succeed->planning) are rejected with clear error messages, 3) Edge cases are handled, 4) Hook integrates with knowledge tool patch mechanism",
             "verdict_expect_rule": "PASS",
             "description": "Code review of hook-based status downgrade prevention logic",
+            "scope": "local"
+          },
+          "constraint_status_locked_in_executing": {
+            "id": "constraint_status_locked_in_executing",
+            "cmd": "python3 knowledge_tool/knowledge_tool/patch_knowledge_document.py task.json '[{\"op\": \"replace\", \"path\": \"/status\", \"value\": \"succeed\"}]' 2>&1 | grep -q 'locked\\|not allowed' && echo '\u2713 Status locked' || echo '\u2717 Locked check failed'",
+            "description": "Verify status is locked when task in executing state",
             "scope": "local"
           }
         },
@@ -55,13 +61,13 @@
         "constraints": {
           "constraint_feature_section_in_markdown": {
             "id": "constraint_feature_section_in_markdown",
-            "cmd": "grep -q '## Features\\|### .*:' /home/yaroslav/git/y2-claude-plugin/task.md && echo '\u2713 Features section found in markdown' || echo '\u26a0 Features section not found'",
+            "cmd": "grep -q '## Features\\|### .*:' $PROJECT_ROOT/task.md && echo '\u2713 Features section found in markdown' || echo '\u26a0 Features section not found'",
             "description": "Verify that 'Features' section is rendered in task.md markdown output",
             "scope": "local"
           },
           "constraint_constraint_details_in_markdown": {
             "id": "constraint_constraint_details_in_markdown",
-            "cmd": "grep -q 'Bash\\|Prompt\\|constraint\\|cmd\\|prompt' /home/yaroslav/git/y2-claude-plugin/task.md && echo '\u2713 Constraint details found' || echo '\u26a0 Constraint details not found'",
+            "cmd": "grep -q 'Bash\\|Prompt\\|constraint\\|cmd\\|prompt' $PROJECT_ROOT/task.md && echo '\u2713 Constraint details found' || echo '\u26a0 Constraint details not found'",
             "description": "Verify that constraint details (bash commands, prompt validations) are rendered in markdown",
             "scope": "local"
           },
@@ -92,38 +98,32 @@
         "constraints": {
           "constraint_tool_exists": {
             "id": "constraint_tool_exists",
-            "cmd": "test -f /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 tool exists' || echo '\u2717 tool missing'",
+            "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 tool exists' || echo '\u2717 tool missing'",
             "description": "Verify task_features_checker.py exists in constraints_tool/",
             "scope": "local"
           },
           "constraint_tool_accepts_task_path": {
             "id": "constraint_tool_accepts_task_path",
-            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'task' && echo '\u2713 accepts task path' || echo '\u2717 help missing'",
+            "cmd": "python3 $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'task' && echo '\u2713 accepts task path' || echo '\u2717 help missing'",
             "description": "Verify tool accepts task document path argument",
             "scope": "local"
           },
           "constraint_tool_accepts_features_arg": {
             "id": "constraint_tool_accepts_features_arg",
-            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'features\\|--features' && echo '\u2713 --features arg supported' || echo '\u2717 --features arg missing'",
+            "cmd": "python3 $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'features\\|--features' && echo '\u2713 --features arg supported' || echo '\u2717 --features arg missing'",
             "description": "Verify tool accepts optional --features argument to filter feature IDs",
             "scope": "local"
           },
           "constraint_tool_accepts_output_checks_path_arg": {
             "id": "constraint_tool_accepts_output_checks_path_arg",
-            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'output\\|checks\\|--output-checks-path' && echo '\u2713 --output-checks-path arg supported' || echo '\u2717 --output-checks-path arg missing'",
+            "cmd": "python3 $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'output\\|checks\\|--output-checks-path' && echo '\u2713 --output-checks-path arg supported' || echo '\u2717 --output-checks-path arg missing'",
             "description": "Verify tool accepts optional --output-checks-path argument for ChecksResults file path",
             "scope": "local"
           },
           "constraint_tool_returns_checks_results": {
             "id": "constraint_tool_returns_checks_results",
-            "cmd": "python3 /home/yaroslav/git/y2-claude-plugin/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'ChecksResults\\|results\\|output' && echo '\u2713 returns results' || echo '\u26a0 results behavior'",
+            "cmd": "python3 $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py --help 2>&1 | grep -q 'ChecksResults\\|results\\|output' && echo '\u2713 returns results' || echo '\u26a0 results behavior'",
             "description": "Verify tool returns results in ChecksResults model format",
-            "scope": "local"
-          },
-          "constraint_tool_execution_on_task": {
-            "id": "constraint_tool_execution_on_task",
-            "cmd": "python3 constraints_tool/constraints_tool/task_features_checker.py task.json 2>&1 | grep -q 'forbid_task_status_downgrade\\|render_spec_features_in_task\\|task_features_checker_tool\\|constraint\\|Feature' && echo '\u2713 executes on task' || echo '\u26a0 execution check'",
-            "description": "Verify tool can execute constraints from task.json features and display results",
             "scope": "local"
           },
           "constraint_tool_saves_results_to_file": {
@@ -137,6 +137,18 @@
             "prompt": "Review task_features_checker.py implementation. Verify: 1) Accepts task document path and optional --features and --output-checks-path arguments, 2) Loads Task model and extracts spec.features, 3) Filters features by --features list if provided, 4) Executes ConstraintBash and ConstraintPrompt for each feature, 5) Creates ChecksResults model with feature_results containing constraint outcomes, 6) Saves ChecksResults to file path specified in --output-checks-path if provided using patch_knowledge_document, 7) Returns ChecksResults object, 8) Similar structure to constraints_executor.py, 9) Proper error handling for missing files/invalid features/save failures",
             "verdict_expect_rule": "PASS",
             "description": "Code review of task_features_checker.py tool including ChecksResults integration",
+            "scope": "local"
+          },
+          "constraint_recursive_execution_prevention": {
+            "id": "constraint_recursive_execution_prevention",
+            "cmd": "grep -q '_check_recursive_execution' constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 Recursive execution prevention found' || echo '\u2717 Missing'",
+            "description": "Verify recursive execution detection is implemented",
+            "scope": "local"
+          },
+          "constraint_project_root_substitution": {
+            "id": "constraint_project_root_substitution",
+            "cmd": "grep -q '_substitute_project_root' constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 PROJECT_ROOT substitution found' || echo '\u2717 Missing'",
+            "description": "Verify PROJECT_ROOT placeholder substitution is implemented",
             "scope": "local"
           }
         },
@@ -152,8 +164,303 @@
           "returns_model": "ChecksResults",
           "output_argument": "--output-checks-path"
         }
+      },
+      "feature_goals_field": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "feature_goals_field",
+        "description": "Add goals field to Feature model. Feature should have optional goals: List[str] field to track feature objectives. Goals should be rendered in markdown output with Goals section.",
+        "goals": [
+          "Add optional goals field to Feature model",
+          "Render goals in markdown output",
+          "Include goals in table of contents"
+        ],
+        "constraints": {
+          "constraint_goals_field_exists": {
+            "id": "constraint_goals_field_exists",
+            "cmd": "grep -q 'goals.*List\\|goals.*list\\[str\\]' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Goals field exists' || echo '\u2717 Goals field missing'",
+            "description": "Verify goals field is defined in Feature model",
+            "scope": "local"
+          },
+          "constraint_goals_rendered_in_markdown": {
+            "id": "constraint_goals_rendered_in_markdown",
+            "cmd": "grep -q '## Goals\\|Goals section' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Goals rendering found' || echo '\u2717 Goals rendering missing'",
+            "description": "Verify goals are rendered in markdown output",
+            "scope": "local"
+          },
+          "constraint_goals_in_toc": {
+            "id": "constraint_goals_in_toc",
+            "cmd": "grep -q 'Goals.*toc\\|toc.*Goals\\|\\[Goals\\]' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Goals in TOC found' || echo '\u2717 Goals in TOC missing'",
+            "description": "Verify goals are included in table of contents",
+            "scope": "local"
+          },
+          "constraint_goals_field_in_task": {
+            "id": "constraint_goals_field_in_task",
+            "cmd": "grep -q '\"goals\"' task.json && echo '\u2713 Goals in task.json' || echo '\u2717 Goals not in task.json'",
+            "description": "Verify goals field appears in task.json features",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "model_enhancement",
+          "implementation": "feature_model",
+          "priority": "high",
+          "status": "planned",
+          "depends_on": [
+            "task_features_checker_tool"
+          ]
+        }
+      },
+      "task_default_render_toc": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "task_default_render_toc",
+        "description": "Task model should default opts.render_toc to True when opts is not specified. If opts is not provided or opts.render_toc is not explicitly set to False, the Task should render its table of contents by default. This improves usability by making TOC rendering the default behavior.",
+        "goals": [
+          "Set render_toc=True by default when opts is not specified",
+          "Allow explicit override with opts.render_toc=False",
+          "Maintain backward compatibility with existing opts configurations",
+          "Improve Task markdown rendering with TOC by default"
+        ],
+        "constraints": {
+          "constraint_default_toc_when_opts_missing": {
+            "id": "constraint_default_toc_when_opts_missing",
+            "cmd": "grep -q 'if not self.opts\\|self.opts is None' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Default opts handling found' || echo '\u2717 Missing'",
+            "description": "Verify Task checks if opts is None/missing to set defaults",
+            "scope": "local"
+          },
+          "constraint_render_toc_default_true": {
+            "id": "constraint_render_toc_default_true",
+            "cmd": "grep -q 'render_toc.*True\\|Opts.*render_toc.*True' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Default render_toc=True found' || echo '\u2717 Missing'",
+            "description": "Verify render_toc defaults to True when opts not specified",
+            "scope": "local"
+          },
+          "constraint_explicit_false_respected": {
+            "id": "constraint_explicit_false_respected",
+            "cmd": "grep -q 'render_toc.*False\\|not.*render_toc' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Explicit False handling found' || echo '\u2717 Missing'",
+            "description": "Verify explicit opts.render_toc=False is respected",
+            "scope": "local"
+          },
+          "constraint_toc_rendered_by_default": {
+            "id": "constraint_toc_rendered_by_default",
+            "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Doc; spec = Spec(version=1, description=Doc(id='d', label='L', metadata={})); t = Task(id='t1', spec=spec, opts=None); output = t.render(); print('\u2713 TOC rendered' if 'Table of Contents' in output else '\u2717 TOC missing')\" 2>/dev/null",
+            "description": "Verify Task renders TOC by default when opts is None",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "enhancement",
+          "implementation": "task_model",
+          "priority": "medium",
+          "status": "planned"
+        }
+      },
+      "task_toc_includes_constraints": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "task_toc_includes_constraints",
+        "description": "Task's table of contents should include constraints from features. When rendering TOC, each feature's constraints should be listed as sub-items. This provides complete visibility into all validation requirements in the task document.",
+        "goals": [
+          "Include feature constraints in Task TOC",
+          "Display constraints nested under their parent features",
+          "Show constraint IDs and descriptions in TOC",
+          "Improve navigation for complex task specifications"
+        ],
+        "constraints": {
+          "constraint_toc_includes_constraints": {
+            "id": "constraint_toc_includes_constraints",
+            "cmd": "grep -q 'constraint.*render_toc\\|constraints.*in.*toc' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Constraint rendering in TOC found' || echo '\u2717 Missing'",
+            "description": "Verify Task._generate_toc() includes constraints from features",
+            "scope": "local"
+          },
+          "constraint_constraints_nested_in_toc": {
+            "id": "constraint_constraints_nested_in_toc",
+            "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Doc, Feature; spec = Spec(version=1, description=Doc(id='d', label='L', metadata={}), features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('\u2713 Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '\u2717 No constraints in TOC')\" 2>/dev/null",
+            "description": "Verify constraints appear as nested items in feature TOC entries",
+            "scope": "local"
+          },
+          "constraint_constraints_visible_in_markdown": {
+            "id": "constraint_constraints_visible_in_markdown",
+            "cmd": "grep -q 'constraint.*toc\\|Constraint' task.md && echo '\u2713 Constraints visible in markdown' || echo '\u2717 Not visible'",
+            "description": "Verify constraints are rendered in task.md TOC",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "enhancement",
+          "implementation": "task_model",
+          "priority": "medium",
+          "status": "planned",
+          "depends_on": [
+            "task_default_render_toc"
+          ]
+        }
+      },
+      "task_toc_rendering_and_links": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "task_toc_rendering_and_links",
+        "description": "Verify Task TOC is rendered correctly with functional links. Task markdown output should: 1) Include proper TOC section with 'Table of Contents' header, 2) Generate correct markdown anchors for all sections, 3) Links in TOC should match actual heading anchors, 4) Handle special characters and spaces correctly in anchors.",
+        "goals": [
+          "Ensure TOC section is properly formatted",
+          "Verify all TOC links have matching anchors",
+          "Test special character handling in anchors",
+          "Validate markdown TOC syntax"
+        ],
+        "constraints": {
+          "constraint_toc_section_exists": {
+            "id": "constraint_toc_section_exists",
+            "cmd": "grep -q '## Table of Contents' task.md && echo '\u2713 TOC section found' || echo '\u2717 Missing'",
+            "description": "Verify 'Table of Contents' section header exists in task.md",
+            "scope": "local"
+          },
+          "constraint_toc_has_entries": {
+            "id": "constraint_toc_has_entries",
+            "cmd": "grep -A 20 '## Table of Contents' task.md | grep -q '^-' && echo '\u2713 TOC entries found' || echo '\u2717 No entries'",
+            "description": "Verify TOC contains markdown list entries (lines starting with -)",
+            "scope": "local"
+          },
+          "constraint_toc_links_format": {
+            "id": "constraint_toc_links_format",
+            "cmd": "grep '## Table of Contents' -A 20 task.md | grep -q '\\[.*\\](#' && echo '\u2713 Links formatted correctly' || echo '\u2717 Bad format'",
+            "description": "Verify TOC links follow markdown format [text](#anchor)",
+            "scope": "local"
+          },
+          "constraint_anchor_sections_exist": {
+            "id": "constraint_anchor_sections_exist",
+            "cmd": "python3 constraints_scripts/validate_toc_links.py task.md",
+            "description": "Verify all TOC links have corresponding heading anchors",
+            "scope": "local"
+          },
+          "constraint_toc_indentation": {
+            "id": "constraint_toc_indentation",
+            "cmd": "grep '## Table of Contents' -A 50 task.md | grep -E '^  -|^    -' | wc -l | grep -qE '[1-9]' && echo '\u2713 Proper nesting found' || echo '\u2717 Missing'",
+            "description": "Verify TOC has proper indentation for nested items",
+            "scope": "local"
+          },
+          "constraint_toc_implementation_review": {
+            "id": "constraint_toc_implementation_review",
+            "prompt": "Review the Task TOC rendering implementation in task_model.py. Verify: 1) _generate_toc() generates valid markdown links with proper anchors, 2) Anchors match heading formats (lowercase, spaces\u2192hyphens), 3) Special characters are handled correctly, 4) Nested items are properly indented with spaces, 5) Links use consistent anchor generation, 6) TOC includes all sections (Specification, Features, Iterations, Constraints)",
+            "verdict_expect_rule": "PASS",
+            "description": "Code review of Task TOC generation logic",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "quality",
+          "implementation": "task_model",
+          "priority": "high",
+          "status": "planned",
+          "depends_on": [
+            "task_toc_includes_constraints"
+          ]
+        }
+      },
+      "constraint_scripts_directory": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "constraint_scripts_directory",
+        "description": "Create and maintain constraints_scripts/ directory for reusable constraint validation scripts. This directory stores bash, python, and other scripts that can be referenced by constraint definitions. Provides centralized location for constraint script management and reusability across multiple features. Example: validate_toc_links.py validates task document TOC links.",
+        "goals": [
+          "Establish constraints_scripts/ directory for reusable scripts",
+          "Document constraint script conventions",
+          "Enable ${PROJECT_ROOT} substitution in script paths",
+          "Support modular constraint validation"
+        ],
+        "constraints": {
+          "constraint_scripts_directory_exists": {
+            "id": "constraint_scripts_directory_exists",
+            "cmd": "test -d constraints_scripts && echo '\u2713 constraints_scripts/ directory exists' || echo '\u2717 Missing'",
+            "description": "Verify constraints_scripts/ directory exists",
+            "scope": "local"
+          },
+          "constraint_scripts_readme_exists": {
+            "id": "constraint_scripts_readme_exists",
+            "cmd": "test -f constraints_scripts/README.md && echo '\u2713 README.md exists' || echo '\u2717 Missing'",
+            "description": "Verify constraints_scripts/README.md documentation exists",
+            "scope": "local"
+          },
+          "constraint_scripts_documented": {
+            "id": "constraint_scripts_documented",
+            "cmd": "grep -q 'constraint.*script\\|script.*location' constraints_scripts/README.md && echo '\u2713 Documentation found' || echo '\u2717 Incomplete'",
+            "description": "Verify constraints_scripts/ purpose is documented",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "infrastructure",
+          "implementation": "file_structure",
+          "priority": "high",
+          "status": "planned"
+        }
+      },
+      "constraint_rendering_capability": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "constraint_rendering_capability",
+        "description": "Make ConstraintBash and ConstraintPrompt classes renderable with render() and render_toc() methods. Enable constraints to be rendered as markdown independently and integrated into parent objects' TOC generation. This improves modularity and allows constraints to manage their own representation.",
+        "goals": [
+          "Add render() method to ConstraintBash and ConstraintPrompt",
+          "Add render_toc() method to both constraint types",
+          "Display constraint metadata (type, command/prompt, scope)",
+          "Update Feature.render_toc() to use constraint rendering"
+        ],
+        "constraints": {
+          "constraint_bash_render_method": {
+            "id": "constraint_bash_render_method",
+            "cmd": "grep -q 'class ConstraintBash' knowledge_tool/knowledge_tool/src/models/constraints_model.py && grep -q 'def render.*include_toc' knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo '\u2713 ConstraintBash.render() exists' || echo '\u2717 Missing'",
+            "description": "Verify ConstraintBash has render() method",
+            "scope": "local"
+          },
+          "constraint_prompt_render_method": {
+            "id": "constraint_prompt_render_method",
+            "cmd": "grep -A 50 'class ConstraintPrompt' knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'def render' && echo '\u2713 ConstraintPrompt.render() exists' || echo '\u2717 Missing'",
+            "description": "Verify ConstraintPrompt has render() method",
+            "scope": "local"
+          },
+          "constraint_bash_render_toc_method": {
+            "id": "constraint_bash_render_toc_method",
+            "cmd": "grep -A 100 'class ConstraintBash' knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'def render_toc' && echo '\u2713 ConstraintBash.render_toc() exists' || echo '\u2717 Missing'",
+            "description": "Verify ConstraintBash has render_toc() method",
+            "scope": "local"
+          },
+          "constraint_prompt_render_toc_method": {
+            "id": "constraint_prompt_render_toc_method",
+            "cmd": "grep -A 150 'class ConstraintPrompt' knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'def render_toc' && echo '\u2713 ConstraintPrompt.render_toc() exists' || echo '\u2717 Missing'",
+            "description": "Verify ConstraintPrompt has render_toc() method",
+            "scope": "local"
+          },
+          "constraint_feature_uses_render_toc": {
+            "id": "constraint_feature_uses_render_toc",
+            "cmd": "grep -q 'constraint.render_toc\\|render_toc()' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Feature uses constraint.render_toc()' || echo '\u2717 Missing'",
+            "description": "Verify Feature.render_toc() uses constraint rendering methods",
+            "scope": "local"
+          },
+          "constraint_rendering_displays_type": {
+            "id": "constraint_rendering_displays_type",
+            "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='echo hi', description='test', scope='local'); output = c.render(); print('\u2713 Constraint type displayed' if 'Type:' in output else '\u2717 Missing type')\" 2>/dev/null",
+            "description": "Verify constraint rendering displays type information",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-13T00:00:00",
+          "feature_type": "architecture",
+          "implementation": "constraints_model, feature_model",
+          "priority": "high",
+          "status": "planned"
+        }
       }
     },
     "metadata": {}
+  },
+  "opts": {
+    "render_priority": false,
+    "render_toc": true
   }
 }

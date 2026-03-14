@@ -12,6 +12,7 @@ PLUGIN_ROOT = Path(__file__).parent.resolve()
 # Consuming project root (when used as a plugin, this is the target project)
 # Defaults to current working directory, can be overridden by env var
 CONSUMING_PROJECT_ROOT = Path(os.getenv("CLAUDE_PROJECT_ROOT", os.getcwd())).resolve()
+PROJECT_ROOT = CONSUMING_PROJECT_ROOT
 
 # Use consuming project's .claude directory for logs
 CLAUDE_DIR = CONSUMING_PROJECT_ROOT / ".claude"
