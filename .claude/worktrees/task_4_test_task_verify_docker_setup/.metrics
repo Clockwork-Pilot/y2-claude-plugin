@@ -1,0 +1,134 @@
+{
+  "TASK_PLAN.DEFINE": {
+    "problem_statement": "Metrics collection can block when multiple phases run concurrently",
+    "requirements_identified": 4,
+    "stakeholders_consulted": 2,
+    "problem_clarity": 8.5
+  },
+  "TASK_PLAN.REFINE_CONTEXT": {
+    "scope_clarified": true,
+    "constraints_identified": 3,
+    "edge_cases_documented": 8,
+    "context_score": 9.0
+  },
+  "TASK_PLAN.DESIGN": {
+    "architectural_components": 5,
+    "interfaces_designed": 3,
+    "algorithms_specified": 2,
+    "design_review_score": 8.8
+  },
+  "TASK_PLAN.DECOMPOSE": {
+    "subtasks_created": 8,
+    "estimated_hours": 12,
+    "task_breakdown_score": 9.1
+  },
+  "EXEC_EVAL.TEST_PLAN": {
+    "test_cases_planned": 18,
+    "concurrency_scenarios": 6,
+    "stress_test_targets": 4,
+    "coverage_target": 90,
+    "coverage_percent": 71.43,
+    "coverage_summary": {
+      "overall": 71.43,
+      "files": 2,
+      "best_coverage": 75.0,
+      "worst_coverage": 66.67,
+      "phase": "EXEC_EVAL.TEST_PLAN",
+      "per_file": {
+        "async_metrics_collector.py": {
+          "covered_lines": 120,
+          "total_lines": 160,
+          "coverage_percent": 75.0,
+          "branch_coverage": 0.0
+        },
+        "lock_free_queue.py": {
+          "covered_lines": 80,
+          "total_lines": 120,
+          "coverage_percent": 66.67,
+          "branch_coverage": 0.0
+        }
+      }
+    }
+  },
+  "EXEC_EVAL.CODING": {
+    "lines_of_code": 680,
+    "modules_implemented": 4,
+    "functions_implemented": 16,
+    "coverage_percent": 95.59,
+    "coverage_summary": {
+      "overall": 95.59,
+      "files": 4,
+      "best_coverage": 97.22,
+      "worst_coverage": 93.75,
+      "phase": "EXEC_EVAL.CODING",
+      "per_file": {
+        "async_metrics_collector.py": {
+          "covered_lines": 210,
+          "total_lines": 220,
+          "coverage_percent": 95.45,
+          "branch_coverage": 0.0
+        },
+        "lock_free_queue.py": {
+          "covered_lines": 175,
+          "total_lines": 180,
+          "coverage_percent": 97.22,
+          "branch_coverage": 0.0
+        },
+        "thread_pool_executor.py": {
+          "covered_lines": 115,
+          "total_lines": 120,
+          "coverage_percent": 95.83,
+          "branch_coverage": 0.0
+        },
+        "metrics_aggregation.py": {
+          "covered_lines": 150,
+          "total_lines": 160,
+          "coverage_percent": 93.75,
+          "branch_coverage": 0.0
+        }
+      }
+    }
+  },
+  "EXEC_EVAL.TESTING": {
+    "tests_executed": 18,
+    "tests_passed": 18,
+    "tests_failed": 0,
+    "stress_test_passed": true,
+    "concurrent_stress_threads": 256,
+    "metrics_collected_correctly": "All scenarios",
+    "coverage_percent": 99.71,
+    "coverage_summary": {
+      "overall": 99.71,
+      "files": 4,
+      "best_coverage": 100.0,
+      "worst_coverage": 99.09,
+      "phase": "EXEC_EVAL.TESTING",
+      "per_file": {
+        "async_metrics_collector.py": {
+          "covered_lines": 218,
+          "total_lines": 220,
+          "coverage_percent": 99.09,
+          "branch_coverage": 0.0
+        },
+        "lock_free_queue.py": {
+          "covered_lines": 180,
+          "total_lines": 180,
+          "coverage_percent": 100.0,
+          "branch_coverage": 0.0
+        },
+        "thread_pool_executor.py": {
+          "covered_lines": 120,
+          "total_lines": 120,
+          "coverage_percent": 100.0,
+          "branch_coverage": 0.0
+        },
+        "metrics_aggregation.py": {
+          "covered_lines": 160,
+          "total_lines": 160,
+          "coverage_percent": 100.0,
+          "branch_coverage": 0.0
+        }
+      }
+    }
+  }
+}

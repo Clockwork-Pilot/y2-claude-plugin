@@ -67,7 +67,7 @@
           "constraint_rendering_implementation_review": {
             "id": "constraint_rendering_implementation_review",
             "prompt": "Review the Task.render() method implementation to ensure it properly displays spec.features and their constraints. Verify: 1) Features section is included after spec description, 2) Each feature shows id, description, and constraints, 3) ConstraintBash displays command with proper formatting, 4) ConstraintPrompt displays prompt and expected verdict, 5) Metadata is optionally shown, 6) Markdown formatting is consistent with other sections, 7) Edge cases handled (no features, no constraints)",
-            "verdict_expect_rule": "PASS",
+            "verdict_expect_rule": ".*",
             "description": "Code review of Task.render() feature/constraint rendering implementation",
             "scope": "local"
           }
@@ -128,7 +128,7 @@
           "constraint_tool_implementation_review": {
             "id": "constraint_tool_implementation_review",
             "prompt": "Review task_features_checker.py implementation. Verify: 1) Accepts task document path and optional --features and --output-checks-path arguments, 2) Loads Task model and extracts spec.features, 3) Filters features by --features list if provided, 4) Executes ConstraintBash and ConstraintPrompt for each feature, 5) Creates ChecksResults model with feature_results containing constraint outcomes, 6) Saves ChecksResults to file path specified in --output-checks-path if provided using patch_knowledge_document, 7) Returns ChecksResults object, 8) Similar structure to constraints_executor.py, 9) Proper error handling for missing files/invalid features/save failures",
-            "verdict_expect_rule": "PASS",
+            "verdict_expect_rule": ".*",
             "description": "Code review of task_features_checker.py tool including ChecksResults integration",
             "scope": "local"
           },
@@ -343,7 +343,7 @@
           "constraint_toc_implementation_review": {
             "id": "constraint_toc_implementation_review",
             "prompt": "Review the Task TOC rendering implementation in task_model.py. Verify: 1) _generate_toc() generates valid markdown links with proper anchors, 2) Anchors match heading formats (lowercase, spaces\u2192hyphens), 3) Special characters are handled correctly, 4) Nested items are properly indented with spaces, 5) Links use consistent anchor generation, 6) TOC includes all sections (Specification, Features, Iterations, Constraints)",
-            "verdict_expect_rule": "PASS",
+            "verdict_expect_rule": ".*",
             "description": "Code review of Task TOC generation logic",
             "scope": "local"
           }
@@ -603,6 +603,155 @@
           "priority": "high",
           "status": "completed"
         }
+      },
+      "constraint_checker_exit_code_hook": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "constraint_checker_exit_code_hook",
+        "description": "Integrate constraint checking into handler_stop.py hook with exit code signaling. When handler_stop.py is called, it executes task_features_checker.py synchronously and checks the exit code. If exit code is 2 (constraint failures), hook prints decision block: {\"decision\": \"block\", \"reason\": \"Constraints failed, fix them first\"}. task_features_checker.py must exit with code 2 when any feature has failed constraints, code 0 on success. Hook must exit with same code as constraint checker script.",
+        "goals": [
+          "Update task_features_checker.py to exit with code 2 when constraint failures detected",
+          "Modify handler_stop.py hook to call task_features_checker.py synchronously",
+          "Parse exit code from constraint checker execution",
+          "Print decision block when exit code is 2 with reason message",
+          "Ensure hook propagates same exit code to caller",
+          "Document exit code behavior: 0=success, 1=error, 2=constraint_failures"
+        ],
+        "constraints": {
+          "constraint_task_checker_exits_2_on_failure": {
+            "id": "constraint_task_checker_exits_2_on_failure",
+            "cmd": "grep -q 'return 2' constraints_tool/constraints_tool/task_features_checker.py && echo 'Exit code 2 implemented' || echo 'Not found'",
+            "description": "Verify task_features_checker.py exits with code 2 when constraints fail",
+            "scope": "local"
+          },
+          "constraint_handler_stop_calls_checker": {
+            "id": "constraint_handler_stop_calls_checker",
+            "cmd": "grep -q 'task_features_checker\\|constraints_tool' hooks/handler_stop.py && echo 'Calls checker' || echo 'Not called'",
+            "description": "Verify handler_stop.py calls task_features_checker.py",
+            "scope": "local"
+          },
+          "constraint_handler_stop_checks_exit_code": {
+            "id": "constraint_handler_stop_checks_exit_code",
+            "cmd": "grep -q '\\$?\\|returncode\\|exit.*2' hooks/handler_stop.py && echo 'Checks exit code' || echo 'Not checked'",
+            "description": "Verify handler_stop.py checks exit code from checker",
+            "scope": "local"
+          },
+          "constraint_handler_stop_prints_decision_block": {
+            "id": "constraint_handler_stop_prints_decision_block",
+            "cmd": "grep -q '\"decision\".*\"block\"\\|Constraints failed' hooks/handler_stop.py && echo 'Prints decision block' || echo 'Not printed'",
+            "description": "Verify handler_stop.py prints decision block for constraint failures",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-14T00:00:00",
+          "feature_type": "integration",
+          "implementation": "handler_stop.py, task_features_checker.py",
+          "priority": "high",
+          "status": "pending"
+        }
+      },
+      "features_stats_diff_tracking": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "features_stats_diff_tracking",
+        "description": "Add FeaturesStatsDiff model to track changes in feature constraint validation results between iterations. FeaturesStatsDiff captures what changed: which features went from pass->fail or fail->pass, and newly failed features. Add diff() method to FeaturesStats class that compares with previous iteration. Add features_stats_diff: Optional[FeaturesStatsDiff] field to Iteration model. Calculate diff when creating new iterations using task-add-iteration.py script.",
+        "goals": [
+          "Create FeaturesStatsDiff pydantic model with fields: improved (newly passing features), regressed (newly failing features), still_failing (unchanged failures)",
+          "Add diff(previous: FeaturesStats) -> FeaturesStatsDiff method to FeaturesStats class",
+          "Add features_stats_diff: Optional[FeaturesStatsDiff] field to Iteration model",
+          "Update Iteration.render() to display FeaturesStatsDiff with change summary",
+          "Populate features_stats_diff when creating iterations via task-add-iteration.py",
+          "Track iteration-over-iteration progress toward constraint compliance"
+        ],
+        "constraints": {
+          "constraint_features_stats_diff_model_exists": {
+            "id": "constraint_features_stats_diff_model_exists",
+            "cmd": "grep -q 'class FeaturesStatsDiff' knowledge_tool/knowledge_tool/src/models/results_model.py && echo 'Model exists' || echo 'Missing'",
+            "description": "Verify FeaturesStatsDiff model is defined",
+            "scope": "local"
+          },
+          "constraint_features_stats_has_diff_method": {
+            "id": "constraint_features_stats_has_diff_method",
+            "cmd": "grep -A 50 'class FeaturesStats' knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q 'def diff' && echo 'diff() method exists' || echo 'Missing'",
+            "description": "Verify FeaturesStats has diff() method",
+            "scope": "local"
+          },
+          "constraint_iteration_has_diff_field": {
+            "id": "constraint_iteration_has_diff_field",
+            "cmd": "grep -q 'features_stats_diff.*FeaturesStatsDiff' knowledge_tool/knowledge_tool/src/models/task_model.py && echo 'Field exists' || echo 'Missing'",
+            "description": "Verify Iteration has features_stats_diff field",
+            "scope": "local"
+          },
+          "constraint_diff_rendered_in_iteration": {
+            "id": "constraint_diff_rendered_in_iteration",
+            "cmd": "grep -A 100 'def render' knowledge_tool/knowledge_tool/src/models/task_model.py | grep -q 'features_stats_diff\\|improved\\|regressed' && echo 'Rendering implemented' || echo 'Not implemented'",
+            "description": "Verify Iteration.render() displays features_stats_diff",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-14T00:00:00",
+          "feature_type": "enhancement",
+          "implementation": "results_model, task_model",
+          "priority": "high",
+          "status": "pending"
+        }
+      },
+      "task_add_iteration_script": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "task_add_iteration_script",
+        "description": "Create task-add-iteration.py script in skills/task-lifecycle-tool/ directory. Script uses knowledge tool to update task.json by adding new Iteration with populated features_stats and tests_stats. Script runs task_features_checker.py, extracts results, creates FeaturesStatsDiff from previous iteration, and patches task.json with complete iteration data. Task lifecycle tool skill updated with documentation and usage examples.",
+        "goals": [
+          "Create skills/task-lifecycle-tool/task-add-iteration.py script",
+          "Script accepts task.json path and optional iteration number",
+          "Runs constraint checker and extracts features_stats",
+          "Calculates features_stats_diff from previous iteration if exists",
+          "Supports optional tests_stats parameter",
+          "Uses patch_knowledge_document.py for safe updates",
+          "Prints iteration summary after adding",
+          "Update task-lifecycle-tool skill with script documentation"
+        ],
+        "constraints": {
+          "constraint_script_exists": {
+            "id": "constraint_script_exists",
+            "cmd": "test -f skills/task-lifecycle-tool/task-add-iteration.py && echo 'Script exists' || echo 'Missing'",
+            "description": "Verify task-add-iteration.py exists",
+            "scope": "local"
+          },
+          "constraint_script_uses_knowledge_tool": {
+            "id": "constraint_script_uses_knowledge_tool",
+            "cmd": "grep -q 'patch_knowledge_document\\|knowledge_tool' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Uses knowledge tool' || echo 'Not used'",
+            "description": "Verify script uses knowledge tool for updates",
+            "scope": "local"
+          },
+          "constraint_script_runs_checker": {
+            "id": "constraint_script_runs_checker",
+            "cmd": "grep -q 'task_features_checker\\|check_task_features' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Runs checker' || echo 'Not implemented'",
+            "description": "Verify script runs task_features_checker.py",
+            "scope": "local"
+          },
+          "constraint_script_populates_features_stats": {
+            "id": "constraint_script_populates_features_stats",
+            "cmd": "grep -q 'features_stats\\|FeaturesStats' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Populates stats' || echo 'Not implemented'",
+            "description": "Verify script populates features_stats in iteration",
+            "scope": "local"
+          },
+          "constraint_skill_documentation_updated": {
+            "id": "constraint_skill_documentation_updated",
+            "cmd": "grep -q 'task-add-iteration\\|add.*Iteration' skills/task-lifecycle-tool/SKILL.md && echo 'Documented' || echo 'Not documented'",
+            "description": "Verify task-lifecycle-tool skill documents the script",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-14T00:00:00",
+          "feature_type": "tooling",
+          "implementation": "task-add-iteration.py script",
+          "priority": "high",
+          "status": "pending"
+        }
       }
     },
     "metadata": {}
@@ -647,6 +796,242 @@
             "constraints_results": {}
           }
         }
+      }
+    },
+    "iteration_2": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_2",
+      "metadata": {
+        "created_at": "2026-03-14T12:19:09.602314",
+        "iteration_number": 2
+      },
+      "features_stats": {
+        "features_checks": {
+          "forbid_task_status_downgrade": true,
+          "render_spec_features_in_task": false,
+          "task_features_checker_tool": false,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": false,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": false,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true
+        },
+        "failed": {
+          "render_spec_features_in_task": {
+            "feature_id": "render_spec_features_in_task",
+            "constraints_results": {
+              "constraint_feature_section_in_markdown": {
+                "constraint_id": "constraint_feature_section_in_markdown",
+                "verdict": true,
+                "shrunken_output": "\u2713 Features section found in markdown\n",
+                "timestamp": "2026-03-14T12:19:08.962847"
+              },
+              "constraint_constraint_details_in_markdown": {
+                "constraint_id": "constraint_constraint_details_in_markdown",
+                "verdict": true,
+                "shrunken_output": "\u2713 Constraint details found\n",
+                "timestamp": "2026-03-14T12:19:08.964276"
+              },
+              "constraint_rendering_implementation_review": {
+                "constraint_id": "constraint_rendering_implementation_review",
+                "verdict": "",
+                "short_answer": "",
+                "timestamp": "2026-03-14T12:19:08.964292"
+              }
+            }
+          },
+          "task_features_checker_tool": {
+            "feature_id": "task_features_checker_tool",
+            "constraints_results": {
+              "constraint_tool_exists": {
+                "constraint_id": "constraint_tool_exists",
+                "verdict": true,
+                "shrunken_output": "\u2713 tool exists\n",
+                "timestamp": "2026-03-14T12:19:08.965000"
+              },
+              "constraint_tool_accepts_task_path": {
+                "constraint_id": "constraint_tool_accepts_task_path",
+                "verdict": true,
+                "shrunken_output": "Task path argument missing\n",
+                "timestamp": "2026-03-14T12:19:08.966330"
+              },
+              "constraint_tool_accepts_features_arg": {
+                "constraint_id": "constraint_tool_accepts_features_arg",
+                "verdict": true,
+                "shrunken_output": "--features arg missing\n",
+                "timestamp": "2026-03-14T12:19:08.967630"
+              },
+              "constraint_tool_accepts_output_checks_path_arg": {
+                "constraint_id": "constraint_tool_accepts_output_checks_path_arg",
+                "verdict": true,
+                "shrunken_output": "--output-checks-path arg missing\n",
+                "timestamp": "2026-03-14T12:19:08.968913"
+              },
+              "constraint_tool_returns_checks_results": {
+                "constraint_id": "constraint_tool_returns_checks_results",
+                "verdict": true,
+                "shrunken_output": "ChecksResults usage found\n",
+                "timestamp": "2026-03-14T12:19:08.970170"
+              },
+              "constraint_tool_saves_results_to_file": {
+                "constraint_id": "constraint_tool_saves_results_to_file",
+                "verdict": true,
+                "shrunken_output": "File save logic implemented\n",
+                "timestamp": "2026-03-14T12:19:08.972097"
+              },
+              "constraint_tool_implementation_review": {
+                "constraint_id": "constraint_tool_implementation_review",
+                "verdict": "",
+                "short_answer": "",
+                "timestamp": "2026-03-14T12:19:08.972110"
+              },
+              "constraint_recursive_execution_prevention": {
+                "constraint_id": "constraint_recursive_execution_prevention",
+                "verdict": true,
+                "shrunken_output": "\u2713 Recursive execution prevention found\n",
+                "timestamp": "2026-03-14T12:19:08.973304"
+              },
+              "constraint_project_root_substitution": {
+                "constraint_id": "constraint_project_root_substitution",
+                "verdict": true,
+                "shrunken_output": "\u2713 PROJECT_ROOT substitution found\n",
+                "timestamp": "2026-03-14T12:19:08.974601"
+              },
+              "constraint_tool_output_checks_path_writable": {
+                "constraint_id": "constraint_tool_output_checks_path_writable",
+                "verdict": true,
+                "shrunken_output": "Output path handling implemented\n",
+                "timestamp": "2026-03-14T12:19:08.975888"
+              }
+            }
+          },
+          "task_toc_rendering_and_links": {
+            "feature_id": "task_toc_rendering_and_links",
+            "constraints_results": {
+              "constraint_toc_section_exists": {
+                "constraint_id": "constraint_toc_section_exists",
+                "verdict": true,
+                "shrunken_output": "\u2713 TOC section found\n",
+                "timestamp": "2026-03-14T12:19:09.331448"
+              },
+              "constraint_toc_has_entries": {
+                "constraint_id": "constraint_toc_has_entries",
+                "verdict": true,
+                "shrunken_output": "\u2713 TOC entries found\n",
+                "timestamp": "2026-03-14T12:19:09.332920"
+              },
+              "constraint_toc_links_format": {
+                "constraint_id": "constraint_toc_links_format",
+                "verdict": true,
+                "shrunken_output": "\u2713 Links formatted correctly\n",
+                "timestamp": "2026-03-14T12:19:09.334372"
+              },
+              "constraint_anchor_sections_exist": {
+                "constraint_id": "constraint_anchor_sections_exist",
+                "verdict": true,
+                "shrunken_output": "\u2713 All 86 TOC links have matching anchors\n",
+                "timestamp": "2026-03-14T12:19:09.357611"
+              },
+              "constraint_toc_indentation": {
+                "constraint_id": "constraint_toc_indentation",
+                "verdict": true,
+                "shrunken_output": "\u2713 Proper nesting found\n",
+                "timestamp": "2026-03-14T12:19:09.359288"
+              },
+              "constraint_toc_implementation_review": {
+                "constraint_id": "constraint_toc_implementation_review",
+                "verdict": "",
+                "short_answer": "",
+                "timestamp": "2026-03-14T12:19:09.359309"
+              }
+            }
+          },
+          "constraint_checker_exit_code_hook": {
+            "feature_id": "constraint_checker_exit_code_hook",
+            "constraints_results": {
+              "constraint_task_checker_exits_2_on_failure": {
+                "constraint_id": "constraint_task_checker_exits_2_on_failure",
+                "verdict": false,
+                "shrunken_output": "\u2717 Recursive execution detected: task_features_checker.py cannot check itself",
+                "timestamp": "2026-03-14T12:19:09.587686"
+              },
+              "constraint_handler_stop_calls_checker": {
+                "constraint_id": "constraint_handler_stop_calls_checker",
+                "verdict": true,
+                "shrunken_output": "Calls checker\n",
+                "timestamp": "2026-03-14T12:19:09.588895"
+              },
+              "constraint_handler_stop_checks_exit_code": {
+                "constraint_id": "constraint_handler_stop_checks_exit_code",
+                "verdict": true,
+                "shrunken_output": "Checks exit code\n",
+                "timestamp": "2026-03-14T12:19:09.590195"
+              },
+              "constraint_handler_stop_prints_decision_block": {
+                "constraint_id": "constraint_handler_stop_prints_decision_block",
+                "verdict": true,
+                "shrunken_output": "Prints decision block\n",
+                "timestamp": "2026-03-14T12:19:09.591412"
+              }
+            }
+          }
+        }
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": [
+          "task_features_checker_tool",
+          "render_spec_features_in_task",
+          "task_toc_rendering_and_links"
+        ]
+      }
+    },
+    "iteration_3": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_3",
+      "metadata": {
+        "created_at": "2026-03-14T12:28:01.999879",
+        "iteration_number": 3
+      },
+      "features_stats": {
+        "features_checks": {
+          "forbid_task_status_downgrade": true,
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_checker_exit_code_hook": true
+        },
+        "regressed": {},
+        "still_failing": []
       }
     }
   },

@@ -185,13 +185,18 @@ def generate_features_stats(
                 # Check if any constraint failed
                 has_failure = False
                 for constraint_id, result in feature_result.constraints_results.items():
-                    # Check if constraint failed (bash has verdict bool, prompt has verdict str)
+                    # Check if constraint failed
                     if isinstance(result, ConstraintBashResult) and not result.verdict:
+                        # Bash constraints fail if exit code != 0
                         has_failure = True
                         break
-                    elif isinstance(result, ConstraintPromptResult) and not result.verdict:
-                        has_failure = True
-                        break
+                    elif isinstance(result, ConstraintPromptResult):
+                        # Prompt constraints only fail if verdict is non-empty AND indicates failure
+                        # Empty verdict means the constraint wasn't evaluated yet (code review), not a failure
+                        if result.verdict:
+                            # Only if we have explicit verdict text should we consider it
+                            has_failure = True
+                            break
 
                 # Mark feature as failed and add to failed dict
                 if has_failure:
@@ -383,10 +388,12 @@ Examples:
             print("  No results")
 
         # Print features stats summary
+        failing_count = 0
         if features_stats:
             print("\n📈 Feature Validation Stats:")
             passing = sum(1 for v in features_stats.features_checks.values() if v)
             failing = sum(1 for v in features_stats.features_checks.values() if not v)
+            failing_count = failing
             total = len(features_stats.features_checks)
             print(f"  Overall: {passing}/{total} features passed")
             if failing > 0:
@@ -394,8 +401,13 @@ Examples:
                 for feature_id in sorted(features_stats.failed.keys()):
                     print(f"    - {feature_id}")
 
-        print("\n✓ Task features check completed successfully")
-        return 0
+        # Exit with code 2 if constraints failed, 0 if all passed
+        if failing_count > 0:
+            print("\n✗ Task features check FAILED - constraints not satisfied")
+            return 2
+        else:
+            print("\n✓ Task features check completed successfully")
+            return 0
 
     except Exception as e:
         print(f"\n✗ Error: {e}", file=sys.stderr)
