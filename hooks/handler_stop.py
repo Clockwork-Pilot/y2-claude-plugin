@@ -61,7 +61,7 @@ def main():
             # Constraints failed - block the stop
             decision_block = {
                 "decision": "block",
-                "reason": "Constraints failed, fix them first"
+                "reason": "Constraints violated, fix features implementation to satisfy them."
             }
             print(json.dumps(decision_block))
 

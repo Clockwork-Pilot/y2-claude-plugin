@@ -2,11 +2,10 @@
   "type": "Task",
   "model_version": 2,
   "id": "task_1",
-  "status": "executing",
   "spec": {
     "type": "Spec",
     "model_version": 1,
-    "version": 1,
+    "description": "### Project Summary\n\n**Status**: \u2713 Complete and Functional\n\n**Components Built**:\n\u2713 Knowledge Tool - JSON patching and markdown rendering\n\u2713 Lifecycle Tool - Task creation and management\n\u2713 File Protection System - Auto-protected documents\n\u2713 Testing - 29 tests all passing\n\u2713 Documentation - CLAUDE.md, skills, README\n\n**Technology**: Python 3.11+, Pydantic, RFC 6902, Git submodules",
     "features": {
       "render_spec_features_in_task": {
         "type": "Feature",
@@ -23,13 +22,6 @@
             "id": "constraint_constraint_details_in_markdown",
             "cmd": "grep -q 'Bash\\|Prompt\\|constraint\\|cmd\\|prompt' $PROJECT_ROOT/task.k.md && echo '\u2713 Constraint details found' || echo '\u26a0 Constraint details not found'",
             "description": "Verify that constraint details (bash commands, prompt validations) are rendered in markdown"
-          },
-          "constraint_rendering_implementation_review": {
-            "id": "constraint_rendering_implementation_review",
-            "prompt": "Review the Task.render() method implementation to ensure it properly displays spec.features and their constraints. Verify: 1) Features section is included after spec description, 2) Each feature shows id, description, and constraints, 3) ConstraintBash displays command with proper formatting, 4) ConstraintPrompt displays prompt and expected verdict, 5) Metadata is optionally shown, 6) Markdown formatting is consistent with other sections, 7) Edge cases handled (no features, no constraints)",
-            "verdict_expect_rule": ".*",
-            "description": "Code review of Task.render() feature/constraint rendering implementation",
-            "scope": "local"
           }
         },
         "metadata": {
@@ -78,13 +70,6 @@
             "id": "constraint_tool_saves_results_to_file",
             "cmd": "grep -q \"output_path.write_text\\|if not output_path.exists\" constraints_tool/constraints_tool/task_features_checker.py && grep -q \"apply_json_patch\" constraints_tool/constraints_tool/task_features_checker.py && echo 'File save logic implemented' || echo 'File save logic missing'",
             "description": "Verify tool saves ChecksResults to file when --output-checks-path provided"
-          },
-          "constraint_tool_implementation_review": {
-            "id": "constraint_tool_implementation_review",
-            "prompt": "Review task_features_checker.py implementation. Verify: 1) Accepts task document path and optional --features and --output-checks-path arguments, 2) Loads Task model and extracts spec.features, 3) Filters features by --features list if provided, 4) Executes ConstraintBash and ConstraintPrompt for each feature, 5) Creates ChecksResults model with feature_results containing constraint outcomes, 6) Saves ChecksResults to file path specified in --output-checks-path if provided using patch_knowledge_document, 7) Returns ChecksResults object, 8) Similar structure to constraints_executor.py, 9) Proper error handling for missing files/invalid features/save failures",
-            "verdict_expect_rule": ".*",
-            "description": "Code review of task_features_checker.py tool including ChecksResults integration",
-            "scope": "local"
           },
           "constraint_recursive_execution_prevention": {
             "id": "constraint_recursive_execution_prevention",
@@ -187,7 +172,7 @@
           },
           "constraint_toc_rendered_by_default": {
             "id": "constraint_toc_rendered_by_default",
-            "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Doc; spec = Spec(version=1, description=Doc(id='d', label='L', metadata={})); t = Task(id='t1', spec=spec, opts=None); output = t.render(); print('\u2713 TOC rendered' if 'Table of Contents' in output else '\u2717 TOC missing')\" 2>/dev/null",
+            "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec; spec = Spec(version=1, description='Test spec'); t = Task(id='t1', spec=spec, opts=None); output = t.render(); print('\u2713 TOC rendered' if 'Table of Contents' in output else '\u2717 TOC missing')\" 2>/dev/null",
             "description": "Verify Task renders TOC by default when opts is None"
           }
         },
@@ -218,7 +203,7 @@
           },
           "constraint_constraints_nested_in_toc": {
             "id": "constraint_constraints_nested_in_toc",
-            "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Doc, Feature; spec = Spec(version=1, description=Doc(id='d', label='L', metadata={}), features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('\u2713 Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '\u2717 No constraints in TOC')\" 2>/dev/null",
+            "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Feature; spec = Spec(version=1, description='Test spec', features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('\u2713 Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '\u2717 No constraints in TOC')\" 2>/dev/null",
             "description": "Verify constraints appear as nested items in feature TOC entries"
           },
           "constraint_constraints_visible_in_markdown": {
@@ -274,13 +259,6 @@
             "id": "constraint_toc_indentation",
             "cmd": "grep '## Table of Contents' -A 50 task.k.md | grep -E '^  -|^    -' | wc -l | grep -qE '[1-9]' && echo '\u2713 Proper nesting found' || echo '\u2717 Missing'",
             "description": "Verify TOC has proper indentation for nested items"
-          },
-          "constraint_toc_implementation_review": {
-            "id": "constraint_toc_implementation_review",
-            "prompt": "Review the Task TOC rendering implementation in task_model.py. Verify: 1) _generate_toc() generates valid markdown links with proper anchors, 2) Anchors match heading formats (lowercase, spaces\u2192hyphens), 3) Special characters are handled correctly, 4) Nested items are properly indented with spaces, 5) Links use consistent anchor generation, 6) TOC includes all sections (Specification, Features, Iterations, Constraints)",
-            "verdict_expect_rule": ".*",
-            "description": "Code review of Task TOC generation logic",
-            "scope": "local"
           }
         },
         "metadata": {
@@ -772,96 +750,9 @@
           "priority": "low",
           "status": "planned"
         }
-      },
-      "two_phase_constraint_validation": {
-        "type": "Feature",
-        "model_version": 1,
-        "id": "two_phase_constraint_validation",
-        "description": "Implement 2-phase constraint validation mechanism to prevent accidental regression of validated constraints. Add proven_red: Optional[str] field to ConstraintBash (excluded from external modifications) that captures the error message when a constraint validation fails. Phase 1: New constraints are added without proven_red. Phase 2: When task_features_checker.py detects a constraint failure, it updates task.k.json to set proven_red with the error message, marking the constraint as proven-failed. Protect cmd field: if proven_red is already set (constraint is validated), any attempt to update cmd is blocked with detailed warning suggesting deletion/recreation. External attempts to set proven_red via patch are silently ignored with warning. Only task_features_checker.py flow can legitimately set proven_red during constraint validation. Update final check logic: only constraints with proven_red affect final result; constraints without proven_red are logged but don't fail the check. Print summary of proven_red vs total constraints at end.",
-        "constraints": {
-          "constraint_proven_red_field_exists": {
-            "id": "constraint_proven_red_field_exists",
-            "cmd": "grep -q \"proven_red.*Optional\\[str\\]\" knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo \"\u2713 proven_red field exists\" || (echo \"\u2717 proven_red field missing\" && exit 1)",
-            "description": "Verify proven_red Optional[str] field exists in ConstraintBash"
-          },
-          "constraint_proven_red_excluded": {
-            "id": "constraint_proven_red_excluded",
-            "cmd": "! (grep -A 5 \"proven_red\" knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q \"exclude=True\") && echo \"\u2713 proven_red not excluded from serialization\" || (echo \"\u2717 proven_red has exclude=True - should be removed\" && exit 1)",
-            "description": "Verify proven_red is excluded from external JSON modifications",
-            "proven_red": "\u2717 proven_red has exclude=True - should be removed"
-          },
-          "constraint_proven_red_default_none": {
-            "id": "constraint_proven_red_default_none",
-            "cmd": "grep -q \"proven_red.*Optional.*Field.*default=None\" knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo \"\u2713 proven_red defaults to None\" || (echo \"\u2717 Default not set correctly\" && exit 1)",
-            "description": "Verify proven_red defaults to None",
-            "proven_red": "\u2717 Default not set correctly"
-          },
-          "constraint_external_proven_red_blocked": {
-            "id": "constraint_external_proven_red_blocked",
-            "cmd": "grep -q \"_restore_proven_red_values\" knowledge_tool/knowledge_tool/patch_knowledge_document.py && echo \"\u2713 proven_red protection exists in patch flow\" || (echo \"\u2717 proven_red not protected in patch_knowledge_document.py\" && exit 1)",
-            "description": "Verify external attempts to set proven_red are blocked/ignored",
-            "proven_red": "\u2717 proven_red not protected in patch_knowledge_document.py"
-          },
-          "constraint_cmd_protection_when_proven": {
-            "id": "constraint_cmd_protection_when_proven",
-            "cmd": "grep -q \"_protect_cmd_updates\" knowledge_tool/knowledge_tool/patch_knowledge_document.py && echo \"\u2713 cmd protection function exists\" || (echo \"\u2717 cmd protection missing\" && exit 1)",
-            "description": "Verify cmd field is protected when proven_red is set",
-            "proven_red": "\u2717 cmd protection missing"
-          },
-          "constraint_cmd_update_warning": {
-            "id": "constraint_cmd_update_warning",
-            "cmd": "grep -q \"Validated constraints cannot be updated, only deleted\" knowledge_tool/knowledge_tool/patch_knowledge_document.py && echo \"\u2713 Warning message exists\" || (echo \"\u2717 Warning message missing\" && exit 1)",
-            "description": "Verify warning message when trying to update cmd on validated constraint",
-            "proven_red": "\u2717 Warning message missing"
-          },
-          "constraint_set_proven_red_on_failure": {
-            "id": "constraint_set_proven_red_on_failure",
-            "cmd": "grep -q \"_set_proven_red_in_task\" constraints_tool/constraints_tool/task_features_checker.py && echo \"\u2713 _set_proven_red_in_task function exists\" || (echo \"\u2717 Function missing\" && exit 1)",
-            "description": "Verify proven_red is set when constraint fails"
-          },
-          "constraint_only_proven_affects_result": {
-            "id": "constraint_only_proven_affects_result",
-            "cmd": "grep -q \"is_proven\" constraints_tool/constraints_tool/task_features_checker.py && echo \"\u2713 Proven-only result logic exists\" || (echo \"\u2717 Proven result logic missing\" && exit 1)",
-            "description": "Verify only constraints with proven_red affect final check result"
-          },
-          "constraint_print_proven_summary": {
-            "id": "constraint_print_proven_summary",
-            "cmd": "grep -q \"Proven constraints.*affect result\" constraints_tool/constraints_tool/task_features_checker.py && echo \"\u2713 Proven summary printed\" || (echo \"\u2717 Proven summary missing\" && exit 1)",
-            "description": "Verify proven vs all constraints summary is printed at end"
-          },
-          "constraint_unprovided_constraints_logged_not_failed": {
-            "id": "constraint_unprovided_constraints_logged_not_failed",
-            "cmd": "grep -q \"Unproven.*informational\" constraints_tool/constraints_tool/task_features_checker.py && echo \"\u2713 Unproven constraints are logged only\" || (echo \"\u2717 Unproven handling missing\" && exit 1)",
-            "description": "Verify constraints without proven_red are logged but don't fail check"
-          },
-          "constraint_proven_red_in_task_json": {
-            "id": "constraint_proven_red_in_task_json",
-            "cmd": "python3 -c \"import json; data=json.load(open(\\\"task.k.json\\\")); constraints = {c_id: c for feat in (data.get(\\\"spec\\\",{}).get(\\\"features\\\",{}) or {}).values() for c_id, c in (feat.get(\\\"constraints\\\",{}) or {}).items()}; proven = [cid for cid,c in constraints.items() if c.get(\\\"proven_red\\\")]; print(f\\\"\u2713 {len(proven)} constraints have proven_red set\\\") if proven else print(\\\"\u2139 No proven_red constraints yet (expected before first failure run)\\\")\"",
-            "description": "Verify proven_red persists in task.k.json for failed constraints"
-          },
-          "constraint_patch_protects_proven_red": {
-            "id": "constraint_patch_protects_proven_red",
-            "cmd": "python3 -c \"\nimport json, sys, tempfile, os\nsys.path.insert(0, os.path.join(os.environ.get(\\\"PROJECT_ROOT\\\", \\\".\\\"), \\\"knowledge_tool/knowledge_tool\\\"))\nfrom patch_knowledge_document import _restore_proven_red_values\norig = {\\\"spec\\\": {\\\"features\\\": {\\\"f1\\\": {\\\"constraints\\\": {\\\"c1\\\": {\\\"proven_red\\\": \\\"old error\\\"}}}}}}\npatched = {\\\"spec\\\": {\\\"features\\\": {\\\"f1\\\": {\\\"constraints\\\": {\\\"c1\\\": {\\\"proven_red\\\": \\\"new error\\\"}}}}}}\nwarnings = _restore_proven_red_values(orig, patched)\nassert patched[\\\"spec\\\"][\\\"features\\\"][\\\"f1\\\"][\\\"constraints\\\"][\\\"c1\\\"][\\\"proven_red\\\"] == \\\"old error\\\", \\\"Protection failed\\\"\nprint(\\\"\u2713 proven_red protection verified: external change was reverted\\\")\" 2>&1 || (echo \"\u2717 Protection test failed\" && exit 1)",
-            "description": "Verify _restore_proven_red_values actually protects proven_red from external patches",
-            "proven_red": "Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\nImportError: cannot import name '_restore_proven_red_values' from 'patch_knowledge_document' (/project/knowledge_tool/knowledge_tool/patch_knowledge_document.py)\n\u2717 Protection test failed"
-          },
-          "constraint_cmd_protection_verified": {
-            "id": "constraint_cmd_protection_verified",
-            "cmd": "python3 -c \"\nimport json, sys, os\nsys.path.insert(0, os.path.join(os.environ.get(\\\"PROJECT_ROOT\\\", \\\".\\\"), \\\"knowledge_tool/knowledge_tool\\\"))\nfrom patch_knowledge_document import _protect_cmd_updates\norig = {\\\"spec\\\": {\\\"features\\\": {\\\"f1\\\": {\\\"constraints\\\": {\\\"c1\\\": {\\\"proven_red\\\": \\\"error\\\", \\\"cmd\\\": \\\"original cmd\\\"}}}}}}\npatched = {\\\"spec\\\": {\\\"features\\\": {\\\"f1\\\": {\\\"constraints\\\": {\\\"c1\\\": {\\\"proven_red\\\": \\\"error\\\", \\\"cmd\\\": \\\"new cmd\\\"}}}}}}\nwarnings = _protect_cmd_updates(orig, patched)\nassert patched[\\\"spec\\\"][\\\"features\\\"][\\\"f1\\\"][\\\"constraints\\\"][\\\"c1\\\"][\\\"cmd\\\"] == \\\"original cmd\\\", \\\"Cmd update not blocked\\\"\nassert len(warnings) > 0, \\\"No warning issued\\\"\nprint(\\\"\u2713 cmd protection verified: update blocked with warning\\\")\" 2>&1 || (echo \"\u2717 Cmd protection test failed\" && exit 1)",
-            "description": "Verify _protect_cmd_updates blocks cmd changes for proven constraints with warning",
-            "proven_red": "Traceback (most recent call last):\n  File \"<string>\", line 4, in <module>\nImportError: cannot import name '_protect_cmd_updates' from 'patch_knowledge_document' (/project/knowledge_tool/knowledge_tool/patch_knowledge_document.py)\n\u2717 Cmd protection test failed"
-          }
-        },
-        "metadata": {
-          "created_at": "2026-03-16T00:00:00",
-          "feature_type": "enhancement",
-          "implementation": "constraint_validation",
-          "priority": "high",
-          "status": "planned"
-        }
       }
     },
-    "metadata": {}
+    "do_not_touch_fails_history": {}
   },
   "iterations": {
     "iteration_1": {
@@ -946,12 +837,6 @@
                 "verdict": true,
                 "shrunken_output": "\u2713 Constraint details found\n",
                 "timestamp": "2026-03-14T12:19:08.964276"
-              },
-              "constraint_rendering_implementation_review": {
-                "constraint_id": "constraint_rendering_implementation_review",
-                "verdict": "",
-                "short_answer": "",
-                "timestamp": "2026-03-14T12:19:08.964292"
               }
             }
           },
@@ -993,12 +878,6 @@
                 "verdict": true,
                 "shrunken_output": "File save logic implemented\n",
                 "timestamp": "2026-03-14T12:19:08.972097"
-              },
-              "constraint_tool_implementation_review": {
-                "constraint_id": "constraint_tool_implementation_review",
-                "verdict": "",
-                "short_answer": "",
-                "timestamp": "2026-03-14T12:19:08.972110"
               },
               "constraint_recursive_execution_prevention": {
                 "constraint_id": "constraint_recursive_execution_prevention",
@@ -1052,12 +931,6 @@
                 "verdict": true,
                 "shrunken_output": "\u2713 Proper nesting found\n",
                 "timestamp": "2026-03-14T12:19:09.359288"
-              },
-              "constraint_toc_implementation_review": {
-                "constraint_id": "constraint_toc_implementation_review",
-                "verdict": "",
-                "short_answer": "",
-                "timestamp": "2026-03-14T12:19:09.359309"
               }
             }
           },
@@ -1096,9 +969,9 @@
         "improved": {},
         "regressed": {},
         "still_failing": [
+          "task_toc_rendering_and_links",
           "render_spec_features_in_task",
-          "task_features_checker_tool",
-          "task_toc_rendering_and_links"
+          "task_features_checker_tool"
         ]
       }
     },

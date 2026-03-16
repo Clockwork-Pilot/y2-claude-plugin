@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-- [Specification (v1)](#specification-v1)
+- [Specification](#specification)
 - [Features](#features)
     - [Feature: add_constraint_validation_requirement_skill](#feature-add_constraint_validation_requirement_skill)
       - [constraint_requirement_section_exists](#constraint_requirement_section_exists)
@@ -54,7 +54,6 @@
     - [Feature: render_spec_features_in_task](#feature-render_spec_features_in_task)
       - [constraint_constraint_details_in_markdown](#constraint_constraint_details_in_markdown)
       - [constraint_feature_section_in_markdown](#constraint_feature_section_in_markdown)
-      - [constraint_rendering_implementation_review](#constraint_rendering_implementation_review)
     - [Feature: task_add_iteration_script](#feature-task_add_iteration_script)
       - [constraint_script_exists](#constraint_script_exists)
       - [constraint_script_populates_features_stats](#constraint_script_populates_features_stats)
@@ -78,7 +77,6 @@
       - [constraint_tool_accepts_output_checks_path_arg](#constraint_tool_accepts_output_checks_path_arg)
       - [constraint_tool_accepts_task_path](#constraint_tool_accepts_task_path)
       - [constraint_tool_exists](#constraint_tool_exists)
-      - [constraint_tool_implementation_review](#constraint_tool_implementation_review)
       - [constraint_tool_output_checks_path_writable](#constraint_tool_output_checks_path_writable)
       - [constraint_tool_returns_checks_results](#constraint_tool_returns_checks_results)
       - [constraint_tool_saves_results_to_file](#constraint_tool_saves_results_to_file)
@@ -89,7 +87,6 @@
     - [Feature: task_toc_rendering_and_links](#feature-task_toc_rendering_and_links)
       - [constraint_anchor_sections_exist](#constraint_anchor_sections_exist)
       - [constraint_toc_has_entries](#constraint_toc_has_entries)
-      - [constraint_toc_implementation_review](#constraint_toc_implementation_review)
       - [constraint_toc_indentation](#constraint_toc_indentation)
       - [constraint_toc_links_format](#constraint_toc_links_format)
       - [constraint_toc_section_exists](#constraint_toc_section_exists)
@@ -120,31 +117,20 @@
     - [iteration_2](#iteration_2)
     - [iteration_3](#iteration_3)
 
-## Specification (v1)
+## Specification
 
-# Task Plan
 ### Project Summary
 
 **Status**: ✓ Complete and Functional
 
 **Components Built**:
 ✓ Knowledge Tool - JSON patching and markdown rendering
-✓ Lifecycle Tool - Task creation and management  
+✓ Lifecycle Tool - Task creation and management
 ✓ File Protection System - Auto-protected documents
 ✓ Testing - 29 tests all passing
 ✓ Documentation - CLAUDE.md, skills, README
 
-**Known Issues**:
-- Auto-generated protected_files.txt in PLUGIN_ROOT needs merge logic
-
 **Technology**: Python 3.11+, Pydantic, RFC 6902, Git submodules
-
-## Created At
-2026-03-06T12:12:53.859554
-
-## Updated At
-2026-03-06T12:12:53.859554
-
 
 ## Features
 
@@ -452,11 +438,6 @@
 **Description:** Verify that 'Features' section is rendered in task.k.md markdown output
 **Command:** `grep -q '## Features\|### .*:' $PROJECT_ROOT/task.k.md && echo '✓ Features section found in markdown' || echo '⚠ Features section not found'`
 
-#### constraint_rendering_implementation_review
-**Description:** Code review of Task.render() feature/constraint rendering implementation
-**Prompt:** Review the Task.render() method implementation to ensure it properly displays spec.features and their constraints. Verify: 1) Features section is included after spec description, 2) Each feature shows id, description, and constraints, 3) ConstraintBash displays command with proper formatting, 4) ConstraintPrompt displays prompt and expected verdict, 5) Metadata is optionally shown, 6) Markdown formatting is consistent with other sections, 7) Edge cases handled (no features, no constraints)
-**Expected Verdict:** `.*`
-
 **Metadata:**
 - created_at: 2026-03-13T00:00:00
 - feature_type: rendering
@@ -590,11 +571,6 @@
 **Description:** Verify task_features_checker.py exists in constraints_tool/
 **Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && echo '✓ tool exists' || echo '✗ tool missing'`
 
-#### constraint_tool_implementation_review
-**Description:** Code review of task_features_checker.py tool including ChecksResults integration
-**Prompt:** Review task_features_checker.py implementation. Verify: 1) Accepts task document path and optional --features and --output-checks-path arguments, 2) Loads Task model and extracts spec.features, 3) Filters features by --features list if provided, 4) Executes ConstraintBash and ConstraintPrompt for each feature, 5) Creates ChecksResults model with feature_results containing constraint outcomes, 6) Saves ChecksResults to file path specified in --output-checks-path if provided using patch_knowledge_document, 7) Returns ChecksResults object, 8) Similar structure to constraints_executor.py, 9) Proper error handling for missing files/invalid features/save failures
-**Expected Verdict:** `.*`
-
 #### constraint_tool_output_checks_path_writable
 **Description:** Verify output checks path is writable and ChecksResults file can be created/updated
 **Command:** `grep -q "Path(output_checks_path)\|output_path.write_text" constraints_tool/constraints_tool/task_features_checker.py && echo 'Output path handling implemented' || echo 'Output path handling missing'`
@@ -662,11 +638,6 @@
 #### constraint_toc_has_entries
 **Description:** Verify TOC contains markdown list entries (lines starting with -)
 **Command:** `grep -A 20 '## Table of Contents' task.k.md | grep -q '^-' && echo '✓ TOC entries found' || echo '✗ No entries'`
-
-#### constraint_toc_implementation_review
-**Description:** Code review of Task TOC generation logic
-**Prompt:** Review the Task TOC rendering implementation in task_model.py. Verify: 1) _generate_toc() generates valid markdown links with proper anchors, 2) Anchors match heading formats (lowercase, spaces→hyphens), 3) Special characters are handled correctly, 4) Nested items are properly indented with spaces, 5) Links use consistent anchor generation, 6) TOC includes all sections (Specification, Features, Iterations, Constraints)
-**Expected Verdict:** `.*`
 
 #### constraint_toc_indentation
 **Description:** Verify TOC has proper indentation for nested items
@@ -887,13 +858,10 @@ print(\"✓ proven_red protection verified: external change was reverted\")" 2>&
 - constraint_task_checker_exits_2_on_failure: FAILED
 
 **render_spec_features_in_task:**
-- constraint_rendering_implementation_review: FAILED
 
 **task_features_checker_tool:**
-- constraint_tool_implementation_review: FAILED
 
 **task_toc_rendering_and_links:**
-- constraint_toc_implementation_review: FAILED
 
 ### iteration_3
 
