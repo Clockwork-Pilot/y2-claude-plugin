@@ -93,6 +93,13 @@
       - [constraint_toc_indentation](#constraint_toc_indentation)
       - [constraint_toc_links_format](#constraint_toc_links_format)
       - [constraint_toc_section_exists](#constraint_toc_section_exists)
+    - [Feature: two_phase_constraint_validation](#feature-two_phase_constraint_validation)
+      - [constraint_cmd_protection_logic](#constraint_cmd_protection_logic)
+      - [constraint_print_proven_summary](#constraint_print_proven_summary)
+      - [constraint_proven_red_affects_result](#constraint_proven_red_affects_result)
+      - [constraint_proven_red_excluded_from_external](#constraint_proven_red_excluded_from_external)
+      - [constraint_proven_red_field_exists](#constraint_proven_red_field_exists)
+      - [constraint_proven_red_set_by_checker](#constraint_proven_red_set_by_checker)
     - [Feature: update_iteration_with_features_stats](#feature-update_iteration_with_features_stats)
       - [constraint_feature_result_constraints_required](#constraint_feature_result_constraints_required)
       - [constraint_features_stats_generated](#constraint_features_stats_generated)
@@ -673,6 +680,40 @@
 - priority: high
 - status: planned
 - depends_on: ['task_toc_includes_constraints']
+
+### Feature: two_phase_constraint_validation
+**Implement 2-phase constraint validation mechanism to prevent accidental regression of validated constraints. Add proven_red: Optional[str] field to ConstraintBash (excluded from external modifications) that captures the error message when a constraint validation fails. Phase 1: New constraints are added without proven_red. Phase 2: When task_features_checker.py detects a constraint failure, it updates task.k.json to set proven_red with the error message, marking the constraint as proven-failed. Protect cmd field: if proven_red is already set (constraint is validated), any attempt to update cmd is blocked with detailed warning suggesting deletion/recreation. External attempts to set proven_red via patch are silently ignored with warning. Only task_features_checker.py flow can legitimately set proven_red during constraint validation. Update final check logic: only constraints with proven_red affect final result; constraints without proven_red are logged but don't fail the check. Print summary of proven_red vs total constraints at end.**
+
+#### constraint_cmd_protection_logic
+**Description:** Verify cmd field is protected when proven_red is set - blocks updates with warning
+**Command:** `grep -q 'if.*proven_red.*and.*cmd' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'cannot update.*cmd\|warning' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'cmd field protection logic not implemented in task_features_checker.py' && exit 1)`
+
+#### constraint_print_proven_summary
+**Description:** Verify proven constraints summary is printed (proven_count/total_count)
+**Command:** `grep -q 'proven.*all\|proven_count' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'print.*proven' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Summary of proven vs all constraints not printed at end' && exit 1)`
+
+#### constraint_proven_red_affects_result
+**Description:** Verify final check result only counts constraints with proven_red as failures
+**Command:** `grep -q 'if.*proven_red' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'failing_count\|verdict.*proven' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Final check result logic does not consider proven_red for failures' && exit 1)`
+
+#### constraint_proven_red_excluded_from_external
+**Description:** Confirm proven_red field is excluded from external JSON modifications
+**Command:** `grep -A 2 'proven_red' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'exclude.*True' || (echo 'proven_red field must have exclude=True to prevent external modification' && exit 1)`
+
+#### constraint_proven_red_field_exists
+**Description:** Verify proven_red Optional[str] field exists in ConstraintBash with exclude=True
+**Command:** `grep -q 'proven_red.*Optional\[str\]' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py && grep -q 'exclude.*True' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo 'proven_red field exists' || (echo 'proven_red: Optional[str] field not found or not excluded in ConstraintBash' && exit 1)`
+
+#### constraint_proven_red_set_by_checker
+**Description:** Verify task_features_checker.py sets proven_red when constraint fails
+**Command:** `grep -q 'proven_red.*=' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'patch.*proven_red\|set.*proven_red' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'task_features_checker.py does not set proven_red on constraint failures' && exit 1)`
+
+**Metadata:**
+- created_at: 2026-03-16T00:00:00
+- feature_type: enhancement
+- implementation: constraint_validation
+- priority: high
+- status: planned
 
 ### Feature: update_iteration_with_features_stats
 **Update Iteration model and task lifecycle tool to track feature constraint validation results. Add features_stats field containing complete feature validation status and failed feature details. FeaturesStats model includes: features_checks (Dict[str, bool] with all task features), failed (Dict[str, FeatureResult] with only features having failed constraints). FeatureResult.constraints_results field is required (Dict, not optional). Display iteration stats every time iteration is added or rendered.**

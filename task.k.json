@@ -860,6 +860,57 @@
           "priority": "low",
           "status": "planned"
         }
+      },
+      "two_phase_constraint_validation": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "two_phase_constraint_validation",
+        "description": "Implement 2-phase constraint validation mechanism to prevent accidental regression of validated constraints. Add proven_red: Optional[str] field to ConstraintBash (excluded from external modifications) that captures the error message when a constraint validation fails. Phase 1: New constraints are added without proven_red. Phase 2: When task_features_checker.py detects a constraint failure, it updates task.k.json to set proven_red with the error message, marking the constraint as proven-failed. Protect cmd field: if proven_red is already set (constraint is validated), any attempt to update cmd is blocked with detailed warning suggesting deletion/recreation. External attempts to set proven_red via patch are silently ignored with warning. Only task_features_checker.py flow can legitimately set proven_red during constraint validation. Update final check logic: only constraints with proven_red affect final result; constraints without proven_red are logged but don't fail the check. Print summary of proven_red vs total constraints at end.",
+        "constraints": {
+          "constraint_proven_red_field_exists": {
+            "id": "constraint_proven_red_field_exists",
+            "cmd": "grep -q 'proven_red.*Optional\\[str\\]' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py && grep -q 'exclude.*True' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo 'proven_red field exists' || (echo 'proven_red: Optional[str] field not found or not excluded in ConstraintBash' && exit 1)",
+            "description": "Verify proven_red Optional[str] field exists in ConstraintBash with exclude=True",
+            "scope": "local"
+          },
+          "constraint_proven_red_excluded_from_external": {
+            "id": "constraint_proven_red_excluded_from_external",
+            "cmd": "grep -A 2 'proven_red' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'exclude.*True' || (echo 'proven_red field must have exclude=True to prevent external modification' && exit 1)",
+            "description": "Confirm proven_red field is excluded from external JSON modifications",
+            "scope": "local"
+          },
+          "constraint_cmd_protection_logic": {
+            "id": "constraint_cmd_protection_logic",
+            "cmd": "grep -q 'if.*proven_red.*and.*cmd' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'cannot update.*cmd\\|warning' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'cmd field protection logic not implemented in task_features_checker.py' && exit 1)",
+            "description": "Verify cmd field is protected when proven_red is set - blocks updates with warning",
+            "scope": "local"
+          },
+          "constraint_proven_red_set_by_checker": {
+            "id": "constraint_proven_red_set_by_checker",
+            "cmd": "grep -q 'proven_red.*=' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'patch.*proven_red\\|set.*proven_red' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'task_features_checker.py does not set proven_red on constraint failures' && exit 1)",
+            "description": "Verify task_features_checker.py sets proven_red when constraint fails",
+            "scope": "local"
+          },
+          "constraint_proven_red_affects_result": {
+            "id": "constraint_proven_red_affects_result",
+            "cmd": "grep -q 'if.*proven_red' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'failing_count\\|verdict.*proven' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Final check result logic does not consider proven_red for failures' && exit 1)",
+            "description": "Verify final check result only counts constraints with proven_red as failures",
+            "scope": "local"
+          },
+          "constraint_print_proven_summary": {
+            "id": "constraint_print_proven_summary",
+            "cmd": "grep -q 'proven.*all\\|proven_count' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -q 'print.*proven' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Summary of proven vs all constraints not printed at end' && exit 1)",
+            "description": "Verify proven constraints summary is printed (proven_count/total_count)",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-16T00:00:00",
+          "feature_type": "enhancement",
+          "implementation": "constraint_validation",
+          "priority": "high",
+          "status": "planned"
+        }
       }
     },
     "metadata": {}
