@@ -149,20 +149,6 @@ python3 constraints_tool/constraints_tool/task_features_checker.py \
 - **cmd**: Shell command to execute
 - **verdict**: True if exit code is 0, False otherwise
 
-### ConstraintPrompt
-```json
-{
-  "id": "validate_logic",
-  "prompt": "Is this logic correct? [code]",
-  "verdict_expect_rule": "(yes|pass|correct)",
-  "description": "Validate code logic",
-  "scope": "local"
-}
-```
-- **prompt**: Question/instruction for Claude
-- **verdict_expect_rule**: Regex pattern for valid verdicts
-- **verdict**: String that must match the regex
-
 ## Implementation
 
 - **File**: `constraints_tool/constraints_tool/task_features_checker.py`
@@ -170,13 +156,12 @@ python3 constraints_tool/constraints_tool/task_features_checker.py \
   - Load Task document and extract features with constraints
   - Filter features by optional `--features` argument
   - Execute ConstraintBash commands with shell execution
-  - Execute ConstraintPrompt with Claude API evaluation
   - Support `$PROJECT_ROOT` substitution in constraint commands
   - Prevent recursive execution of constraints
   - Aggregate results into ChecksResults model
 - **Models**: From `knowledge_tool/knowledge_tool/src/models/`
-  - Task, Feature, ConstraintBash, ConstraintPrompt
-  - ChecksResults, FeatureResult, ConstraintBashResult, ConstraintPromptResult
+  - Task, Feature, ConstraintBash
+  - ChecksResults, FeatureResult, ConstraintBashResult
 
 ## Check Results
 

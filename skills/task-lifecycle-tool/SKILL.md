@@ -59,15 +59,13 @@ Feature {
 }
 ```
 
-**Constraint**  has *ConstraintBash* and *ConstraintPrompt* fields.
+**Constraint**  has *ConstraintBash* fields.
 Constraint is a validation rule which isd a prerequisite for the feature to be considered working. Constraint validation is a bash command or a prompt-based.
 
 constraint_bash: **ConstraintBash** - contains `cmd` that should be executed to validate the constraint, and exit code 0 indicates that the constraint is satisfied. The command can be a simple check or a more complex validation script.
 **Limitations:** 
 - `task_features_checker.py` API Script checks features constraints, and should not be used directly in constraints' `cmd`. Attempt to call it recursively will immediately fail.
 - Absolute paths in `cmd` should not be used. Instead path should be starting with `${CLAUDE_PROJECT_ROOT}`.
-
-constraint_prompt: **ConstraintPrompt** - contains `prompt` and `verdict_expect_rule` and a validation rule for the result.
 
 ### Task.status is "executing"
 **Spec** section becomes read-only when task is in "executing" stage to ensure consistency and prevent changes that could affect the execution process.
@@ -196,7 +194,3 @@ Feature ID: feature_2
     1 **Constraint ID**: constraint_1
        **Type**: ConstraintBash
        **Validation Command**: `echo "Validating constraint 1" && exit 0`
-    2 **Constraint ID**: constraint_2
-       **Type**: ConstraintPrompt
-       **Validation Prompt**: `Is the output correct?`
-       **Verdict Expect Rule**: `yes`
