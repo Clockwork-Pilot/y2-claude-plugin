@@ -18,8 +18,8 @@ sys.path.insert(0, str(_script_dir))
 
 from models import (
     Task, Feature,
-    ConstraintBash, ConstraintPrompt,
-    ConstraintBashResult, ConstraintPromptResult,
+    ConstraintBash,
+    ConstraintBashResult,
     FeatureResult, ChecksResults, FeaturesStats
 )
 
@@ -30,6 +30,69 @@ from patch_knowledge_document import apply_json_patch
 # Import config for PROJECT_ROOT
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from config import PROJECT_ROOT as CONFIG_PROJECT_ROOT
+
+
+def _set_proven_red_in_task(task_json_path: str, feature_id: str, constraint_id: str, error_msg: str) -> None:
+    """Directly set proven_red in task JSON file for a failed constraint.
+
+    Bypasses patch_knowledge_document.py to directly write proven_red without
+    it being stripped by normal patch protection. This is the ONLY authorized
+    mechanism for setting proven_red.
+
+    Args:
+        task_json_path: Path to task.k.json file
+        feature_id: Feature ID containing the constraint
+        constraint_id: Constraint ID to update
+        error_msg: Error message to set as proven_red
+    """
+    task_path = Path(task_json_path)
+    try:
+        with open(task_path, 'r') as f:
+            data = json.load(f)
+
+        features = (data.get("spec") or {}).get("features") or {}
+        feature = features.get(feature_id)
+        if not feature:
+            print(f"  ⚠️  Feature '{feature_id}' not found in task document")
+            return
+
+        constraints = feature.get("constraints") or {}
+        constraint = constraints.get(constraint_id)
+        if not isinstance(constraint, dict):
+            print(f"  ⚠️  Constraint '{constraint_id}' not found in feature '{feature_id}'")
+            return
+
+        existing_proven_red = constraint.get("proven_red")
+        if existing_proven_red is None:
+            constraint["proven_red"] = error_msg
+            print(f"  ✓ Set proven_red for constraint '{constraint_id}'")
+        elif existing_proven_red != error_msg:
+            print(f"  ⚠️  Warning: proven_red changed for '{constraint_id}'")
+            print(f"     Old: {existing_proven_red[:80]}{'...' if len(existing_proven_red) > 80 else ''}")
+            print(f"     New: {error_msg[:80]}{'...' if len(error_msg) > 80 else ''}")
+            constraint["proven_red"] = error_msg
+        else:
+            print(f"  ℹ  proven_red already set for constraint '{constraint_id}' (unchanged)")
+            return
+
+        # Write back using protected file mechanism (handles read-only files)
+        try:
+            from common.file_tools import write_protected_file
+            write_protected_file(task_path, json.dumps(data, indent=2))
+        except Exception:
+            # Fallback to direct write
+            with open(task_path, 'w') as f:
+                json.dump(data, f, indent=2)
+
+        # Re-render the markdown for task document
+        try:
+            from common.render import render as render_doc
+            render_doc(str(task_path))
+        except Exception as e:
+            print(f"  ⚠️  Could not re-render markdown: {e}")
+
+    except Exception as e:
+        print(f"  ✗ Failed to set proven_red for '{constraint_id}': {e}")
 
 
 def _substitute_project_root(cmd: str) -> str:
@@ -81,15 +144,15 @@ def _check_recursive_execution(cmd: str) -> bool:
 
 
 def execute_constraint(
-    constraint: Union[ConstraintBash, ConstraintPrompt]
-) -> Union[ConstraintBashResult, ConstraintPromptResult]:
+    constraint: Union[ConstraintBash]
+) -> Union[ConstraintBashResult]:
     """Execute a single constraint and return its result.
 
     Args:
-        constraint: ConstraintBash or ConstraintPrompt to execute
+        constraint: ConstraintBash to execute
 
     Returns:
-        ConstraintBashResult or ConstraintPromptResult with execution result
+        ConstraintBashResult with execution result
     """
     if isinstance(constraint, ConstraintBash):
         # Check for recursive execution attempts
@@ -124,11 +187,6 @@ def execute_constraint(
         except Exception as e:
             return constraint.create_result(False, str(e))
 
-    elif isinstance(constraint, ConstraintPrompt):
-        # For prompt constraints, return empty result
-        # Actual LLM evaluation happens at higher level if needed
-        return constraint.create_result()
-
     else:
         raise TypeError(f"Unknown constraint type: {type(constraint)}")
 
@@ -161,8 +219,11 @@ def generate_features_stats(
 ) -> FeaturesStats:
     """Generate FeaturesStats from ChecksResults for iteration tracking.
 
+    2-Phase constraint validation: only constraints with proven_red set affect
+    the final result. Constraints without proven_red are informational only.
+
     Args:
-        task: Task document containing all features
+        task: Task document containing all features (with proven_red state)
         checks_results: ChecksResults with constraint execution results
 
     Returns:
@@ -174,28 +235,37 @@ def generate_features_stats(
         features_checks[feature_id] = True
 
     # Build failed features dict and update features_checks for failures
+    # Only proven constraints (with proven_red set) affect the final result
     failed_features = {}
     if checks_results.features_results:
         for feature_id, feature_result in checks_results.features_results.items():
             if feature_result.constraints_results:
-                # Check if any constraint failed
-                has_failure = False
-                for constraint_id, result in feature_result.constraints_results.items():
-                    # Check if constraint failed
-                    if isinstance(result, ConstraintBashResult) and not result.verdict:
-                        # Bash constraints fail if exit code != 0
-                        has_failure = True
-                        break
-                    elif isinstance(result, ConstraintPromptResult):
-                        # Prompt constraints only fail if verdict is non-empty AND indicates failure
-                        # Empty verdict means the constraint wasn't evaluated yet (code review), not a failure
-                        if result.verdict:
-                            # Only if we have explicit verdict text should we consider it
-                            has_failure = True
-                            break
+                # Get constraints with their proven_red state from the task
+                feature_constraints = {}
+                if task.spec.features and feature_id in task.spec.features:
+                    feature_obj = task.spec.features[feature_id]
+                    if feature_obj.constraints:
+                        feature_constraints = feature_obj.constraints
 
-                # Mark feature as failed and add to failed dict
-                if has_failure:
+                has_proven_failure = False
+                for constraint_id, result in feature_result.constraints_results.items():
+                    # Only proven constraints (with proven_red) affect the result
+                    constraint_obj = feature_constraints.get(constraint_id)
+                    is_proven = (
+                        isinstance(constraint_obj, ConstraintBash) and
+                        constraint_obj.proven_red is not None
+                    )
+
+                    if not is_proven:
+                        continue  # Unproven constraints are informational only
+
+                    # Check if proven constraint failed
+                    if isinstance(result, ConstraintBashResult) and not result.verdict:
+                        has_proven_failure = True
+                        break
+
+                # Mark feature as failed and add to failed dict (only for proven failures)
+                if has_proven_failure:
                     features_checks[feature_id] = False
                     failed_features[feature_id] = feature_result
 
@@ -276,10 +346,7 @@ def check_task_features(
         features_results=features_results if features_results else None
     )
 
-    # Generate FeaturesStats for iteration tracking
-    features_stats = generate_features_stats(task, checks_results)
-
-    # Save ChecksResults if specified
+    # Save ChecksResults first (before setting proven_red)
     if output_checks_path:
         output_path = Path(output_checks_path)
         print(f"💾 Saving results to {output_checks_path}")
@@ -310,6 +377,32 @@ def check_task_features(
                 print(f"⚠️  Failed to save results: {error.error}")
             else:
                 print(f"✓ Results saved to {output_checks_path}")
+
+    # Set proven_red on failed constraints in task document
+    print("\n🔴 Updating proven_red for failed constraints...")
+    any_proven_red_set = False
+    for feature_id, feature_result in features_results.items():
+        if feature_result.constraints_results:
+            for constraint_id, result in feature_result.constraints_results.items():
+                # Only set proven_red for failed bash constraints
+                if isinstance(result, ConstraintBashResult) and not result.verdict:
+                    error_msg = (result.shrunken_output or "Constraint failed").strip()
+                    _set_proven_red_in_task(task_json_path, feature_id, constraint_id, error_msg)
+                    any_proven_red_set = True
+
+    if not any_proven_red_set:
+        print("  ✓ No new failures to record")
+
+    # Reload task to get updated proven_red values for FeaturesStats generation
+    with open(task_path, 'r') as f:
+        updated_data = json.load(f)
+    try:
+        updated_task = Task.model_validate(updated_data)
+    except Exception:
+        updated_task = task  # Fall back to original if reload fails
+
+    # Generate FeaturesStats for iteration tracking (using updated proven_red state)
+    features_stats = generate_features_stats(updated_task, checks_results)
 
     return checks_results, features_stats
 
@@ -371,59 +464,98 @@ Examples:
             output_checks_path=args.output_checks_path
         )
 
+        # Load updated task to get proven_red state for summary
+        import json as _json
+        with open(args.task_path, 'r') as f:
+            _task_data = _json.load(f)
+        try:
+            _updated_task = Task.model_validate(_task_data)
+        except Exception:
+            _updated_task = None
+
+        # Collect proven/unproven constraint counts
+        total_constraints = 0
+        proven_constraints = 0
+        unproven_logged = []
+
+        if checks_results.features_results and _updated_task:
+            for feature_id, feature_result in checks_results.features_results.items():
+                feature_obj = (_updated_task.spec.features or {}).get(feature_id)
+                if not feature_obj or not feature_result.constraints_results:
+                    continue
+                for constraint_id in (feature_result.constraints_results or {}):
+                    total_constraints += 1
+                    c_obj = (feature_obj.constraints or {}).get(constraint_id)
+                    if isinstance(c_obj, ConstraintBash) and c_obj.proven_red is not None:
+                        proven_constraints += 1
+                    else:
+                        unproven_logged.append(f"{feature_id}/{constraint_id}")
+
+        # Print proven/all constraints summary
+        print(f"\n📊 Constraint Validation Summary (2-Phase):")
+        print(f"  Proven constraints (affect result): {proven_constraints}/{total_constraints}")
+        if unproven_logged:
+            print(f"  Unproven (informational only): {len(unproven_logged)}")
+            for c in unproven_logged:
+                print(f"    ℹ  {c}")
+
         # Print tested features summary
         print("\n📋 Tested Features:")
         if checks_results.features_results:
             for feature_id, feature_result in checks_results.features_results.items():
                 constraint_count = len(feature_result.constraints_results or {})
                 passed_count = sum(1 for result in (feature_result.constraints_results or {}).values()
-                                 if (isinstance(result, ConstraintBashResult) and result.verdict) or
-                                    (isinstance(result, ConstraintPromptResult) and not result.verdict))
+                                 if (isinstance(result, ConstraintBashResult) and result.verdict))
                 failed_count = constraint_count - passed_count
                 status = "✓" if failed_count == 0 else "✗"
                 print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed")
         else:
             print("  No features tested")
 
-        # Print features stats summary
+        # Print features stats summary (only proven failures count)
         failing_count = 0
         if features_stats:
-            print("\n📈 Feature Validation Stats:")
+            print("\n📈 Feature Validation Stats (proven constraints only):")
             passing = sum(1 for v in features_stats.features_checks.values() if v)
             failing = sum(1 for v in features_stats.features_checks.values() if not v)
             failing_count = failing
             total = len(features_stats.features_checks)
             print(f"  Overall: {passing}/{total} features passed")
             if failing > 0:
-                print(f"  Failed: {failing} features")
+                print(f"  Failed: {failing} features (proven constraints failing)")
 
-        # Print detailed error information for failed constraints
+        # Print detailed error information for proven failed constraints
         if features_stats and features_stats.failed:
-            print("\n❌ Failed Constraints Details:")
+            print("\n❌ Failed Proven Constraint Details:")
             for feature_id in sorted(features_stats.failed.keys()):
                 feature_result = features_stats.failed[feature_id]
+                # Get proven constraints from updated task
+                feature_obj = (_updated_task.spec.features or {}).get(feature_id) if _updated_task else None
                 print(f"\n  {feature_id}:")
                 if feature_result.constraints_results:
                     for constraint_id, result in sorted(feature_result.constraints_results.items()):
-                        # Check if constraint failed
+                        # Only show proven constraint failures
+                        c_obj = (feature_obj.constraints or {}).get(constraint_id) if feature_obj else None
+                        is_proven = isinstance(c_obj, ConstraintBash) and c_obj.proven_red is not None
+
+                        if not is_proven:
+                            continue
+
                         is_failed = False
                         if isinstance(result, ConstraintBashResult) and not result.verdict:
                             is_failed = True
-                        elif isinstance(result, ConstraintPromptResult) and result.verdict:
-                            is_failed = True
 
                         if is_failed:
-                            print(f"    ✗ {constraint_id}")
+                            print(f"    ✗ {constraint_id} [proven]")
                             output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
                             if output:
-                                # Print output with indentation
                                 for line in output.split('\n'):
                                     if line.strip():
                                         print(f"      {line}")
 
-        # Exit with code 2 if constraints failed, 0 if all passed
+        # Exit with code 2 if proven constraints failed, 0 if all passed
         if failing_count > 0:
-            print("\n✗ Task features check FAILED - constraints not satisfied")
+            print("\n✗ Task features check FAILED - proven constraints not satisfied")
             return 2
         else:
             print("\n✓ Task features check completed successfully")
