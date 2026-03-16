@@ -23,7 +23,7 @@ def check_constraints() -> int:
     Returns:
         Exit code: 0=all passed, 2=constraints failed, 1=error
     """
-    task_json = PROJECT_ROOT / "task.json"
+    task_json = PROJECT_ROOT / "task.k.json"
 
     if not task_json.exists():
         # No task document to check
