@@ -821,6 +821,45 @@
           "priority": "medium",
           "status": "planned"
         }
+      },
+      "remove_scope_from_constraint_bash": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "remove_scope_from_constraint_bash",
+        "description": "Remove the scope field from ConstraintBash model as it is redundant and not actively used. The scope field should be completely removed from: 1) ConstraintBash model definition in constraints_model.py, 2) Any Field() definitions with scope parameter, 3) All references to constraint.scope in the codebase. This simplifies the model and reduces unnecessary fields.",
+        "constraints": {
+          "constraint_scope_field_removed_from_definition": {
+            "id": "constraint_scope_field_removed_from_definition",
+            "cmd": "! grep -A 10 'class ConstraintBash' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'scope:' || (echo 'Scope field still present in ConstraintBash' && exit 1)",
+            "description": "Verify scope field is removed from ConstraintBash class definition",
+            "scope": "local"
+          },
+          "constraint_no_scope_in_constraint_bash": {
+            "id": "constraint_no_scope_in_constraint_bash",
+            "cmd": "grep 'class ConstraintBash' -A 20 $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | ! grep -q 'scope' || (echo 'Scope field or scope references found in ConstraintBash' && exit 1)",
+            "description": "Confirm scope field is completely removed from ConstraintBash model",
+            "scope": "local"
+          },
+          "constraint_no_scope_field_usage": {
+            "id": "constraint_no_scope_field_usage",
+            "cmd": "! grep 'self.scope\\|constraint.scope' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py || (echo 'Found self.scope or constraint.scope usage in code' && exit 1)",
+            "description": "Verify no references to scope field remain in constraints_model.py",
+            "scope": "local"
+          },
+          "constraint_all_model_tests_pass": {
+            "id": "constraint_all_model_tests_pass",
+            "cmd": "! grep 'scope' $PROJECT_ROOT/knowledge_tool/knowledge_tool/tests/test_constraints_model.py || (echo 'Found scope references in constraint tests - must update tests' && exit 1)",
+            "description": "Verify constraint model tests still exist and pass without scope field",
+            "scope": "local"
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-16T00:00:00",
+          "feature_type": "refactoring",
+          "implementation": "constraints_model",
+          "priority": "low",
+          "status": "planned"
+        }
       }
     },
     "metadata": {}
@@ -1058,8 +1097,8 @@
         "improved": {},
         "regressed": {},
         "still_failing": [
-          "task_features_checker_tool",
           "render_spec_features_in_task",
+          "task_features_checker_tool",
           "task_toc_rendering_and_links"
         ]
       }

@@ -554,6 +554,35 @@
           "timestamp": "2026-03-16T13:55:38.742805"
         }
       }
+    },
+    "remove_scope_from_constraint_bash": {
+      "feature_id": "remove_scope_from_constraint_bash",
+      "constraints_results": {
+        "constraint_scope_field_removed_from_definition": {
+          "constraint_id": "constraint_scope_field_removed_from_definition",
+          "verdict": false,
+          "shrunken_output": "Scope field still present in ConstraintBash\n",
+          "timestamp": "2026-03-16T14:29:28.976678"
+        },
+        "constraint_no_scope_in_constraint_bash": {
+          "constraint_id": "constraint_no_scope_in_constraint_bash",
+          "verdict": false,
+          "shrunken_output": "/bin/sh: 1: Syntax error: \"!\" unexpected\n",
+          "timestamp": "2026-03-16T14:29:28.977463"
+        },
+        "constraint_no_scope_field_usage": {
+          "constraint_id": "constraint_no_scope_field_usage",
+          "verdict": false,
+          "shrunken_output": "        lines.append(f\"**Scope:** {self.scope}\")\n        lines.append(f\"**Scope:** {self.scope}\")\nFound self.scope or constraint.scope usage in code\n",
+          "timestamp": "2026-03-16T14:29:28.979244"
+        },
+        "constraint_all_model_tests_pass": {
+          "constraint_id": "constraint_all_model_tests_pass",
+          "verdict": false,
+          "shrunken_output": "    def test_features_scope_creation(self):\n        features_scope = FeaturesScope(scope=\"local\")\n        assert features_scope.type == \"FeaturesScope\"\n        assert features_scope.scope == \"local\"\n        assert features_scope.features is None\n        assert features_scope.metadata == {}\n    def test_features_scope_with_features(self):\n        features_scope = FeaturesScope(\n            scope=\"global\",\n        assert len(features_scope.features) == 2\n        assert features_scope.features[\"g1\"",
+          "timestamp": "2026-03-16T14:29:28.980961"
+        }
+      }
     }
   }
 }

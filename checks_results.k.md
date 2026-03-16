@@ -46,6 +46,11 @@
     - [constraint_no_dict_metadata_references](#migrate-metadata-to-model-constraint-no-dict-metadata-references)
     - [constraint_spec_model_uses_metadata](#migrate-metadata-to-model-constraint-spec-model-uses-metadata)
     - [constraint_task_model_uses_metadata](#migrate-metadata-to-model-constraint-task-model-uses-metadata)
+  - [Feature: remove_scope_from_constraint_bash](#remove-scope-from-constraint-bash)
+    - [constraint_all_model_tests_pass](#remove-scope-from-constraint-bash-constraint-all-model-tests-pass)
+    - [constraint_no_scope_field_usage](#remove-scope-from-constraint-bash-constraint-no-scope-field-usage)
+    - [constraint_no_scope_in_constraint_bash](#remove-scope-from-constraint-bash-constraint-no-scope-in-constraint-bash)
+    - [constraint_scope_field_removed_from_definition](#remove-scope-from-constraint-bash-constraint-scope-field-removed-from-definition)
   - [Feature: render_spec_features_in_task](#render-spec-features-in-task)
     - [constraint_constraint_details_in_markdown](#render-spec-features-in-task-constraint-constraint-details-in-markdown)
     - [constraint_feature_section_in_markdown](#render-spec-features-in-task-constraint-feature-section-in-markdown)
@@ -405,6 +410,51 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 **Verdict:** ✗ FAIL
 **Timestamp:** 2026-03-16T13:55:38.727759
 **Output:** `Task model must have metadata: Metadata field (not Dict)
+`
+
+
+<a id="remove-scope-from-constraint-bash"></a>
+### Feature: remove_scope_from_constraint_bash
+
+**Bash Constraints:**
+
+<a id="remove-scope-from-constraint-bash-constraint-all-model-tests-pass"></a>
+#### remove_scope_from_constraint_bash.constraint_all_model_tests_pass
+**Verdict:** ✗ FAIL
+**Timestamp:** 2026-03-16T14:29:28.980961
+**Output:** `    def test_features_scope_creation(self):
+        features_scope = FeaturesScope(scope="local")
+        assert features_scope.type == "FeaturesScope"
+        assert features_scope.scope == "local"
+        assert features_scope.features is None
+        assert features_scope.metadata == {}
+    def test_features_scope_with_features(self):
+        features_scope = FeaturesScope(
+            scope="global",
+        assert len(features_scope.features) == 2
+        assert features_scope.features["g1"`
+
+<a id="remove-scope-from-constraint-bash-constraint-no-scope-field-usage"></a>
+#### remove_scope_from_constraint_bash.constraint_no_scope_field_usage
+**Verdict:** ✗ FAIL
+**Timestamp:** 2026-03-16T14:29:28.979244
+**Output:** `        lines.append(f"**Scope:** {self.scope}")
+        lines.append(f"**Scope:** {self.scope}")
+Found self.scope or constraint.scope usage in code
+`
+
+<a id="remove-scope-from-constraint-bash-constraint-no-scope-in-constraint-bash"></a>
+#### remove_scope_from_constraint_bash.constraint_no_scope_in_constraint_bash
+**Verdict:** ✗ FAIL
+**Timestamp:** 2026-03-16T14:29:28.977463
+**Output:** `/bin/sh: 1: Syntax error: "!" unexpected
+`
+
+<a id="remove-scope-from-constraint-bash-constraint-scope-field-removed-from-definition"></a>
+#### remove_scope_from_constraint_bash.constraint_scope_field_removed_from_definition
+**Verdict:** ✗ FAIL
+**Timestamp:** 2026-03-16T14:29:28.976678
+**Output:** `Scope field still present in ConstraintBash
 `
 
 

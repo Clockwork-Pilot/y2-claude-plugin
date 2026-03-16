@@ -46,6 +46,11 @@
       - [constraint_no_dict_metadata_references](#constraint_no_dict_metadata_references)
       - [constraint_spec_model_uses_metadata](#constraint_spec_model_uses_metadata)
       - [constraint_task_model_uses_metadata](#constraint_task_model_uses_metadata)
+    - [Feature: remove_scope_from_constraint_bash](#feature-remove_scope_from_constraint_bash)
+      - [constraint_all_model_tests_pass](#constraint_all_model_tests_pass)
+      - [constraint_no_scope_field_usage](#constraint_no_scope_field_usage)
+      - [constraint_no_scope_in_constraint_bash](#constraint_no_scope_in_constraint_bash)
+      - [constraint_scope_field_removed_from_definition](#constraint_scope_field_removed_from_definition)
     - [Feature: render_spec_features_in_task](#feature-render_spec_features_in_task)
       - [constraint_constraint_details_in_markdown](#constraint_constraint_details_in_markdown)
       - [constraint_feature_section_in_markdown](#constraint_feature_section_in_markdown)
@@ -394,6 +399,32 @@
 - feature_type: refactoring
 - implementation: models
 - priority: medium
+- status: planned
+
+### Feature: remove_scope_from_constraint_bash
+**Remove the scope field from ConstraintBash model as it is redundant and not actively used. The scope field should be completely removed from: 1) ConstraintBash model definition in constraints_model.py, 2) Any Field() definitions with scope parameter, 3) All references to constraint.scope in the codebase. This simplifies the model and reduces unnecessary fields.**
+
+#### constraint_all_model_tests_pass
+**Description:** Verify constraint model tests still exist and pass without scope field
+**Command:** `! grep 'scope' $PROJECT_ROOT/knowledge_tool/knowledge_tool/tests/test_constraints_model.py || (echo 'Found scope references in constraint tests - must update tests' && exit 1)`
+
+#### constraint_no_scope_field_usage
+**Description:** Verify no references to scope field remain in constraints_model.py
+**Command:** `! grep 'self.scope\|constraint.scope' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py || (echo 'Found self.scope or constraint.scope usage in code' && exit 1)`
+
+#### constraint_no_scope_in_constraint_bash
+**Description:** Confirm scope field is completely removed from ConstraintBash model
+**Command:** `grep 'class ConstraintBash' -A 20 $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | ! grep -q 'scope' || (echo 'Scope field or scope references found in ConstraintBash' && exit 1)`
+
+#### constraint_scope_field_removed_from_definition
+**Description:** Verify scope field is removed from ConstraintBash class definition
+**Command:** `! grep -A 10 'class ConstraintBash' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'scope:' || (echo 'Scope field still present in ConstraintBash' && exit 1)`
+
+**Metadata:**
+- created_at: 2026-03-16T00:00:00
+- feature_type: refactoring
+- implementation: constraints_model
+- priority: low
 - status: planned
 
 ### Feature: render_spec_features_in_task
