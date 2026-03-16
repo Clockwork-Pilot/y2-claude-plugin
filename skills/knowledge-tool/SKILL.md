@@ -3,15 +3,18 @@ name: knowledge-tool
 description: Apply JSON Patch to knowledge documents and render Markdown equivalents.
 ---
 
-This tool drives the knowledge document workflow by applying **RFC 6902 JSON Patch** operations to `.json` files and then automatically generating the corresponding `.md` representation.
+This tool drives the knowledge document workflow by applying **RFC 6902 JSON Patch** operations to `.k.json` files and then automatically generating `.k.md` file with markdown representation.
 
 # Knowledge documents
 Knowledge documents are structured JSON files that represent various types of knowledge (tasks, docs, etc.). Each document has a corresponding Markdown file that is generated from the JSON source.
 
-- **`xxxxxxx.json`** — is the source of truth canonical knowledge document in JSON format.
-- **`xxxxxxx.md`** — auto-generated Markdown representation of `xxxxxxx.json`.
+We claim that all the files matched by following patterns are protected knowledge documents:
+
+- **`xxxxxxx.k.json`** — is the source of truth canonical knowledge document in JSON format.
+- **`xxxxxxx.k.md`** — auto-generated Markdown representation of `xxxxxxx.k.json`.
 
 > ⚠️ Both files are protected (read-only). Do not edit them directly.
+> Sometimes user omits `.k` sub-extension in knowledge files. We support `*.json`, `*.md` natively as well.
 
 ## Prevent direct updates  Direct updates enforcement
 - `patch_knowledge_document` registers both files in the knowledge file registry
@@ -26,11 +29,11 @@ Knowledge documents are structured JSON files that represent various types of kn
 
 
 ## Tool for updating knowledge documents — `patch_knowledge_document.py`
-This script applies JSON Patch operations to a specified `.json` knowledge document, validates the result, and regenerates the corresponding `.md` file.
+This script applies JSON Patch operations to a specified `.k.json` knowledge document, validates the result, and regenerates the corresponding `.k.md` file.
 
 ## Usage
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py <doc.json> '<json-patch>'
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py <doc.k.json> '<json-patch>'
 ```
 
 ## Tool for creating knowledge documents — `create_knowledge_document.py`
@@ -49,10 +52,10 @@ python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_docu
 ## Examples
 ```bash
 # Create a new Doc
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Doc doc.json
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Doc doc.k.json
 
 # Create a new Task
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Task task.json
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Task task.k.json
 ```
 
 ## Error handling

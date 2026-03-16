@@ -125,10 +125,10 @@ def add_iteration_to_task(
     """Add iteration to task document.
 
     Runs constraint checks, creates iteration with features_stats and diff,
-    and patches task.json with the new iteration.
+    and patches task.k.json with the new iteration.
 
     Args:
-        task_json_path: Path to task.json
+        task_json_path: Path to task.k.json
         iteration_num: Optional iteration number (auto-incremented if not provided)
         tests_stats: Optional test statistics to include
 
@@ -174,8 +174,8 @@ def add_iteration_to_task(
         "value": iteration_data,
     }]
 
-    # Apply patch to task.json
-    print(f"📝 Adding {iteration_id} to task.json...")
+    # Apply patch to task.k.json
+    print(f"📝 Adding {iteration_id} to task.k.json...")
     error = apply_json_patch(str(task_path), json.dumps(patch_ops))
     if error:
         print(f"✗ Failed to add iteration: {error.error}", file=sys.stderr)
@@ -208,7 +208,7 @@ def main():
 
     parser.add_argument(
         'task_path',
-        help='Path to task.json file'
+        help='Path to task.k.json file'
     )
 
     parser.add_argument(

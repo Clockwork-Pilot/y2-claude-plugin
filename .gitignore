@@ -1,6 +1,7 @@
 protected_files.txt
 .claude.local.json
 .credentials/
+.claude/
 
 *~
 *.pyc

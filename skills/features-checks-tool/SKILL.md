@@ -1,6 +1,6 @@
 ---
 name: features-checks
-description: Execute and validate feature constraints from task.json, capturing results to checks_results.json using task_features_checker.py
+description: Execute and validate feature constraints from task.k.json, capturing results to checks_results.json using task_features_checker.py
 ---
 
 # Features Checks Tool
@@ -15,6 +15,21 @@ This skill validates feature constraints embedded in task documents:
 - Support filtering constraints by feature ID
 - Aggregate results into a ChecksResults document
 - Track constraint execution history and outcomes with full output details
+
+## ⚠️ CRITICAL: Use task_features_checker.py EXCLUSIVELY
+
+**DO NOT manually run constraint commands or create custom validation scripts.**
+
+The ONLY authoritative tool for checking constraints is:
+```bash
+python3 constraints_tool/constraints_tool/task_features_checker.py task.k.json
+```
+
+All constraint validation, failure tracking, and history recording MUST use this tool. Manual testing bypasses:
+- Proper exit code validation (critical for constraint correctness)
+- Error filtering (prevents garbage errors in history)
+- Constraint history recording (version-based tracking)
+- ChecksResults generation (source of truth)
 
 ## ⚠️ Requirement: Constraint Checks Upon Work Completion
 
@@ -31,7 +46,7 @@ This ensures code changes meet feature requirements and constraints are satisfie
 ## How It Works
 
 The skill uses task_features_checker.py to validate constraints from task documents:
-1. Load task document (task.json) containing features with embedded constraints
+1. Load task document (task.k.json) containing features with embedded constraints
 2. Extract constraints from specified features (or all if none specified)
 3. Execute each constraint:
    - **Bash constraints**: Run shell command, capture output, determine pass/fail
@@ -84,29 +99,29 @@ Executor reads:
 ### Command Pattern
 ```bash
 python3 constraints_tool/constraints_tool/task_features_checker.py \
-    <task.json> \
+    <task.k.json> \
     [--features feature1,feature2,...] \
     [--output-checks-path checks_results.json]
 ```
 
 ### Arguments
-- `task.json` — Input task document with features containing constraints
+- `task.k.json` — Input task document with features containing constraints
 - `--features` — Optional comma-separated list of feature IDs to check (if not provided, checks all features)
 - `--output-checks-path` — Optional output file for check results (ChecksResults model)
 
 ### Example
 ```bash
 # Check all features and their constraints
-python3 constraints_tool/constraints_tool/task_features_checker.py task.json
+python3 constraints_tool/constraints_tool/task_features_checker.py task.k.json
 
 # Check specific features only
 python3 constraints_tool/constraints_tool/task_features_checker.py \
-    task.json \
+    task.k.json \
     --features forbid_task_status_downgrade,render_spec_features_in_task
 
 # Save results to file with markdown rendering via patch_knowledge_document.py
 python3 constraints_tool/constraints_tool/task_features_checker.py \
-    task.json \
+    task.k.json \
     --output-checks-path checks_results.json
 ```
 
@@ -175,7 +190,7 @@ Results are captured in a ChecksResults document with:
 
 ## Example Constraint Structure in Task
 
-### Constraints in task.json (within Feature)
+### Constraints in task.k.json (within Feature)
 ```json
 {
   "type": "Feature",
@@ -247,7 +262,7 @@ Failed constraint output is truncated to 500 characters in `shrunken_output` fie
 For full output or debugging:
 1. Run constraint manually: `{constraint_cmd}`
 2. Check `checks_results.json` for captured output
-3. Read task.md constraint description for requirements
+3. Read task.k.md constraint description for requirements
 
 ### Addressing Failures
 1. Read constraint description - understand what's required
@@ -256,9 +271,30 @@ For full output or debugging:
 4. Re-run `task_features_checker.py` to validate
 5. Repeat until all constraints pass
 
+## Exit Code Rules (Critical for Constraints)
+
+**Bash constraints MUST use proper exit codes:**
+
+- **Exit code 0** = Constraint PASSED (test found what it was looking for)
+- **Exit code != 0** = Constraint FAILED (test did not find what it was looking for)
+
+❌ **WRONG** - Always exits 0 (even on failure):
+```bash
+grep -q 'pattern' file && echo 'Found' || echo 'Not found'
+```
+
+✅ **CORRECT** - Proper exit codes:
+```bash
+grep -q 'pattern' file                    # grep exit code propagates
+test -f file || { echo "Error: file not found"; exit 1; }   # Explicit failure on test failure
+```
+
+**Key rule**: The shell command's exit code must reflect test result, not echo result.
+
 ## Notes
 
 - Bash constraints execute immediately with `$PROJECT_ROOT` substitution support
+- Exit code 0 = PASS, non-zero = FAIL (shell standard)
 - Prompt constraints are evaluated by Claude with verdict validation against verdict_expect_rule regex
 - Recursive execution detection prevents infinite loops in constraint evaluation
 - All timestamps are ISO8601 formatted

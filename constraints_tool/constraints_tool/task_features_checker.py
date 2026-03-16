@@ -104,12 +104,17 @@ def execute_constraint(
 
         # Execute bash command
         try:
+            # Set PROJECT_ROOT environment variable so constraints can use it
+            env = os.environ.copy()
+            env['PROJECT_ROOT'] = str(CONFIG_PROJECT_ROOT)
+
             result = subprocess.run(
                 cmd,
                 shell=True,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
+                env=env
             )
             verdict = result.returncode == 0
             output = result.stdout + result.stderr
@@ -140,18 +145,9 @@ def check_feature(feature: Feature) -> FeatureResult:
     constraint_results = {}
 
     if feature.constraints:
-        print(f"🎯 Checking feature '{feature.id}': {len(feature.constraints)} constraints")
         for constraint_id, constraint in feature.constraints.items():
-            try:
-                print(f"  → Executing: {constraint_id}")
-                result = execute_constraint(constraint)
-                constraint_results[constraint_id] = result
-                if isinstance(result, ConstraintBashResult):
-                    print(f"     Result: {'✓ PASS' if result.verdict else '✗ FAIL'}")
-                else:
-                    print(f"     Result: {result.verdict or '(empty)'}")
-            except Exception as e:
-                print(f"  ✗ Error: {e}")
+            result = execute_constraint(constraint)
+            constraint_results[constraint_id] = result
 
     return FeatureResult(
         feature_id=feature.id,
@@ -217,7 +213,7 @@ def check_task_features(
     """Execute constraints for features in a Task document.
 
     Workflow:
-    1. Load task.json as Task document
+    1. Load task.k.json as Task document
     2. Extract spec.features
     3. Filter by feature_ids if provided
     4. For each feature, execute its constraints
@@ -225,7 +221,7 @@ def check_task_features(
     6. Optionally save ChecksResults to file using patch_knowledge_document
 
     Args:
-        task_json_path: Path to task.json file (Task document)
+        task_json_path: Path to task.k.json file (Task document)
         feature_ids: Optional list of feature IDs to check (if None, check all)
         output_checks_path: Optional path to ChecksResults file to save results
 
@@ -236,7 +232,7 @@ def check_task_features(
 
     print(f"📋 Loading task from {task_json_path}")
 
-    # Load task.json
+    # Load task.k.json
     if not task_path.exists():
         raise FileNotFoundError(f"Task file not found: {task_json_path}")
 
@@ -325,25 +321,25 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Check all features in task.json
-  python3 task_features_checker.py task.json
+  # Check all features in task.k.json
+  python3 task_features_checker.py task.k.json
 
   # Check specific features
-  python3 task_features_checker.py task.json --features feature_1,feature_2
+  python3 task_features_checker.py task.k.json --features feature_1,feature_2
 
   # Check and save results
-  python3 task_features_checker.py task.json --output-checks-path checks_results.json
+  python3 task_features_checker.py task.k.json --output-checks-path checks_results.k.json
 
   # Check specific features and save results
-  python3 task_features_checker.py task.json \\
+  python3 task_features_checker.py task.k.json \\
     --features forbid_task_status_downgrade,render_spec_features_in_task \\
-    --output-checks-path checks_results.json
+    --output-checks-path checks_results.k.json
         """
     )
 
     parser.add_argument(
         'task_path',
-        help='Path to task.json file (Task document)'
+        help='Path to task.k.json file (Task document)'
     )
 
     parser.add_argument(
@@ -357,7 +353,7 @@ Examples:
         '--output-checks-path',
         help='Path to save ChecksResults document',
         type=str,
-        default='checks_results.json'
+        default='checks_results.k.json'
     )
 
     args = parser.parse_args()
@@ -375,17 +371,19 @@ Examples:
             output_checks_path=args.output_checks_path
         )
 
-        # Print results summary
-        print("\n📊 Execution Summary:")
+        # Print tested features summary
+        print("\n📋 Tested Features:")
         if checks_results.features_results:
-            total_constraints = 0
             for feature_id, feature_result in checks_results.features_results.items():
                 constraint_count = len(feature_result.constraints_results or {})
-                total_constraints += constraint_count
-                print(f"  {feature_id}: {constraint_count} constraints")
-            print(f"Total: {total_constraints} constraints executed")
+                passed_count = sum(1 for result in (feature_result.constraints_results or {}).values()
+                                 if (isinstance(result, ConstraintBashResult) and result.verdict) or
+                                    (isinstance(result, ConstraintPromptResult) and not result.verdict))
+                failed_count = constraint_count - passed_count
+                status = "✓" if failed_count == 0 else "✗"
+                print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed")
         else:
-            print("  No results")
+            print("  No features tested")
 
         # Print features stats summary
         failing_count = 0
@@ -398,8 +396,30 @@ Examples:
             print(f"  Overall: {passing}/{total} features passed")
             if failing > 0:
                 print(f"  Failed: {failing} features")
-                for feature_id in sorted(features_stats.failed.keys()):
-                    print(f"    - {feature_id}")
+
+        # Print detailed error information for failed constraints
+        if features_stats and features_stats.failed:
+            print("\n❌ Failed Constraints Details:")
+            for feature_id in sorted(features_stats.failed.keys()):
+                feature_result = features_stats.failed[feature_id]
+                print(f"\n  {feature_id}:")
+                if feature_result.constraints_results:
+                    for constraint_id, result in sorted(feature_result.constraints_results.items()):
+                        # Check if constraint failed
+                        is_failed = False
+                        if isinstance(result, ConstraintBashResult) and not result.verdict:
+                            is_failed = True
+                        elif isinstance(result, ConstraintPromptResult) and result.verdict:
+                            is_failed = True
+
+                        if is_failed:
+                            print(f"    ✗ {constraint_id}")
+                            output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
+                            if output:
+                                # Print output with indentation
+                                for line in output.split('\n'):
+                                    if line.strip():
+                                        print(f"      {line}")
 
         # Exit with code 2 if constraints failed, 0 if all passed
         if failing_count > 0:

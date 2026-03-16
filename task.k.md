@@ -38,9 +38,14 @@
       - [constraint_features_stats_diff_model_exists](#constraint_features_stats_diff_model_exists)
       - [constraint_features_stats_has_diff_method](#constraint_features_stats_has_diff_method)
       - [constraint_iteration_has_diff_field](#constraint_iteration_has_diff_field)
-    - [Feature: forbid_task_status_downgrade](#feature-forbid_task_status_downgrade)
-      - [constraint_status_locked_in_executing](#constraint_status_locked_in_executing)
-      - [constraint_status_validation_exists](#constraint_status_validation_exists)
+    - [Feature: migrate_metadata_to_model](#feature-migrate_metadata_to_model)
+      - [constraint_constraint_model_uses_metadata](#constraint_constraint_model_uses_metadata)
+      - [constraint_doc_model_uses_metadata](#constraint_doc_model_uses_metadata)
+      - [constraint_feature_model_uses_metadata](#constraint_feature_model_uses_metadata)
+      - [constraint_metadata_import](#constraint_metadata_import)
+      - [constraint_no_dict_metadata_references](#constraint_no_dict_metadata_references)
+      - [constraint_spec_model_uses_metadata](#constraint_spec_model_uses_metadata)
+      - [constraint_task_model_uses_metadata](#constraint_task_model_uses_metadata)
     - [Feature: render_spec_features_in_task](#feature-render_spec_features_in_task)
       - [constraint_constraint_details_in_markdown](#constraint_constraint_details_in_markdown)
       - [constraint_feature_section_in_markdown](#constraint_feature_section_in_markdown)
@@ -56,6 +61,11 @@
       - [constraint_explicit_false_respected](#constraint_explicit_false_respected)
       - [constraint_render_toc_default_true](#constraint_render_toc_default_true)
       - [constraint_toc_rendered_by_default](#constraint_toc_rendered_by_default)
+    - [Feature: task_features_checker_selective_patch](#feature-task_features_checker_selective_patch)
+      - [constraint_feature_results_filtering](#constraint_feature_results_filtering)
+      - [constraint_patch_uses_add_op](#constraint_patch_uses_add_op)
+      - [constraint_preserves_other_features](#constraint_preserves_other_features)
+      - [constraint_selective_patch_logic](#constraint_selective_patch_logic)
     - [Feature: task_features_checker_tool](#feature-task_features_checker_tool)
       - [constraint_project_root_substitution](#constraint_project_root_substitution)
       - [constraint_recursive_execution_prevention](#constraint_recursive_execution_prevention)
@@ -260,7 +270,7 @@
 - Populate shrunken_output with command output truncated to 500 characters
 - Ensure output is captured for both passed and failed constraints
 - Display failed output in ChecksResults markdown rendering
-- Include output in checks_results.json for full constraint result tracking
+- Include output in checks_results.k.json for full constraint result tracking
 - Improve debugging capability by preserving command output in results
 
 #### constraint_output_populated_on_failure
@@ -295,8 +305,8 @@
 **Command:** `grep -q 'goals.*List\|goals.*list\[str\]' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '✓ Goals field exists' || echo '✗ Goals field missing'`
 
 #### constraint_goals_field_in_task
-**Description:** Verify goals field appears in task.json features
-**Command:** `grep -q '"goals"' task.json && echo '✓ Goals in task.json' || echo '✗ Goals not in task.json'`
+**Description:** Verify goals field appears in task.k.json features
+**Command:** `grep -q '"goals"' task.k.json && echo '✓ Goals in task.k.json' || echo '✗ Goals not in task.k.json'`
 
 #### constraint_goals_in_toc
 **Description:** Verify goals are included in table of contents
@@ -348,22 +358,42 @@
 - priority: high
 - status: pending
 
-### Feature: forbid_task_status_downgrade
-**Prevent Task status changes once in executing state. Implementation: Use validation in PLUGIN_ROOT/hooks/ or patch_knowledge_document to ensure: 1) Status can only transition: planning → executing, 2) Once in executing state, no further status changes are allowed (locked state), 3) Reject any attempts to manually change status from executing/failed/succeed with clear error messages**
+### Feature: migrate_metadata_to_model
+**Migrate all models from using metadata: Dict[str, Any] to using metadata: Metadata model. This provides type safety, consistency, and standardized metadata handling across all knowledge document models. Models affected: ConstraintBash, ConstraintPrompt, Task, Spec, Feature, and Doc. Each model should import the Metadata class from metadata_model and use it instead of Dict[str, Any].**
 
-#### constraint_status_locked_in_executing
-**Description:** Verify status is locked when task in executing state
-**Command:** `python3 knowledge_tool/knowledge_tool/patch_knowledge_document.py task.json '[{"op": "replace", "path": "/status", "value": "succeed"}]' 2>&1 | grep -q 'locked\|not allowed' && echo '✓ Status locked' || echo '✗ Locked check failed'`
+#### constraint_constraint_model_uses_metadata
+**Description:** Verify ConstraintBash and ConstraintPrompt use Metadata model instead of Dict
+**Command:** `grep -c 'metadata: Metadata' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py 2>/dev/null | grep -qE '^[1-9]' || (echo 'ConstraintBash/ConstraintPrompt must have metadata: Metadata field (not Dict)' && exit 1)`
 
-#### constraint_status_validation_exists
-**Description:** Verify status validation code exists in hooks directory
-**Command:** `grep -r 'forbid.*downgrade\|status.*validation\|executing.*planning\|failed.*planning\|succeed.*planning' $PROJECT_ROOT/hooks/ && echo 'Hook validation found'`
+#### constraint_doc_model_uses_metadata
+**Description:** Verify Doc model uses Metadata model instead of Dict
+**Command:** `grep -E '^\s{0,8}metadata:\s+Metadata\s*(=|:)' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/doc_model.py || (echo 'Doc model must have metadata: Metadata field definition (not Dict)' && exit 1)`
+
+#### constraint_feature_model_uses_metadata
+**Description:** Verify Feature model uses Metadata model instead of Dict
+**Command:** `grep -c 'metadata: Metadata' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/feature_model.py 2>/dev/null | grep -qE '^[1-9]' || (echo 'Feature model must have metadata: Metadata field (not Dict)' && exit 1)`
+
+#### constraint_metadata_import
+**Description:** Verify Metadata is imported in all model files
+**Command:** `grep -r 'from.*metadata_model import Metadata' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/*.py 2>/dev/null | wc -l | grep -qE '^[5-9]' || (echo 'Metadata must be imported in ALL model files (5+ imports needed)' && exit 1)`
+
+#### constraint_no_dict_metadata_references
+**Description:** Verify no models still use Dict for metadata field
+**Command:** `! grep -r 'metadata: Dict' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/*.py 2>/dev/null | grep -qE '\.(py|json):' || (echo 'NO Dict metadata references allowed in models - must all be Metadata type' && exit 1)`
+
+#### constraint_spec_model_uses_metadata
+**Description:** Verify Spec model uses Metadata model instead of Dict
+**Command:** `grep -c 'metadata: Metadata' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/spec_model.py 2>/dev/null | grep -qE '^[1-9]' || (echo 'Spec model must have metadata: Metadata field (not Dict)' && exit 1)`
+
+#### constraint_task_model_uses_metadata
+**Description:** Verify Task model uses Metadata model instead of Dict
+**Command:** `grep -c 'metadata: Metadata' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/task_model.py 2>/dev/null | grep -qE '^[1-9]' || (echo 'Task model must have metadata: Metadata field (not Dict)' && exit 1)`
 
 **Metadata:**
-- created_at: 2026-03-13T00:00:00
-- feature_type: validation
-- implementation: hooks
-- priority: high
+- created_at: 2026-03-16T00:00:00
+- feature_type: refactoring
+- implementation: models
+- priority: medium
 - status: planned
 
 ### Feature: render_spec_features_in_task
@@ -371,11 +401,11 @@
 
 #### constraint_constraint_details_in_markdown
 **Description:** Verify that constraint details (bash commands, prompt validations) are rendered in markdown
-**Command:** `grep -q 'Bash\|Prompt\|constraint\|cmd\|prompt' $PROJECT_ROOT/task.md && echo '✓ Constraint details found' || echo '⚠ Constraint details not found'`
+**Command:** `grep -q 'Bash\|Prompt\|constraint\|cmd\|prompt' $PROJECT_ROOT/task.k.md && echo '✓ Constraint details found' || echo '⚠ Constraint details not found'`
 
 #### constraint_feature_section_in_markdown
-**Description:** Verify that 'Features' section is rendered in task.md markdown output
-**Command:** `grep -q '## Features\|### .*:' $PROJECT_ROOT/task.md && echo '✓ Features section found in markdown' || echo '⚠ Features section not found'`
+**Description:** Verify that 'Features' section is rendered in task.k.md markdown output
+**Command:** `grep -q '## Features\|### .*:' $PROJECT_ROOT/task.k.md && echo '✓ Features section found in markdown' || echo '⚠ Features section not found'`
 
 #### constraint_rendering_implementation_review
 **Description:** Code review of Task.render() feature/constraint rendering implementation
@@ -391,11 +421,11 @@
 - depends_on: ['forbid_task_status_downgrade']
 
 ### Feature: task_add_iteration_script
-**Create task-add-iteration.py script in skills/task-lifecycle-tool/ directory. Script uses knowledge tool to update task.json by adding new Iteration with populated features_stats and tests_stats. Script runs task_features_checker.py, extracts results, creates FeaturesStatsDiff from previous iteration, and patches task.json with complete iteration data. Task lifecycle tool skill updated with documentation and usage examples.**
+**Create task-add-iteration.py script in skills/task-lifecycle-tool/ directory. Script uses knowledge tool to update task.k.json by adding new Iteration with populated features_stats and tests_stats. Script runs task_features_checker.py, extracts results, creates FeaturesStatsDiff from previous iteration, and patches task.k.json with complete iteration data. Task lifecycle tool skill updated with documentation and usage examples.**
 
 **Goals:**
 - Create skills/task-lifecycle-tool/task-add-iteration.py script
-- Script accepts task.json path and optional iteration number
+- Script accepts task.k.json path and optional iteration number
 - Runs constraint checker and extracts features_stats
 - Calculates features_stats_diff from previous iteration if exists
 - Supports optional tests_stats parameter
@@ -462,8 +492,34 @@
 - priority: medium
 - status: planned
 
+### Feature: task_features_checker_selective_patch
+**When --features argument is used with task_features_checker.py, the tool should perform selective patching of checks_results.k.json knowledge document instead of overwriting the entire file. Only the feature results specified in --features should be patched/updated, while preserving existing results for all other features in the document. This ensures that incremental validation runs don't lose results from previous checks.**
+
+#### constraint_feature_results_filtering
+**Description:** Verify feature results are filtered based on --features argument
+**Command:** `grep -q 'if feature_ids:' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -A 15 'if feature_ids:' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py | grep -q 'features_to_check.*{.*for.*in.*feature_ids' || (echo 'Feature filtering must use dict comprehension to filter features_to_check based on feature_ids list' && exit 1)`
+
+#### constraint_patch_uses_add_op
+**Description:** Verify patch operations use add/merge strategy instead of replace for selective updates
+**Command:** `grep -q 'apply_json_patch' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && grep -B 5 -A 10 'apply_json_patch' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py | grep -q '"op": "add"' || (echo 'Patching implementation must use apply_json_patch with add operations to merge results' && exit 1)`
+
+#### constraint_preserves_other_features
+**Description:** Verify that when --features is used, only those features are patched and others are preserved
+**Command:** `test -f $PROJECT_ROOT/checks_results.k.json && initial_count=$(grep -c '\"feature_id\"' $PROJECT_ROOT/checks_results.k.json) || initial_count=0; ! grep -q 'initialize.*empty\|features_results.*=.*{}' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Bug: features_results should only contain filtered features, not reset to empty' && exit 1)`
+
+#### constraint_selective_patch_logic
+**Description:** Verify selective patch logic exists when --features argument is provided
+**Command:** `cd $PROJECT_ROOT && test_output=$(python constraints_tool/constraints_tool/task_features_checker.py task.k.json --features task_features_checker_tool 2>&1); echo "$test_output" | grep -q 'task_features_checker_tool' && test_output2=$(python constraints_tool/constraints_tool/task_features_checker.py task.k.json --features render_spec_features_in_task 2>&1); echo "$test_output2" | grep -q 'render_spec_features_in_task' && both_exist=$(grep -c '\"feature_id\"' checks_results.k.json 2>/dev/null || echo 0); test "$both_exist" -gt 1 || (echo 'Selective patching not working: when --features used twice, both feature results should coexist in checks_results file' && exit 1)`
+
+**Metadata:**
+- created_at: 2026-03-16T00:00:00
+- feature_type: enhancement
+- implementation: task_features_checker
+- priority: medium
+- status: planned
+
 ### Feature: task_features_checker_tool
-**Create task_features_checker.py script in constraints_tool/ directory. Script should: 1) Accept path to task document (task.json), 2) Accept optional --features argument with comma-separated list of feature IDs to check, 3) Accept optional --output-checks-path argument for ChecksResults.json path to save results, 4) If --features not provided, check all features in spec.features, 5) Execute constraints for selected features similar to constraints_executor.py, 6) Write results to ChecksResults model containing feature_results with constraint execution outcomes, 7) Save ChecksResults to path specified in --output-checks-path if provided, 8) Support both ConstraintBash and ConstraintPrompt types, 9) Return results showing which constraints passed/failed**
+**Create task_features_checker.py script in constraints_tool/ directory. Script should: 1) Accept path to task document (task.k.json), 2) Accept optional --features argument with comma-separated list of feature IDs to check, 3) Accept optional --output-checks-path argument for ChecksResults.json path to save results, 4) If --features not provided, check all features in spec.features, 5) Execute constraints for selected features similar to constraints_executor.py, 6) Write results to ChecksResults model containing feature_results with constraint execution outcomes, 7) Save ChecksResults to path specified in --output-checks-path if provided, 8) Support both ConstraintBash and ConstraintPrompt types, 9) Return results showing which constraints passed/failed**
 
 #### constraint_project_root_substitution
 **Description:** Verify PROJECT_ROOT placeholder substitution is implemented
@@ -530,8 +586,8 @@
 **Command:** `python3 -c "import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Doc, Feature; spec = Spec(version=1, description=Doc(id='d', label='L', metadata={}), features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('✓ Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '✗ No constraints in TOC')" 2>/dev/null`
 
 #### constraint_constraints_visible_in_markdown
-**Description:** Verify constraints are rendered in task.md TOC
-**Command:** `grep -q 'constraint.*toc\|Constraint' task.md && echo '✓ Constraints visible in markdown' || echo '✗ Not visible'`
+**Description:** Verify constraints are rendered in task.k.md TOC
+**Command:** `grep -q 'constraint.*toc\|Constraint' task.k.md && echo '✓ Constraints visible in markdown' || echo '✗ Not visible'`
 
 #### constraint_toc_includes_constraints
 **Description:** Verify Task._generate_toc() includes constraints from features
@@ -556,11 +612,11 @@
 
 #### constraint_anchor_sections_exist
 **Description:** Verify all TOC links have corresponding heading anchors
-**Command:** `python3 constraints_scripts/validate_toc_links.py task.md`
+**Command:** `python3 constraints_scripts/validate_toc_links.py task.k.md`
 
 #### constraint_toc_has_entries
 **Description:** Verify TOC contains markdown list entries (lines starting with -)
-**Command:** `grep -A 20 '## Table of Contents' task.md | grep -q '^-' && echo '✓ TOC entries found' || echo '✗ No entries'`
+**Command:** `grep -A 20 '## Table of Contents' task.k.md | grep -q '^-' && echo '✓ TOC entries found' || echo '✗ No entries'`
 
 #### constraint_toc_implementation_review
 **Description:** Code review of Task TOC generation logic
@@ -569,15 +625,15 @@
 
 #### constraint_toc_indentation
 **Description:** Verify TOC has proper indentation for nested items
-**Command:** `grep '## Table of Contents' -A 50 task.md | grep -E '^  -|^    -' | wc -l | grep -qE '[1-9]' && echo '✓ Proper nesting found' || echo '✗ Missing'`
+**Command:** `grep '## Table of Contents' -A 50 task.k.md | grep -E '^  -|^    -' | wc -l | grep -qE '[1-9]' && echo '✓ Proper nesting found' || echo '✗ Missing'`
 
 #### constraint_toc_links_format
 **Description:** Verify TOC links follow markdown format [text](#anchor)
-**Command:** `grep '## Table of Contents' -A 20 task.md | grep -q '\[.*\](#' && echo '✓ Links formatted correctly' || echo '✗ Bad format'`
+**Command:** `grep '## Table of Contents' -A 20 task.k.md | grep -q '\[.*\](#' && echo '✓ Links formatted correctly' || echo '✗ Bad format'`
 
 #### constraint_toc_section_exists
-**Description:** Verify 'Table of Contents' section header exists in task.md
-**Command:** `grep -q '## Table of Contents' task.md && echo '✓ TOC section found' || echo '✗ Missing'`
+**Description:** Verify 'Table of Contents' section header exists in task.k.md
+**Command:** `grep -q '## Table of Contents' task.k.md && echo '✓ TOC section found' || echo '✗ Missing'`
 
 **Metadata:**
 - created_at: 2026-03-13T00:00:00
@@ -625,7 +681,7 @@
 
 #### constraint_stats_displayed_on_iteration
 **Description:** Verify iteration contains features_stats in task document
-**Command:** `grep -q 'iteration_1' task.json && jq '.iterations.iteration_1.features_stats' task.json | grep -q 'features_checks' && echo 'Stats in iteration' || echo 'Not in iteration'`
+**Command:** `grep -q 'iteration_1' task.k.json && jq '.iterations.iteration_1.features_stats' task.k.json | grep -q 'features_checks' && echo 'Stats in iteration' || echo 'Not in iteration'`
 
 **Metadata:**
 - created_at: 2026-03-14T00:00:00
