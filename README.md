@@ -7,7 +7,7 @@ A minimal Claude plugin written in Python that implements hook handlers and logs
 This project includes the following Git submodules:
 
 - **y2_pycov** - Python coverage utilities (https://github.com/YuraLitvinov/y2-pycov)
-- **knowledge_tool** - Knowledge tool system (https://github.com/YaroslavLitvinov/y2-knowledge-tool)
+- **knowledge_tool** - Knowledge tool system (https://github.com/YaroslavLitvinov/y2-knowledge_document_tools)
 
 To clone with submodules:
 ```bash

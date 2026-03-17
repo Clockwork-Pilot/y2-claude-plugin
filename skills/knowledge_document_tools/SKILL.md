@@ -1,5 +1,5 @@
 ---
-name: knowledge-tool
+name: knowledge_document_tools
 description: Apply JSON Patch to knowledge documents and render Markdown equivalents.
 ---
 

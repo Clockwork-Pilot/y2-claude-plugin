@@ -14,7 +14,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
-from hooks import is_knowledge_file, send_error
+from hooks import is_knowledge_file, is_edit_blocked_by_unverified_constraints, send_error
 
 logger = setup_logger(__name__)
 
@@ -24,9 +24,16 @@ def main():
         input_data = sys.stdin.read()
         hook_input = json.loads(input_data) if input_data else {}
 
+        # Check if writing is blocked due to unverified constraints
+        file_path = hook_input.get('tool_input', {}).get('file_path')
+        if is_edit_blocked_by_unverified_constraints(file_path):
+            error_msg = "Cannot write: task-spec.k.json contains unverified constraints.\n\nUnverified constraints must be removed or fixed before modifications are allowed."
+            send_error(error_msg, file_path)
+            logger.error(f"Write blocked due to unverified constraints: {file_path}")
+            sys.exit(2)
+
         # Check if the file being written is a registered knowledge file
         # Hook input has file_path in tool_input (actual structure from hook data)
-        file_path = hook_input.get('tool_input', {}).get('file_path')
         if file_path and is_knowledge_file(file_path):
             error_msg = f"Cannot write to knowledge document: {file_path}\n\nKnowledge documents should only be modified using patch_knowledge_document.py to ensure proper validation and automatic markdown rendering."
             send_error(error_msg, file_path)

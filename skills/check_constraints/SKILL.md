@@ -1,5 +1,5 @@
 ---
-name: features-checks
+name: check_constraints
 description: Execute and validate feature constraints from task-iterations.k.json, capturing results to checks_results.json using check_spec_constraints.py
 ---
 

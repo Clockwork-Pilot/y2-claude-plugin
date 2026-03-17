@@ -193,8 +193,8 @@ def generate_features_stats(
     )
 
 
-def check_task_features(
-    task_json_path: str,
+def check_constraints(
+    spec_json_path: str,
     feature_ids: Optional[list] = None,
     output_checks_path: Optional[str] = None
 ) -> tuple[ChecksResults, Optional[FeaturesStats]]:
@@ -209,22 +209,22 @@ def check_task_features(
     6. Optionally save ChecksResults to file using patch_knowledge_document
 
     Args:
-        task_json_path: Path to task-spec.k.json (Spec document)
+        spec_json_path: Path to task-spec.k.json (Spec document)
         feature_ids: Optional list of feature IDs to check (if None, check all)
         output_checks_path: Optional path to ChecksResults file to save results
 
     Returns:
         ChecksResults document with all execution results
     """
-    task_path = Path(task_json_path)
+    spec_path = Path(spec_json_path)
 
-    print(f"📋 Loading spec from {task_json_path}")
+    print(f"📋 Loading spec from {spec_json_path}")
 
     # Load document
-    if not task_path.exists():
-        raise FileNotFoundError(f"Document file not found: {task_json_path}")
+    if not spec_path.exists():
+        raise FileNotFoundError(f"Document file not found: {spec_json_path}")
 
-    with open(task_path, 'r') as f:
+    with open(spec_path, 'r') as f:
         data = json.load(f)
 
     # Load Spec document (task-spec.k.json)
@@ -300,7 +300,7 @@ def check_task_features(
     # Save updated task with incremented fails_count using knowledge API
     if patch_ops:
         print("🔄 Updating fails_count for failed constraints...")
-        error = apply_json_patch(str(task_path), json.dumps(patch_ops))
+        error = apply_json_patch(str(spec_path), json.dumps(patch_ops))
         if error:
             print(f"⚠️  Failed to update fails_count: {error.error}")
         else:
@@ -375,7 +375,7 @@ Examples:
     )
 
     parser.add_argument(
-        'task_path',
+        'spec_path',
         help='Path to task-spec.k.json file (Spec document)'
     )
 
@@ -401,9 +401,13 @@ Examples:
         feature_ids = [f.strip() for f in args.features.split(',')]
 
     try:
+        # Load spec document for unverified constraints reporting
+        spec_data = json.loads(Path(args.spec_path).read_text())
+        spec = Spec.model_validate(spec_data)
+
         # Execute constraint checks
-        checks_results, features_stats = check_task_features(
-            args.task_path,
+        checks_results, features_stats = check_constraints(
+            args.spec_path,
             feature_ids=feature_ids,
             output_checks_path=args.output_checks_path
         )
@@ -453,6 +457,29 @@ Examples:
                                 for line in output.split('\n'):
                                     if line.strip():
                                         print(f"      {line}")
+
+        # Print unverified constraints (fails_count < 1) grouped by feature
+        unverified_by_feature = {}
+        if spec and spec.features:
+            for feature_id, feature in spec.features.items():
+                if feature.constraints:
+                    for constraint_id, constraint in feature.constraints.items():
+                        fails_count = getattr(constraint, 'fails_count', 0)
+                        if fails_count < 1:
+                            if feature_id not in unverified_by_feature:
+                                unverified_by_feature[feature_id] = []
+                            unverified_by_feature[feature_id].append((constraint_id, fails_count))
+
+        if unverified_by_feature:
+            print("\n⚠️  Unverified Constraints (fails_count < 1):")
+            total_unverified = 0
+            for feature_id in sorted(unverified_by_feature.keys()):
+                constraints = unverified_by_feature[feature_id]
+                total_unverified += len(constraints)
+                print(f"\n  {feature_id}:")
+                for constraint_id, fails_count in sorted(constraints):
+                    print(f"    🚫 {constraint_id} (fails_count={fails_count})")
+            print(f"\nTotal unverified: {total_unverified}")
 
         # Exit with code 2 if constraints failed, 0 if all passed
         if failing_count > 0:

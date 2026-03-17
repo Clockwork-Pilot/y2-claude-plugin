@@ -74,6 +74,10 @@
       - [constraint_iterations_dir_exists](#constraint_iterations_dir_exists)
       - [constraint_project_data_dir_path](#constraint_project_data_dir_path)
       - [constraint_raw_specs_dir_exists](#constraint_raw_specs_dir_exists)
+    - [Feature: protect_constraint_updates_when_failed](#protect_constraint_updates_when_failed)
+      - [constraint_cmd_update_blocked_when_failed](#constraint_cmd_update_blocked_when_failed)
+      - [constraint_description_update_blocked_when_failed](#constraint_description_update_blocked_when_failed)
+      - [constraint_update_blocked_with_fails_count](#constraint_update_blocked_with_fails_count)
     - [Feature: remove_scope_from_constraint_bash](#remove_scope_from_constraint_bash)
       - [constraint_all_model_tests_pass](#constraint_all_model_tests_pass)
       - [constraint_no_scope_field_usage](#constraint_no_scope_field_usage)
@@ -112,7 +116,6 @@
       - [constraint_tool_returns_checks_results](#constraint_tool_returns_checks_results)
       - [constraint_tool_saves_results_to_file](#constraint_tool_saves_results_to_file)
     - [Feature: task_toc_includes_constraints](#task_toc_includes_constraints)
-      - [constraint_constraints_nested_in_toc](#constraint_constraints_nested_in_toc)
       - [constraint_constraints_visible_in_markdown](#constraint_constraints_visible_in_markdown)
       - [constraint_toc_includes_constraints](#constraint_toc_includes_constraints)
     - [Feature: task_toc_rendering_and_links](#task_toc_rendering_and_links)
@@ -121,6 +124,11 @@
       - [constraint_toc_indentation](#constraint_toc_indentation)
       - [constraint_toc_links_format](#constraint_toc_links_format)
       - [constraint_toc_section_exists](#constraint_toc_section_exists)
+    - [Feature: track_unverified_constraints](#track_unverified_constraints)
+      - [constraint_flag_false_with_all_proven](#constraint_flag_false_with_all_proven)
+      - [constraint_flag_true_with_unproven](#constraint_flag_true_with_unproven)
+      - [constraint_flag_updated_on_add](#constraint_flag_updated_on_add)
+      - [constraint_spec_has_unverified_field](#constraint_spec_has_unverified_field)
     - [Feature: update_iteration_with_features_stats](#update_iteration_with_features_stats)
       - [constraint_feature_result_constraints_required](#constraint_feature_result_constraints_required)
       - [constraint_features_stats_generated](#constraint_features_stats_generated)
@@ -136,7 +144,7 @@
 ## Features
 
 ### Feature: add_constraint_validation_requirement_skill
-**Add constraint validation requirement to features-checks-tool skill documentation. Require that coding agents check constraints upon work completion and ensure all features pass before marking work as done. Document mandatory constraint checking scenarios, provide command examples, and guide agents on interpreting results and addressing failures.**
+**Add constraint validation requirement to check_constraints skill documentation. Require that coding agents check constraints upon work completion and ensure all features pass before marking work as done. Document mandatory constraint checking scenarios, provide command examples, and guide agents on interpreting results and addressing failures.**
 
 **Goals:**
 - Add ⚠️ REQUIREMENT section stating constraint checks MUST run upon work completion
@@ -149,15 +157,15 @@
 
 #### constraint_requirement_section_exists
 **Description:** Verify requirement section exists in skill documentation
-**Command:** `grep -q 'MUST RUN\|Requirement.*Constraint\|Constraint.*Checks.*MUST' skills/features-checks-tool/SKILL.md && echo 'Requirement section found' || echo 'Missing'`
+**Command:** `grep -q 'MUST RUN\|Requirement.*Constraint\|Constraint.*Checks.*MUST' skills/check_constraints/SKILL.md && echo 'Requirement section found' || echo 'Missing'`
 
 #### constraint_results_interpretation_guide
 **Description:** Verify guide for interpreting constraint results is documented
-**Command:** `grep -q 'Interpreting\|Success.*PASS\|Failure.*FAIL' skills/features-checks-tool/SKILL.md && echo 'Interpretation guide exists' || echo 'Missing'`
+**Command:** `grep -q 'Interpreting\|Success.*PASS\|Failure.*FAIL' skills/check_constraints/SKILL.md && echo 'Interpretation guide exists' || echo 'Missing'`
 
 #### constraint_when_to_run_documented
 **Description:** Verify documentation on when to run constraint checks
-**Command:** `grep -q 'When to Run\|REQUIRED scenarios' skills/features-checks-tool/SKILL.md && echo 'When section documented' || echo 'Not documented'`
+**Command:** `grep -q 'When to Run\|REQUIRED scenarios' skills/check_constraints/SKILL.md && echo 'When section documented' || echo 'Not documented'`
 
 **Metadata:**
 - created_at: 2026-03-14T00:00:00
@@ -180,7 +188,7 @@
 
 #### constraint_proven_constraint_removal_blocked
 **Description:** Removing a constraint with fails_count > 0 must be blocked by Feature model validation
-**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Task "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/spec/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t","fails_count":2}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"remove","path":"/spec/features/f1/constraints/c1"}]' 2>&1 | grep -q 'fails_count'; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t","fails_count":2}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"remove","path":"/features/f1/constraints/c1"}]' 2>&1 | grep -q "fails_count"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
 
 **Metadata:**
 - priority: high
@@ -492,6 +500,35 @@
 - status: pending
 - type: infrastructure
 
+### Feature: protect_constraint_updates_when_failed
+**Block updates to constraint cmd and description when fails_count > 0. Prevents modification of constraints with proven failure history.**
+
+**Goals:**
+- Prevent cmd field changes when constraint has failed
+- Prevent description changes when constraint has failed
+- Enforce fix-before-modify pattern for proven-failing constraints
+- Maintain constraint integrity and audit trail
+
+#### constraint_cmd_update_blocked_when_failed
+**Description:** Verify that updating cmd field is blocked when constraint has fails_count > 0
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo original","description":"t","fails_count":1}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features/f1/constraints/c1/cmd","value":"echo modified"}]' 2>&1 | grep -q "fails_count"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+
+#### constraint_description_update_blocked_when_failed
+**Description:** Verify that updating description field is blocked when constraint has fails_count > 0
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"original","fails_count":1}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features/f1/constraints/c1/description","value":"modified"}]' 2>&1 | grep -q "fails_count"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+
+#### constraint_update_blocked_with_fails_count
+**Description:** Verify that constraint cmd updates are blocked when fails_count > 0
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo original","description":"t","fails_count":1}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features/f1/constraints/c1/cmd","value":"echo modified"}]' 2>&1 | grep -q "fails_count"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+
+**Metadata:**
+- created_at: 2026-03-17T00:00:00
+- feature_type: protection
+- implementation: constraint_model
+- priority: high
+- status: planned
+- depends_on: ['constraint_bash_fails_count_cmd_protection']
+
 ### Feature: remove_scope_from_constraint_bash
 **Remove redundant scope field from ConstraintBash**
 
@@ -594,7 +631,7 @@
 
 #### constraint_script_runs_checker
 **Description:** Verify script runs check_spec_constraints.py
-**Command:** `grep -q 'task_features_checker\|check_task_features' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Runs checker' || echo 'Not implemented'`
+**Command:** `grep -q 'task_features_checker\|check_constraints' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Runs checker' || echo 'Not implemented'`
 
 #### constraint_script_uses_knowledge_tool
 **Description:** Verify script uses knowledge tool for updates
@@ -715,7 +752,7 @@
 
 #### constraint_tool_returns_checks_results
 **Description:** Verify tool returns results in ChecksResults model format
-**Command:** `grep -q "ChecksResults\|check_task_features.*ChecksResults" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'ChecksResults usage found' || echo 'ChecksResults not found'`
+**Command:** `grep -q "ChecksResults\|check_constraints.*ChecksResults" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'ChecksResults usage found' || echo 'ChecksResults not found'`
 
 #### constraint_tool_saves_results_to_file
 **Description:** Verify tool saves ChecksResults to file when --output-checks-path provided
@@ -739,10 +776,6 @@
 - Display constraints nested under their parent features
 - Show constraint IDs and descriptions in TOC
 - Improve navigation for complex task specifications
-
-#### constraint_constraints_nested_in_toc
-**Description:** Verify constraints appear as nested items in feature TOC entries
-**Command:** `python3 -c "import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Feature; spec = Spec(version=1, description='Test spec', features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('✓ Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '✗ No constraints in TOC')" 2>/dev/null`
 
 #### constraint_constraints_visible_in_markdown
 **Description:** Verify constraints are rendered in task-iterations.k.md TOC
@@ -797,6 +830,41 @@
 - status: planned
 - depends_on: ['task_toc_includes_constraints']
 
+### Feature: track_unverified_constraints
+**Spec model tracks contains_unverified_constraints flag. When features/constraints are added/updated/deleted, automatically set flag to True if any constraint has fails_count < 1, False if all constraints are proven (fails_count >= 1).**
+
+**Goals:**
+- Add contains_unverified_constraints field to Spec model
+- Auto-update flag on feature/constraint add operations
+- Auto-update flag on feature/constraint update operations
+- Auto-update flag on feature/constraint delete operations
+- Block spec serialization if contains_unverified_constraints=True (optional enforcement)
+- Provide visibility into spec quality and test coverage
+
+#### constraint_flag_false_with_all_proven
+**Description:** Verify contains_unverified_constraints=False when all constraints have fails_count >= 1
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t","fails_count":2}}}}}]' >/dev/null && grep -q '"contains_unverified_constraints": false' "$F"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+
+#### constraint_flag_true_with_unproven
+**Description:** Verify contains_unverified_constraints=True when constraint has fails_count < 1
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t"}}}}}]' >/dev/null && grep -q '"contains_unverified_constraints": true' "$F"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+
+#### constraint_flag_updated_on_add
+**Description:** Verify flag updates to True when adding feature with unproven constraints
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && grep -q '"contains_unverified_constraints": false' "$F" && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t"}}}}}]' >/dev/null && grep -q '"contains_unverified_constraints": true' "$F"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+
+#### constraint_spec_has_unverified_field
+**Description:** Verify Spec model has contains_unverified_constraints field
+**Command:** `grep -q 'contains_unverified_constraints' knowledge_tool/knowledge_tool/src/models/spec_model.py && echo '✓ Field exists' || echo '✗ Field missing'`
+
+**Metadata:**
+- created_at: 2026-03-17T00:00:00
+- feature_type: tracking
+- implementation: spec_model
+- priority: high
+- status: planned
+- depends_on: ['constraint_bash_fails_count_cmd_protection']
+
 ### Feature: update_iteration_with_features_stats
 **Update Iteration model and task lifecycle tool to track feature constraint validation results. Add features_stats field containing complete feature validation status and failed feature details. FeaturesStats model includes: features_checks (Dict[str, bool] with all task features), failed (Dict[str, FeatureResult] with only features having failed constraints). FeatureResult.constraints_results field is required (Dict, not optional). Display iteration stats every time iteration is added or rendered.**
 
@@ -848,20 +916,20 @@
 **Update y2 skills to work with separate task-spec document**
 
 **Goals:**
-- Update y2:knowledge-tool skill doc to reference task-spec.k.json patterns
+- Update y2:knowledge_document_tools skill doc to reference task-spec.k.json patterns
 - Add section documenting task-spec document structure
 - Update y2:task-lifecycle-tool to handle task-spec operations
-- Update y2:features-checks-tool to work with task-spec features
+- Update y2:check_constraints to work with task-spec features
 - Document when to use task-iterations.k.json vs task-spec.k.json
 - Review constraint-related skills for spec-field references
 
 #### constraint_features_checks_tool_updated
-**Description:** Documentation: features-checks-tool must reference task-spec document
-**Command:** `grep -q 'task-spec' $PROJECT_ROOT/skills/features-checks-tool/SKILL.md && echo 'ok' || exit 1`
+**Description:** Documentation: check_constraints must reference task-spec document
+**Command:** `grep -q 'task-spec' $PROJECT_ROOT/skills/check_constraints/SKILL.md && echo 'ok' || exit 1`
 
 #### constraint_knowledge_tool_docs_updated
-**Description:** Documentation: knowledge-tool skill must document task-spec usage
-**Command:** `grep -i 'task-spec\|task_spec' $PROJECT_ROOT/skills/knowledge-tool/SKILL.md && echo 'ok' || exit 1`
+**Description:** Documentation: knowledge_document_tools skill must document task-spec usage
+**Command:** `grep -i 'task-spec\|task_spec' $PROJECT_ROOT/skills/knowledge_document_tools/SKILL.md && echo 'ok' || exit 1`
 
 **Metadata:**
 - priority: medium

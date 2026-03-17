@@ -83,4 +83,51 @@ def validate_task_status_transition(file_path: str, patch_operations: list, old_
     return True, ""
 
 
-__all__ = ["send_error", "is_knowledge_file", "validate_task_status_transition"]
+def have_unverified_constraints() -> bool:
+    """Check if task-spec.k.json has unverified constraints.
+
+    Reads the contains_unverified_constraints flag from PROJECT_ROOT/task-spec.k.json.
+    Unverified constraints (fails_count < 1) are those that haven't been proven to fail.
+
+    Returns:
+        True if contains_unverified_constraints flag is True, False otherwise.
+    """
+    from config import PROJECT_ROOT, TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK
+
+    if TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK:
+        return False
+
+    spec_path = PROJECT_ROOT / "task-spec.k.json"
+
+    try:
+        if not spec_path.exists():
+            return False
+
+        spec_data = json.loads(spec_path.read_text())
+        return spec_data.get("contains_unverified_constraints", False)
+    except Exception:
+        return False
+
+
+def is_edit_blocked_by_unverified_constraints(file_path: str = None) -> bool:
+    """Check if editing is blocked due to unverified constraints.
+
+    This function is used in hooks (handler_write.py, handler_edit.py) to prevent
+    modifications when the spec has unverified constraints.
+
+    Args:
+        file_path: Optional file path being edited (for context, not currently used)
+
+    Returns:
+        True if unverified constraints exist and editing should be blocked, False otherwise.
+    """
+    return have_unverified_constraints()
+
+
+__all__ = [
+    "send_error",
+    "is_knowledge_file",
+    "validate_task_status_transition",
+    "have_unverified_constraints",
+    "is_edit_blocked_by_unverified_constraints"
+]

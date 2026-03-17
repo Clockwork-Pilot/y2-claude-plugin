@@ -21,7 +21,7 @@ sys.path.insert(0, str(_constraints_tool))
 
 from models import Task, FeaturesStats, FeaturesStatsDiff, Iteration
 from patch_knowledge_document import apply_json_patch
-from task_features_checker import check_task_features
+from check_spec_constraints import check_constraints
 
 
 def get_last_iteration_number(task: Task) -> int:
@@ -149,7 +149,7 @@ def add_iteration_to_task(
     # Run constraint checks
     print("🔍 Running constraint checks...")
     try:
-        checks_results, features_stats = check_task_features(
+        checks_results, features_stats = check_constraints(
             task_json_path,
             output_checks_path=None  # Don't save to file, just use for stats
         )

@@ -162,7 +162,7 @@
 ## Features
 
 ### Feature: add_constraint_validation_requirement_skill
-**Add constraint validation requirement to features-checks-tool skill documentation. Require that coding agents check constraints upon work completion and ensure all features pass before marking work as done. Document mandatory constraint checking scenarios, provide command examples, and guide agents on interpreting results and addressing failures.**
+**Add constraint validation requirement to check_constraints skill documentation. Require that coding agents check constraints upon work completion and ensure all features pass before marking work as done. Document mandatory constraint checking scenarios, provide command examples, and guide agents on interpreting results and addressing failures.**
 
 **Goals:**
 - Add ⚠️ REQUIREMENT section stating constraint checks MUST run upon work completion
@@ -175,15 +175,15 @@
 
 #### constraint_requirement_section_exists
 **Description:** Verify requirement section exists in skill documentation
-**Command:** `grep -q 'MUST RUN\|Requirement.*Constraint\|Constraint.*Checks.*MUST' skills/features-checks-tool/SKILL.md && echo 'Requirement section found' || echo 'Missing'`
+**Command:** `grep -q 'MUST RUN\|Requirement.*Constraint\|Constraint.*Checks.*MUST' skills/check_constraints/SKILL.md && echo 'Requirement section found' || echo 'Missing'`
 
 #### constraint_results_interpretation_guide
 **Description:** Verify guide for interpreting constraint results is documented
-**Command:** `grep -q 'Interpreting\|Success.*PASS\|Failure.*FAIL' skills/features-checks-tool/SKILL.md && echo 'Interpretation guide exists' || echo 'Missing'`
+**Command:** `grep -q 'Interpreting\|Success.*PASS\|Failure.*FAIL' skills/check_constraints/SKILL.md && echo 'Interpretation guide exists' || echo 'Missing'`
 
 #### constraint_when_to_run_documented
 **Description:** Verify documentation on when to run constraint checks
-**Command:** `grep -q 'When to Run\|REQUIRED scenarios' skills/features-checks-tool/SKILL.md && echo 'When section documented' || echo 'Not documented'`
+**Command:** `grep -q 'When to Run\|REQUIRED scenarios' skills/check_constraints/SKILL.md && echo 'When section documented' || echo 'Not documented'`
 
 **Metadata:**
 - created_at: 2026-03-14T00:00:00
@@ -702,7 +702,7 @@
 
 #### constraint_script_runs_checker
 **Description:** Verify script runs check_spec_constraints.py
-**Command:** `grep -q 'task_features_checker\|check_task_features' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Runs checker' || echo 'Not implemented'`
+**Command:** `grep -q 'task_features_checker\|check_constraints' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Runs checker' || echo 'Not implemented'`
 
 #### constraint_script_uses_knowledge_tool
 **Description:** Verify script uses knowledge tool for updates
@@ -823,7 +823,7 @@
 
 #### constraint_tool_returns_checks_results
 **Description:** Verify tool returns results in ChecksResults model format
-**Command:** `grep -q "ChecksResults\|check_task_features.*ChecksResults" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'ChecksResults usage found' || echo 'ChecksResults not found'`
+**Command:** `grep -q "ChecksResults\|check_constraints.*ChecksResults" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'ChecksResults usage found' || echo 'ChecksResults not found'`
 
 #### constraint_tool_saves_results_to_file
 **Description:** Verify tool saves ChecksResults to file when --output-checks-path provided
@@ -956,20 +956,20 @@
 **Update y2 skills to work with separate task-spec document**
 
 **Goals:**
-- Update y2:knowledge-tool skill doc to reference task-spec.k.json patterns
+- Update y2:knowledge_document_tools skill doc to reference task-spec.k.json patterns
 - Add section documenting task-spec document structure
 - Update y2:task-lifecycle-tool to handle task-spec operations
-- Update y2:features-checks-tool to work with task-spec features
+- Update y2:check_constraints to work with task-spec features
 - Document when to use task-iterations.k.json vs task-spec.k.json
 - Review constraint-related skills for spec-field references
 
 #### constraint_features_checks_tool_updated
-**Description:** Documentation: features-checks-tool must reference task-spec document
-**Command:** `grep 'task-spec' $PROJECT_ROOT/skills/y2-features-checks-tool/SKILL.md && echo 'ok' || exit 1`
+**Description:** Documentation: check_constraints must reference task-spec document
+**Command:** `grep 'task-spec' $PROJECT_ROOT/skills/y2-check_constraints/SKILL.md && echo 'ok' || exit 1`
 
 #### constraint_knowledge_tool_docs_updated
-**Description:** Documentation: knowledge-tool skill must document task-spec usage
-**Command:** `grep -i 'task-spec\|task_spec' $PROJECT_ROOT/skills/knowledge-tool/SKILL.md && echo 'ok' || exit 1`
+**Description:** Documentation: knowledge_document_tools skill must document task-spec usage
+**Command:** `grep -i 'task-spec\|task_spec' $PROJECT_ROOT/skills/knowledge_document_tools/SKILL.md && echo 'ok' || exit 1`
 
 **Metadata:**
 - priority: medium

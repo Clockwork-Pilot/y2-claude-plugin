@@ -3,16 +3,19 @@ name: task-lifecycle-tool
 description: Task lifecycle knowledge document management. `task-iterations.k.json` is the canonical task document; `task-iterations.k.md` is its rendered Markdown view. Both files are protected and should not be edited directly; use `patch_knowledge_document.py` to update `task-iterations.k.json` and automatically regenerate `task-iterations.k.md`.
 ---
 
-Load knowledge-tool skill
+Load knowledge_document_tools skill
 
-# Task
+# Task Spec
+- **`task-spec.k.json`** — canonical knowledge document used to track task progress through its lifecycle.
+- **`task-spec.k.md`** — auto-generated Markdown representation of `task-spec.k.json`.
+
+# Task Iterations
 - **`task-iterations.k.json`** — canonical knowledge document used to track task progress through its lifecycle.
 - **`task-iterations.k.md`** — auto-generated Markdown representation of `task-iterations.k.json`.
 
-> ⚠️ Both files are protected (read-only). Do not edit them directly.
+> ⚠️ Above files are protected (read-only). Do not edit them directly.
 
-### Create task
-Create `task-iterations.k.json` (if it does not exist).
+### Create task document (if it does not exist).
 
 ```bash
 python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Task task-iterations.k.json
@@ -137,7 +140,7 @@ Example of whowing features and constraints directly on the screen, shown below:
 
 When coding agents complete work and add a new iteration to task-iterations.k.json:
 
-1. **Run feature constraint checks** using the features-checks-tool:
+1. **Run feature constraint checks** using the check_constraints:
    ```bash
    python constraints_tool/constraints_tool/check_spec_constraints.py task-iterations.k.json --output-checks-path checks_results.k.json
    ```

@@ -1,14 +1,11 @@
 {
   "permissions": {
     "deny": [
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git reset:*)",
-      "Bash(git rebase:*)"      
-    ],
-    "allow": [
       "Bash(gh:*)",
       "Bash(git:*)",
+      "Bash(git rebase:*)"
+    ],
+    "allow": [
       "Bash(pnpm:*)",
       "Bash(npx:*)",
       "Bash(cargo:*)",
@@ -68,9 +65,7 @@
       "Write(/tmp/**)",
       "Bash(python:*)",
       "Bash(.specify/**)",
-      "Bash(python3:*)",
-      "mcp__claude_ai_Google_Calendar__gcal_list_events",
-      "mcp__github__push_files"
+      "Bash(python3:*)"
     ]
   }
 }

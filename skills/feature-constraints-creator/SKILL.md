@@ -13,10 +13,10 @@ You must create a set of constraints that are impossible to bypass. Assume the d
 
 # How Constraints Fit Into the System
 
-Constraints live inside **Features** inside `task-iterations.k.json`:
+Constraints live inside **Features** inside `task-spec.k.json` (after spec decoupling):
 
 ```
-Task.spec.features[feature_id].constraints[constraint_id]
+Spec.features[feature_id].constraints[constraint_id]
 ```
 
 Each `Feature` has:
@@ -25,7 +25,7 @@ Each `Feature` has:
 - `constraints` — dict of `ConstraintBash` objects
 - `metadata` — optional tags (priority, status, depends_on, etc.)
 
-Constraints are executed by `check_spec_constraints.py` (see `y2:features-checks-tool`). **Never run constraint commands manually** — always use that tool.
+Constraints are executed by `check_spec_constraints.py` (see `y2:check_constraints`). **Never run constraint commands manually** — always use that tool with the `--features` flag to check specific features immediately after creation.
 
 ---
 
@@ -48,13 +48,13 @@ Before writing constraints, write a clear feature definition:
 - `description` — High-level feature summary (max 100 characters). Used for quick reference and indexing.
 - `goals` — Detailed knowledge structure about the feature. This is where the primary semantic content lives and what drives constraint design.
 
-Add it to `task-iterations.k.json` via the knowledge tool:
+Add it to `task-spec.k.json` via the knowledge tool:
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-iterations.k.json '[
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-spec.k.json '[
   {
     "op": "add",
-    "path": "/spec/features/my_feature",
+    "path": "/features/my_feature",
     "value": { ... feature object ... }
   }
 ]'
@@ -140,37 +140,50 @@ Never check if a log says "Success". Check for the specific data payload.
 
 # Step 3 — Add Constraints to the Feature
 
-Use `patch_knowledge_document.py` to add each constraint:
+Use `patch_knowledge_document.py` to add each constraint to `task-spec.k.json`:
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-iterations.k.json '[
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-spec.k.json '[
   {
     "op": "add",
-    "path": "/spec/features/my_feature/constraints/constraint_file_exists",
+    "path": "/features/my_feature/constraints/constraint_file_exists",
     "value": {
       "id": "constraint_file_exists",
       "cmd": "test -f $PROJECT_ROOT/src/main.py || { echo missing; exit 1; }",
-      "description": "Verify src/main.py exists",
-      "scope": "local"
+      "description": "Verify src/main.py exists"
     }
   }
 ]'
 ```
 
+**Note:** After adding constraints, immediately proceed to Step 4 to validate them with `check_spec_constraints.py` using the `--features` flag.
+
 ---
 
 # Step 4 — Validate the Constraint Suite
 
-After adding constraints, verify them with the features-checks-tool:
+After adding constraints, **automatically verify them** with the check_constraints tool:
 
 ```bash
 python3 constraints_tool/constraints_tool/check_spec_constraints.py \
-    task-iterations.k.json \
+    task-spec.k.json \
     --features my_feature \
     --output-checks-path checks_results.k.json
 ```
 
+**CRITICAL:** Use the `--features` flag with the feature ID to check **only the newly created feature**. This:
+- Validates that all constraints in the feature are properly defined
+- Catches syntax errors and execution failures immediately
+- Prevents invalid constraints from being committed
+- Provides immediate feedback on constraint quality
+
 **Expected on an empty codebase:** all constraints FAIL. If any pass on an empty codebase, they are invalid (Zero-State Rule violation) and must be rewritten.
+
+**After running checks:**
+- Review `checks_results.k.json` for any PASS verdicts on empty codebase (invalid)
+- Fix any constraints that violated Zero-State Rule
+- Rerun checks until all fail as expected on empty codebase
+- Only then proceed with implementation
 
 ---
 
@@ -246,10 +259,13 @@ Before submitting a constraint suite, verify each constraint:
 | Skill | When to use |
 |---|---|
 | `y2:task-lifecycle-tool` | Create the Task, transition status, add Iterations |
-| `y2:knowledge-tool` | Apply JSON Patch operations to `task-iterations.k.json` |
-| `y2:features-checks-tool` | Run constraint validation after implementation |
+| `y2:knowledge_document_tools` | Apply JSON Patch operations to `task-iterations.k.json` |
+| `y2:check_constraints` | Run constraint validation after implementation |
 
 **Workflow:**
-1. Use this skill → design features + constraints during **planning** stage
-2. Use `y2:features-checks-tool` → validate constraints during/after **executing** stage
-3. Use `y2:task-lifecycle-tool` → record iteration results with `features_stats`
+1. Use this skill → design features + constraints in `task-spec.k.json`
+2. **Immediately after:** Run `python3 constraints_tool/constraints_tool/check_spec_constraints.py task-spec.k.json --features <feature_id>` to validate the feature constraints
+3. Use `y2:check_constraints` → validate all constraints during/after **executing** stage
+4. Use `y2:task-lifecycle-tool` → record iteration results with `features_stats`
+
+**Key Practice:** The `--features` flag should be used to check only the newly created feature, ensuring immediate feedback on constraint quality before committing the feature definition.
