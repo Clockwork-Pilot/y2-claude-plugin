@@ -904,6 +904,13 @@
             "tags": [],
             "description": "task.k.json must not contain explicit fails_count: 0 values \u2014 0 is the default and should be omitted from serialization",
             "fails_count": 2
+          },
+          "constraint_proven_constraint_removal_blocked": {
+            "id": "constraint_proven_constraint_removal_blocked",
+            "cmd": "F=$(mktemp /tmp/XXXX.k.json); rm \"$F\"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Task \"$F\" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"replace\",\"path\":\"/spec/features\",\"value\":{\"f1\":{\"type\":\"Feature\",\"model_version\":1,\"id\":\"f1\",\"description\":\"t\",\"constraints\":{\"c1\":{\"id\":\"c1\",\"cmd\":\"echo t\",\"description\":\"t\",\"fails_count\":2}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"remove\",\"path\":\"/spec/features/f1/constraints/c1\"}]' 2>&1 | grep -q 'fails_count'; E=$?; rm -f \"$F\" \"${F%.k.json}.k.md\"; exit $E",
+            "tags": [],
+            "description": "Removing a constraint with fails_count > 0 must be blocked by Feature model validation",
+            "fails_count": 1
           }
         },
         "metadata": {
@@ -1149,9 +1156,9 @@
         "improved": {},
         "regressed": {},
         "still_failing": [
+          "task_features_checker_tool",
           "render_spec_features_in_task",
-          "task_toc_rendering_and_links",
-          "task_features_checker_tool"
+          "task_toc_rendering_and_links"
         ]
       }
     },
@@ -1190,6 +1197,120 @@
           "task_toc_rendering_and_links": true,
           "constraint_checker_exit_code_hook": true
         },
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_4": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_4",
+      "metadata": {
+        "created_at": "2026-03-17T01:39:11.093044",
+        "iteration_number": 4
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_5": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_5",
+      "metadata": {
+        "created_at": "2026-03-17T01:45:22.940894",
+        "iteration_number": 5
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_6": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_6",
+      "metadata": {
+        "created_at": "2026-03-17T02:00:05.087396",
+        "iteration_number": 6
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
         "regressed": {},
         "still_failing": []
       }

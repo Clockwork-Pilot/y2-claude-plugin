@@ -10,6 +10,7 @@
       - [constraint_when_to_run_documented](#constraint_when_to_run_documented)
     - [Feature: constraint_bash_fails_count_cmd_protection](#feature-constraint_bash_fails_count_cmd_protection)
       - [constraint_no_default_fails_count_in_json](#constraint_no_default_fails_count_in_json)
+      - [constraint_proven_constraint_removal_blocked](#constraint_proven_constraint_removal_blocked)
     - [Feature: constraint_checker_exit_code_hook](#feature-constraint_checker_exit_code_hook)
       - [constraint_handler_stop_calls_checker](#constraint_handler_stop_calls_checker)
       - [constraint_handler_stop_checks_exit_code](#constraint_handler_stop_checks_exit_code)
@@ -113,6 +114,9 @@
     - [iteration_1](#iteration_1)
     - [iteration_2](#iteration_2)
     - [iteration_3](#iteration_3)
+    - [iteration_4](#iteration_4)
+    - [iteration_5](#iteration_5)
+    - [iteration_6](#iteration_6)
 
 ## Specification
 
@@ -168,6 +172,10 @@
 #### constraint_no_default_fails_count_in_json
 **Description:** task.k.json must not contain explicit fails_count: 0 values — 0 is the default and should be omitted from serialization
 **Command:** `python3 -c "import json,sys; d=json.load(open(\"$PROJECT_ROOT/task.k.json\")); bad=[f\"{fid}.{cid}\" for fid,feat in d.get(\"spec\",{}).get(\"features\",{}).items() for cid,c in feat.get(\"constraints\",{}).items() if \"fails_count\" in c and c[\"fails_count\"]==0]; print(\"FAIL: \"+str(bad)) or sys.exit(1) if bad else print(\"OK: no default fails_count in spec.features constraints\")"`
+
+#### constraint_proven_constraint_removal_blocked
+**Description:** Removing a constraint with fails_count > 0 must be blocked by Feature model validation
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Task "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/spec/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t","fails_count":2}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"remove","path":"/spec/features/f1/constraints/c1"}]' 2>&1 | grep -q 'fails_count'; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
 
 **Metadata:**
 - priority: high
@@ -858,6 +866,102 @@
 - render_spec_features_in_task: ✓ PASS
 - task_add_iteration_script: ✓ PASS
 - task_default_render_toc: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_4
+
+**Metadata:**
+
+- created_at: 2026-03-17T01:39:11.093044
+- iteration_number: 4
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_5
+
+**Metadata:**
+
+- created_at: 2026-03-17T01:45:22.940894
+- iteration_number: 5
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_6
+
+**Metadata:**
+
+- created_at: 2026-03-17T02:00:05.087396
+- iteration_number: 6
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
 - task_features_checker_tool: ✓ PASS
 - task_toc_includes_constraints: ✓ PASS
 - task_toc_rendering_and_links: ✓ PASS

@@ -3,7 +3,7 @@
 
 import sys
 import json
-import subprocess
+import subprocess  # still needed for check_constraints()
 
 from pathlib import Path
 from datetime import datetime
@@ -17,6 +17,17 @@ logger = setup_logger(__name__)
 
 PLUGIN_ROOT = Path(__file__).parent.parent
 
+# Import add_iteration_to_task directly from task-add-iteration.py
+_iteration_script = PLUGIN_ROOT / "skills" / "task-lifecycle-tool" / "task-add-iteration.py"
+if _iteration_script.exists():
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location("task_add_iteration", _iteration_script)
+    _mod = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_mod)
+    add_iteration_to_task = _mod.add_iteration_to_task
+else:
+    add_iteration_to_task = None
+
 
 
 def check_constraints() -> int:
@@ -28,10 +39,8 @@ def check_constraints() -> int:
     task_json = PROJECT_ROOT / "task.k.json"
 
     if not task_json.exists():
-        # No task document to check
         return 0
 
-    # Run task_features_checker.py synchronously
     checker_script = PLUGIN_ROOT / "constraints_tool" / "constraints_tool" / "task_features_checker.py"
 
     try:
@@ -42,12 +51,77 @@ def check_constraints() -> int:
             text=True,
             timeout=60,
         )
-
         return result.returncode
 
     except Exception as e:
         logger.error(f"Error running constraint checks: {e}")
         return 1
+
+
+def add_iteration() -> int:
+    """Record this iteration using add_iteration_to_task.
+
+    Returns:
+        Exit code: 0=success, non-zero=error
+    """
+    if add_iteration_to_task is None:
+        logger.warning("add_iteration_to_task not available")
+        return 0
+
+    task_json = PROJECT_ROOT / "task.k.json"
+    if not task_json.exists():
+        return 0
+
+    try:
+        return add_iteration_to_task(str(task_json))
+    except Exception as e:
+        logger.error(f"Error adding iteration: {e}")
+        return 1
+
+
+def get_recurring_failures() -> list:
+    """Find features failing in all of the last 3 iterations.
+
+    Returns:
+        List of feature IDs that have been failing consistently
+    """
+    task_json = PROJECT_ROOT / "task.k.json"
+    if not task_json.exists():
+        return []
+
+    try:
+        with open(task_json) as f:
+            task_data = json.load(f)
+
+        iterations = task_data.get("iterations", {})
+        if not iterations:
+            return []
+
+        sorted_iters = sorted(
+            [(k, v) for k, v in iterations.items() if k.startswith("iteration_")],
+            key=lambda x: int(x[0].split("_")[1])
+        )
+
+        last_3 = sorted_iters[-3:]
+        if len(last_3) < 3:
+            return []
+
+        failing_sets = []
+        for _, iter_data in last_3:
+            fs = iter_data.get("features_stats", {})
+            if not fs:
+                break
+            checks = fs.get("features_checks", {})
+            failing_sets.append({fid for fid, passed in checks.items() if not passed})
+
+        if len(failing_sets) < 3:
+            return []
+
+        return list(failing_sets[0] & failing_sets[1] & failing_sets[2])
+
+    except Exception as e:
+        logger.error(f"Error reading iterations: {e}")
+        return []
 
 
 def main():
@@ -60,31 +134,32 @@ def main():
 
         # Handle constraint failures
         if check_exit_code == 2:
-            # Constraints failed - block the stop
-            decision_block = {
-                "decision": "block",
-                "reason": "Constraints violated, fix features implementation to satisfy them."
-            }
-            print(json.dumps(decision_block))
+            recurring = get_recurring_failures()
+            reason = "Constraints violated, fix features implementation to satisfy them."
+            if recurring:
+                reason += f" Recurring failures (3+ iterations): {', '.join(sorted(recurring))}."
 
-            log_message = {
+            print(json.dumps({"decision": "block", "reason": reason}))
+
+            logger.info(json.dumps({
                 'timestamp': datetime.now().isoformat(),
                 'event': 'Stop',
                 'status': 'blocked',
                 'reason': 'Constraint checks failed',
-                'data': hook_input
-            }
-            logger.info(json.dumps(log_message))
+                'recurring_failures': recurring,
+                'data': hook_input,
+            }))
             sys.exit(2)
 
-        # Constraints passed or no constraints - allow stop
-        log_message = {
+        # Constraints passed — record iteration
+        add_iteration()
+
+        logger.info(json.dumps({
             'timestamp': datetime.now().isoformat(),
             'event': 'Stop',
             'status': 'allowed',
-            'data': hook_input
-        }
-        logger.info(json.dumps(log_message))
+            'data': hook_input,
+        }))
         sys.exit(0)
 
     except Exception as e:

@@ -281,9 +281,10 @@ def check_task_features(
                         # Get current fails_count and increment it
                         current_fails_count = constraint_obj.fails_count
                         new_fails_count = current_fails_count + 1
-                        # Add patch operation to increment fails_count
+                        # Use "add" when field is absent (fails_count==0 is omitted from JSON),
+                        # "replace" when the field already exists (fails_count > 0).
                         patch_ops.append({
-                            "op": "replace",
+                            "op": "add" if current_fails_count == 0 else "replace",
                             "path": f"/spec/features/{feature_id}/constraints/{constraint_id}/fails_count",
                             "value": new_fails_count
                         })
