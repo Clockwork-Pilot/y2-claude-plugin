@@ -29,14 +29,14 @@ def is_knowledge_file(file_path: str) -> bool:
     Returns:
         True if the file is a registered knowledge file, False otherwise.
     """
-    from config import KNOWN_KNOWLEDGE_FILES
+    from config import KNOWN_KNOWLEDGE_FILES_PATH
 
-    if not KNOWN_KNOWLEDGE_FILES.exists():
+    if not KNOWN_KNOWLEDGE_FILES_PATH.exists():
         return False
 
     abs_path = str(Path(file_path).resolve())
     try:
-        content = KNOWN_KNOWLEDGE_FILES.read_text().strip()
+        content = KNOWN_KNOWLEDGE_FILES_PATH.read_text().strip()
         return abs_path in content.split('\n')
     except Exception:
         return False

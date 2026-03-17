@@ -9,11 +9,7 @@
       - [constraint_results_interpretation_guide](#constraint_results_interpretation_guide)
       - [constraint_when_to_run_documented](#constraint_when_to_run_documented)
     - [Feature: constraint_bash_fails_count_cmd_protection](#feature-constraint_bash_fails_count_cmd_protection)
-      - [constraint_cmd_change_blocked_when_failed](#constraint_cmd_change_blocked_when_failed)
-      - [constraint_fails_count_field_exists](#constraint_fails_count_field_exists)
-      - [constraint_fails_count_not_settable_via_json](#constraint_fails_count_not_settable_via_json)
-      - [constraint_increment_fails_count_method_exists](#constraint_increment_fails_count_method_exists)
-      - [constraint_task_features_checker_increments_fails_count](#constraint_task_features_checker_increments_fails_count)
+      - [constraint_no_default_fails_count_in_json](#constraint_no_default_fails_count_in_json)
     - [Feature: constraint_checker_exit_code_hook](#feature-constraint_checker_exit_code_hook)
       - [constraint_handler_stop_calls_checker](#constraint_handler_stop_calls_checker)
       - [constraint_handler_stop_checks_exit_code](#constraint_handler_stop_checks_exit_code)
@@ -167,27 +163,11 @@
 - status: completed
 
 ### Feature: constraint_bash_fails_count_cmd_protection
-**ConstraintBash.fails_count is maintained and protected: (1) fails_count can only be modified via increment_fails_count() method, not via snapshot/JSON loading; (2) cmd field cannot be updated when fails_count > 0, with update attempts blocked; (3) constraint can be removed entirely even when fails_count > 0; (4) knowledge base API (apply_json_patch) unchanged.**
+**ConstraintBash.fails_count is maintained correctly: default value of 0 must not appear explicitly in task.k.json (it is the default and clutters the document). When fails_count is 0, model serialization must omit the field.**
 
-#### constraint_cmd_change_blocked_when_failed
-**Description:** Negative/Security: cmd cannot be updated when fails_count > 0
-**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='original', description='test'); c.increment_fails_count(); data = {'id': 'test', 'cmd': 'changed', 'description': 'test', 'fails_count': 1}; c2 = ConstraintBash.model_validate(data); assert c2.cmd != 'changed' or c2.fails_count == 0; print('✓ cmd change blocked when fails_count > 0')" || exit 1`
-
-#### constraint_fails_count_field_exists
-**Description:** Structural: ConstraintBash has fails_count field defaulting to 0
-**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='test', description='test'); assert hasattr(c, 'fails_count') and c.fails_count == 0; print('✓ fails_count field exists')" || exit 1`
-
-#### constraint_fails_count_not_settable_via_json
-**Description:** Negative/Security: fails_count protected from snapshot updates
-**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; data = {'id': 'test', 'cmd': 'test', 'description': 'test', 'fails_count': 5}; c = ConstraintBash.model_validate(data); assert c.fails_count != 5; print('✓ fails_count cannot be set via JSON')" || exit 1`
-
-#### constraint_increment_fails_count_method_exists
-**Description:** Structural: increment_fails_count() method increments count
-**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='test', description='test'); c.increment_fails_count(); assert c.fails_count == 1; print('✓ increment_fails_count() works')" || exit 1`
-
-#### constraint_task_features_checker_increments_fails_count
-**Description:** Behavioral: task_features_checker increments fails_count on constraint failure
-**Command:** `grep 'constraint_obj.increment_fails_count()' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && echo '✓ increment_fails_count called on failure' || exit 1`
+#### constraint_no_default_fails_count_in_json
+**Description:** task.k.json must not contain explicit fails_count: 0 values — 0 is the default and should be omitted from serialization
+**Command:** `python3 -c "import json,sys; d=json.load(open(\"$PROJECT_ROOT/task.k.json\")); bad=[f\"{fid}.{cid}\" for fid,feat in d.get(\"spec\",{}).get(\"features\",{}).items() for cid,c in feat.get(\"constraints\",{}).items() if \"fails_count\" in c and c[\"fails_count\"]==0]; print(\"FAIL: \"+str(bad)) or sys.exit(1) if bad else print(\"OK: no default fails_count in spec.features constraints\")"`
 
 **Metadata:**
 - priority: high

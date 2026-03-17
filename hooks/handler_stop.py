@@ -11,10 +11,12 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
+from config import PROJECT_ROOT
 
 logger = setup_logger(__name__)
 
-PROJECT_ROOT = Path(__file__).parent.parent
+PLUGIN_ROOT = Path(__file__).parent.parent
+
 
 
 def check_constraints() -> int:
@@ -30,7 +32,7 @@ def check_constraints() -> int:
         return 0
 
     # Run task_features_checker.py synchronously
-    checker_script = PROJECT_ROOT / "constraints_tool" / "constraints_tool" / "task_features_checker.py"
+    checker_script = PLUGIN_ROOT / "constraints_tool" / "constraints_tool" / "task_features_checker.py"
 
     try:
         result = subprocess.run(
