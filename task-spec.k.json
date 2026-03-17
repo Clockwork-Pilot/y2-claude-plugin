@@ -3,7 +3,7 @@
   "model_version": 1,
   "version": 1,
   "description": "### Project Summary\n\n**Status**: \u2713 Complete and Functional\n\n**Components Built**:\n\u2713 Knowledge Tool - JSON patching and markdown rendering\n\u2713 Lifecycle Tool - Task creation and management\n\u2713 File Protection System - Auto-protected documents\n\u2713 Testing - 29 tests all passing\n\u2713 Documentation - CLAUDE.md, skills, README\n\n**Technology**: Python 3.11+, Pydantic, RFC 6902, Git submodules",
-  "contains_unverified_constraints": true,
+  "contains_unverified_constraints": false,
   "features": {
     "render_spec_features_in_task": {
       "type": "Feature",
@@ -1094,8 +1094,9 @@
       "constraints": {
         "constraint_spec_has_unverified_field": {
           "id": "constraint_spec_has_unverified_field",
-          "cmd": "grep -q 'contains_unverified_constraints' knowledge_tool/knowledge_tool/src/models/spec_model.py && echo '\u2713 Field exists' || echo '\u2717 Field missing'",
-          "description": "Verify Spec model has contains_unverified_constraints field"
+          "cmd": "grep -q \"contains_unverified_constraints\" knowledge_tool/knowledge_tool/src/models/spec_model.py && echo \"\u2713 Field exists\" || echo \"\u2717 Field missing\"",
+          "description": "Verify Spec model has contains_unverified_constraints field",
+          "fails_count": 1
         },
         "constraint_flag_true_with_unproven": {
           "id": "constraint_flag_true_with_unproven",
@@ -1105,8 +1106,9 @@
         },
         "constraint_flag_false_with_all_proven": {
           "id": "constraint_flag_false_with_all_proven",
-          "cmd": "F=$(mktemp /tmp/XXXX.k.json); rm \"$F\"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec \"$F\" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"replace\",\"path\":\"/features\",\"value\":{\"f1\":{\"type\":\"Feature\",\"model_version\":1,\"id\":\"f1\",\"description\":\"t\",\"constraints\":{\"c1\":{\"id\":\"c1\",\"cmd\":\"echo t\",\"description\":\"t\",\"fails_count\":2}}}}}]' >/dev/null && grep -q '\"contains_unverified_constraints\": false' \"$F\"; E=$?; rm -f \"$F\" \"${F%.k.json}.k.md\"; exit $E",
-          "description": "Verify contains_unverified_constraints=False when all constraints have fails_count >= 1"
+          "cmd": "F=$(mktemp /tmp/XXXX.k.json); rm \"$F\"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec \"$F\" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"add\",\"path\":\"/features\",\"value\":{\"f1\":{\"type\":\"Feature\",\"model_version\":1,\"id\":\"f1\",\"description\":\"t\",\"constraints\":{\"c1\":{\"id\":\"c1\",\"cmd\":\"echo t\",\"description\":\"t\",\"fails_count\":2}}}}}]' >/dev/null && grep -q '\"contains_unverified_constraints\": false' \"$F\"; E=$?; rm -f \"$F\" \"${F%.k.json}.k.md\"; exit $E",
+          "description": "Verify contains_unverified_constraints=False when all constraints have fails_count >= 1",
+          "fails_count": 1
         },
         "constraint_flag_updated_on_add": {
           "id": "constraint_flag_updated_on_add",

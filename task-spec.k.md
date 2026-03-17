@@ -843,7 +843,7 @@
 
 #### constraint_flag_false_with_all_proven
 **Description:** Verify contains_unverified_constraints=False when all constraints have fails_count >= 1
-**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t","fails_count":2}}}}}]' >/dev/null && grep -q '"contains_unverified_constraints": false' "$F"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
+**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"add","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"t","fails_count":2}}}}}]' >/dev/null && grep -q '"contains_unverified_constraints": false' "$F"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
 
 #### constraint_flag_true_with_unproven
 **Description:** Verify contains_unverified_constraints=True when constraint has fails_count < 1
@@ -855,7 +855,7 @@
 
 #### constraint_spec_has_unverified_field
 **Description:** Verify Spec model has contains_unverified_constraints field
-**Command:** `grep -q 'contains_unverified_constraints' knowledge_tool/knowledge_tool/src/models/spec_model.py && echo '✓ Field exists' || echo '✗ Field missing'`
+**Command:** `grep -q "contains_unverified_constraints" knowledge_tool/knowledge_tool/src/models/spec_model.py && echo "✓ Field exists" || echo "✗ Field missing"`
 
 **Metadata:**
 - created_at: 2026-03-17T00:00:00

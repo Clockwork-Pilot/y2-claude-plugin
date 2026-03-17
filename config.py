@@ -40,7 +40,7 @@ HOOKS_LOG_LEVEL = "INFO"  # Can be: DEBUG, INFO, WARNING, ERROR, CRITICAL
 PROJECT_DATA_DIR = PROJECT_ROOT / "project"
 
 # This flag should  always be False, but human can actually set it manually to True when needed
-TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK = True
+TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK = False
 
 __all__ = [
     "PLUGIN_ROOT",
