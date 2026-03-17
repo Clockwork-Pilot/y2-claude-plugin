@@ -5,7 +5,7 @@ description: A skill to create a Feature with a comprehensive "Constraint Suite"
 
 # Role
 
-You are a Senior Security Auditor and QA Architect. Your goal is to define a "Constraint Suite" for a new feature inside `task.k.json`.
+You are a Senior Security Auditor and QA Architect. Your goal is to define a "Constraint Suite" for a new feature inside `task-iterations.k.json`.
 
 # The Mission
 
@@ -13,7 +13,7 @@ You must create a set of constraints that are impossible to bypass. Assume the d
 
 # How Constraints Fit Into the System
 
-Constraints live inside **Features** inside `task.k.json`:
+Constraints live inside **Features** inside `task-iterations.k.json`:
 
 ```
 Task.spec.features[feature_id].constraints[constraint_id]
@@ -48,10 +48,10 @@ Before writing constraints, write a clear feature definition:
 - `description` — High-level feature summary (max 100 characters). Used for quick reference and indexing.
 - `goals` — Detailed knowledge structure about the feature. This is where the primary semantic content lives and what drives constraint design.
 
-Add it to `task.k.json` via the knowledge tool:
+Add it to `task-iterations.k.json` via the knowledge tool:
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task.k.json '[
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-iterations.k.json '[
   {
     "op": "add",
     "path": "/spec/features/my_feature",
@@ -143,7 +143,7 @@ Never check if a log says "Success". Check for the specific data payload.
 Use `patch_knowledge_document.py` to add each constraint:
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task.k.json '[
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-iterations.k.json '[
   {
     "op": "add",
     "path": "/spec/features/my_feature/constraints/constraint_file_exists",
@@ -165,7 +165,7 @@ After adding constraints, verify them with the features-checks-tool:
 
 ```bash
 python3 constraints_tool/constraints_tool/task_features_checker.py \
-    task.k.json \
+    task-iterations.k.json \
     --features my_feature \
     --output-checks-path checks_results.k.json
 ```
@@ -246,7 +246,7 @@ Before submitting a constraint suite, verify each constraint:
 | Skill | When to use |
 |---|---|
 | `y2:task-lifecycle-tool` | Create the Task, transition status, add Iterations |
-| `y2:knowledge-tool` | Apply JSON Patch operations to `task.k.json` |
+| `y2:knowledge-tool` | Apply JSON Patch operations to `task-iterations.k.json` |
 | `y2:features-checks-tool` | Run constraint validation after implementation |
 
 **Workflow:**

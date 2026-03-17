@@ -1,6 +1,6 @@
 ---
 name: features-checks
-description: Execute and validate feature constraints from task.k.json, capturing results to checks_results.json using task_features_checker.py
+description: Execute and validate feature constraints from task-iterations.k.json, capturing results to checks_results.json using task_features_checker.py
 ---
 
 # Features Checks Tool
@@ -22,7 +22,7 @@ This skill validates feature constraints embedded in task documents:
 
 The ONLY authoritative tool for checking constraints is:
 ```bash
-python3 constraints_tool/constraints_tool/task_features_checker.py task.k.json
+python3 constraints_tool/constraints_tool/task_features_checker.py task-iterations.k.json
 ```
 
 All constraint validation, failure tracking, and history recording MUST use this tool. Manual testing bypasses:
@@ -43,10 +43,22 @@ Before marking an iteration as complete or merging code changes:
 
 This ensures code changes meet feature requirements and constraints are satisfied.
 
+## Input Documents
+
+Features and constraints can come from two separate knowledge documents:
+
+- **task-iterations.k.json** — Legacy location (deprecated); spec field now optional
+- **task-spec.k.json** — Current location for specifications with features and constraints
+
+For constraint validation with the spec-decoupled architecture:
+- Features are defined in **task-spec.k.json** (Spec type at root)
+- The tool validates these features and their constraints
+- Results are saved to **checks_results.k.json**
+
 ## How It Works
 
 The skill uses task_features_checker.py to validate constraints from task documents:
-1. Load task document (task.k.json) containing features with embedded constraints
+1. Load specification document (task-spec.k.json) containing features with embedded constraints
 2. Extract constraints from specified features (or all if none specified)
 3. Execute each constraint:
    - **Bash constraints**: Run shell command, capture output, determine pass/fail
@@ -99,29 +111,29 @@ Executor reads:
 ### Command Pattern
 ```bash
 python3 constraints_tool/constraints_tool/task_features_checker.py \
-    <task.k.json> \
+    <task-iterations.k.json> \
     [--features feature1,feature2,...] \
     [--output-checks-path checks_results.json]
 ```
 
 ### Arguments
-- `task.k.json` — Input task document with features containing constraints
+- `task-iterations.k.json` — Input task document with features containing constraints
 - `--features` — Optional comma-separated list of feature IDs to check (if not provided, checks all features)
 - `--output-checks-path` — Optional output file for check results (ChecksResults model)
 
 ### Example
 ```bash
 # Check all features and their constraints
-python3 constraints_tool/constraints_tool/task_features_checker.py task.k.json
+python3 constraints_tool/constraints_tool/task_features_checker.py task-iterations.k.json
 
 # Check specific features only
 python3 constraints_tool/constraints_tool/task_features_checker.py \
-    task.k.json \
+    task-iterations.k.json \
     --features forbid_task_status_downgrade,render_spec_features_in_task
 
 # Save results to file with markdown rendering via patch_knowledge_document.py
 python3 constraints_tool/constraints_tool/task_features_checker.py \
-    task.k.json \
+    task-iterations.k.json \
     --output-checks-path checks_results.json
 ```
 
@@ -175,7 +187,7 @@ Results are captured in a ChecksResults document with:
 
 ## Example Constraint Structure in Task
 
-### Constraints in task.k.json (within Feature)
+### Constraints in task-iterations.k.json (within Feature)
 ```json
 {
   "type": "Feature",
@@ -247,7 +259,7 @@ Failed constraint output is truncated to 500 characters in `shrunken_output` fie
 For full output or debugging:
 1. Run constraint manually: `{constraint_cmd}`
 2. Check `checks_results.json` for captured output
-3. Read task.k.md constraint description for requirements
+3. Read task-iterations.k.md constraint description for requirements
 
 ### Addressing Failures
 1. Read constraint description - understand what's required

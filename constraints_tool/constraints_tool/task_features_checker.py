@@ -17,7 +17,7 @@ sys.path.insert(0, str(_knowledge_tool_src))
 sys.path.insert(0, str(_script_dir))
 
 from models import (
-    Task, Feature,
+    Spec, Feature,
     ConstraintBash,
     ConstraintBashResult,
     FeatureResult, ChecksResults, FeaturesStats
@@ -153,13 +153,13 @@ def check_feature(feature: Feature) -> FeatureResult:
 
 
 def generate_features_stats(
-    task: Task,
+    features: Dict[str, Feature],
     checks_results: ChecksResults
 ) -> FeaturesStats:
     """Generate FeaturesStats from ChecksResults for iteration tracking.
 
     Args:
-        task: Task document containing all features
+        features: Dict of features containing all features
         checks_results: ChecksResults with constraint execution results
 
     Returns:
@@ -167,7 +167,7 @@ def generate_features_stats(
     """
     # Initialize features_checks with all features set to True (passing)
     features_checks = {}
-    for feature_id in task.spec.features.keys():
+    for feature_id in features.keys():
         features_checks[feature_id] = True
 
     # Build failed features dict and update features_checks for failures
@@ -198,18 +198,18 @@ def check_task_features(
     feature_ids: Optional[list] = None,
     output_checks_path: Optional[str] = None
 ) -> tuple[ChecksResults, Optional[FeaturesStats]]:
-    """Execute constraints for features in a Task document.
+    """Execute constraints for features in a Spec document (task-spec.k.json).
 
     Workflow:
-    1. Load task.k.json as Task document
-    2. Extract spec.features
+    1. Load task-spec.k.json as Spec document
+    2. Extract features from spec
     3. Filter by feature_ids if provided
     4. For each feature, execute its constraints
     5. Aggregate results into ChecksResults document
     6. Optionally save ChecksResults to file using patch_knowledge_document
 
     Args:
-        task_json_path: Path to task.k.json file (Task document)
+        task_json_path: Path to task-spec.k.json (Spec document)
         feature_ids: Optional list of feature IDs to check (if None, check all)
         output_checks_path: Optional path to ChecksResults file to save results
 
@@ -218,31 +218,33 @@ def check_task_features(
     """
     task_path = Path(task_json_path)
 
-    print(f"📋 Loading task from {task_json_path}")
+    print(f"📋 Loading spec from {task_json_path}")
 
-    # Load task.k.json
+    # Load document
     if not task_path.exists():
-        raise FileNotFoundError(f"Task file not found: {task_json_path}")
+        raise FileNotFoundError(f"Document file not found: {task_json_path}")
 
     with open(task_path, 'r') as f:
         data = json.load(f)
 
-    # Parse Task document
+    # Load Spec document (task-spec.k.json)
     try:
-        task = Task.model_validate(data)
+        spec = Spec.model_validate(data)
+        features = spec.features
+        doc_type = 'Spec'
     except Exception as e:
-        raise ValueError(f"Invalid Task format: {e}")
+        raise ValueError(f"Invalid Spec format: {e}")
 
-    # Extract features from spec
-    if not task.spec.features:
-        print("⚠️  No features found in task spec")
+    # Extract features
+    if not features:
+        print("⚠️  No features found in document")
         return ChecksResults.create_default(), None
 
     # Filter features if specified
-    features_to_check = task.spec.features
+    features_to_check = features
     if feature_ids:
         features_to_check = {
-            fid: f for fid, f in task.spec.features.items()
+            fid: f for fid, f in features.items()
             if fid in feature_ids
         }
         if not features_to_check:
@@ -267,9 +269,12 @@ def check_task_features(
     # Build JSON Patch operations to increment fails_count for failed constraints
     patch_ops = []
     locked_constraints = []  # Track constraints that become locked
-    if checks_results.features_results and task.spec.features:
+    # Determine patch path based on document type (Spec vs Task)
+    feature_path_prefix = "features" if doc_type == "Spec" else "spec/features"
+
+    if checks_results.features_results and features:
         for feature_id, feature_result in checks_results.features_results.items():
-            feature_obj = task.spec.features.get(feature_id)
+            feature_obj = features.get(feature_id)
             if not feature_obj or not feature_result.constraints_results:
                 continue
 
@@ -285,7 +290,7 @@ def check_task_features(
                         # "replace" when the field already exists (fails_count > 0).
                         patch_ops.append({
                             "op": "add" if current_fails_count == 0 else "replace",
-                            "path": f"/spec/features/{feature_id}/constraints/{constraint_id}/fails_count",
+                            "path": f"/{feature_path_prefix}/{feature_id}/constraints/{constraint_id}/fails_count",
                             "value": new_fails_count
                         })
                         # Track if constraint is becoming locked (fails_count > 0)
@@ -341,7 +346,7 @@ def check_task_features(
                 print(f"✓ Results saved to {output_checks_path}")
 
     # Generate FeaturesStats for iteration tracking
-    features_stats = generate_features_stats(task, checks_results)
+    features_stats = generate_features_stats(features, checks_results)
 
     return checks_results, features_stats
 
@@ -349,21 +354,21 @@ def check_task_features(
 def main():
     """Main entry point with CLI argument parsing."""
     parser = argparse.ArgumentParser(
-        description="Execute and validate feature constraints from a Task document",
+        description="Execute and validate feature constraints from a Spec document (task-spec.k.json)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Check all features in task.k.json
-  python3 task_features_checker.py task.k.json
+  # Check all features in task-spec.k.json
+  python3 task_features_checker.py task-spec.k.json
 
   # Check specific features
-  python3 task_features_checker.py task.k.json --features feature_1,feature_2
+  python3 task_features_checker.py task-spec.k.json --features feature_1,feature_2
 
   # Check and save results
-  python3 task_features_checker.py task.k.json --output-checks-path checks_results.k.json
+  python3 task_features_checker.py task-spec.k.json --output-checks-path checks_results.k.json
 
   # Check specific features and save results
-  python3 task_features_checker.py task.k.json \\
+  python3 task_features_checker.py task-spec.k.json \\
     --features forbid_task_status_downgrade,render_spec_features_in_task \\
     --output-checks-path checks_results.k.json
         """
@@ -371,7 +376,7 @@ Examples:
 
     parser.add_argument(
         'task_path',
-        help='Path to task.k.json file (Task document)'
+        help='Path to task-spec.k.json file (Spec document)'
     )
 
     parser.add_argument(

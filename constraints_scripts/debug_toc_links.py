@@ -7,7 +7,7 @@ helping identify broken or mismatched links.
 Usage:
     python3 debug_toc_links.py [markdown_file]
 
-Default: task.k.md
+Default: task-iterations.k.md
 """
 
 import re
@@ -25,7 +25,7 @@ def generate_anchor(text: str) -> str:
     return anchor
 
 
-def debug_toc_links(markdown_file: str = 'task.k.md') -> bool:
+def debug_toc_links(markdown_file: str = 'task-iterations.k.md') -> bool:
     """Debug and show TOC link mappings.
 
     Args:

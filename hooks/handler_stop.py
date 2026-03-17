@@ -36,7 +36,7 @@ def check_constraints() -> int:
     Returns:
         Exit code: 0=all passed, 2=constraints failed, 1=error
     """
-    task_json = PROJECT_ROOT / "task.k.json"
+    task_json = PROJECT_ROOT / "task-iterations.k.json"
 
     if not task_json.exists():
         return 0
@@ -68,7 +68,7 @@ def add_iteration() -> int:
         logger.warning("add_iteration_to_task not available")
         return 0
 
-    task_json = PROJECT_ROOT / "task.k.json"
+    task_json = PROJECT_ROOT / "task-iterations.k.json"
     if not task_json.exists():
         return 0
 
@@ -85,7 +85,7 @@ def get_recurring_failures() -> list:
     Returns:
         List of feature IDs that have been failing consistently
     """
-    task_json = PROJECT_ROOT / "task.k.json"
+    task_json = PROJECT_ROOT / "task-iterations.k.json"
     if not task_json.exists():
         return []
 

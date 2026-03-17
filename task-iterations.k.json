@@ -1,0 +1,594 @@
+{
+  "type": "Task",
+  "model_version": 2,
+  "id": "task_1",
+  "iterations": {
+    "iteration_1": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_1",
+      "metadata": {
+        "created_at": "2026-03-14T00:00:00",
+        "description": "Enhanced features with FeaturesStats tracking and constraint validation requirements"
+      },
+      "code_stats": {
+        "added_lines": 287,
+        "removed_lines": 12,
+        "files_changed": 8
+      },
+      "features_stats": {
+        "features_checks": {
+          "forbid_task_status_downgrade": true,
+          "render_spec_features_in_task": false,
+          "task_features_checker_tool": false,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": false,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true
+        },
+        "failed": {
+          "render_spec_features_in_task": {
+            "feature_id": "render_spec_features_in_task",
+            "constraints_results": {}
+          },
+          "task_features_checker_tool": {
+            "feature_id": "task_features_checker_tool",
+            "constraints_results": {}
+          },
+          "task_toc_rendering_and_links": {
+            "feature_id": "task_toc_rendering_and_links",
+            "constraints_results": {}
+          }
+        }
+      }
+    },
+    "iteration_2": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_2",
+      "metadata": {
+        "created_at": "2026-03-14T12:19:09.602314",
+        "iteration_number": 2
+      },
+      "features_stats": {
+        "features_checks": {
+          "forbid_task_status_downgrade": true,
+          "render_spec_features_in_task": false,
+          "task_features_checker_tool": false,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": false,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": false,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true
+        },
+        "failed": {
+          "render_spec_features_in_task": {
+            "feature_id": "render_spec_features_in_task",
+            "constraints_results": {
+              "constraint_feature_section_in_markdown": {
+                "constraint_id": "constraint_feature_section_in_markdown",
+                "verdict": true,
+                "shrunken_output": "\u2713 Features section found in markdown\n",
+                "timestamp": "2026-03-14T12:19:08.962847",
+                "fails_count": 0
+              },
+              "constraint_constraint_details_in_markdown": {
+                "constraint_id": "constraint_constraint_details_in_markdown",
+                "verdict": true,
+                "shrunken_output": "\u2713 Constraint details found\n",
+                "timestamp": "2026-03-14T12:19:08.964276",
+                "fails_count": 0
+              }
+            }
+          },
+          "task_features_checker_tool": {
+            "feature_id": "task_features_checker_tool",
+            "constraints_results": {
+              "constraint_tool_exists": {
+                "constraint_id": "constraint_tool_exists",
+                "verdict": true,
+                "shrunken_output": "\u2713 tool exists\n",
+                "timestamp": "2026-03-14T12:19:08.965000",
+                "fails_count": 0
+              },
+              "constraint_tool_accepts_task_path": {
+                "constraint_id": "constraint_tool_accepts_task_path",
+                "verdict": true,
+                "shrunken_output": "Task path argument missing\n",
+                "timestamp": "2026-03-14T12:19:08.966330",
+                "fails_count": 0
+              },
+              "constraint_tool_accepts_features_arg": {
+                "constraint_id": "constraint_tool_accepts_features_arg",
+                "verdict": true,
+                "shrunken_output": "--features arg missing\n",
+                "timestamp": "2026-03-14T12:19:08.967630",
+                "fails_count": 0
+              },
+              "constraint_tool_accepts_output_checks_path_arg": {
+                "constraint_id": "constraint_tool_accepts_output_checks_path_arg",
+                "verdict": true,
+                "shrunken_output": "--output-checks-path arg missing\n",
+                "timestamp": "2026-03-14T12:19:08.968913",
+                "fails_count": 0
+              },
+              "constraint_tool_returns_checks_results": {
+                "constraint_id": "constraint_tool_returns_checks_results",
+                "verdict": true,
+                "shrunken_output": "ChecksResults usage found\n",
+                "timestamp": "2026-03-14T12:19:08.970170",
+                "fails_count": 0
+              },
+              "constraint_tool_saves_results_to_file": {
+                "constraint_id": "constraint_tool_saves_results_to_file",
+                "verdict": true,
+                "shrunken_output": "File save logic implemented\n",
+                "timestamp": "2026-03-14T12:19:08.972097",
+                "fails_count": 0
+              },
+              "constraint_recursive_execution_prevention": {
+                "constraint_id": "constraint_recursive_execution_prevention",
+                "verdict": true,
+                "shrunken_output": "\u2713 Recursive execution prevention found\n",
+                "timestamp": "2026-03-14T12:19:08.973304",
+                "fails_count": 0
+              },
+              "constraint_project_root_substitution": {
+                "constraint_id": "constraint_project_root_substitution",
+                "verdict": true,
+                "shrunken_output": "\u2713 PROJECT_ROOT substitution found\n",
+                "timestamp": "2026-03-14T12:19:08.974601",
+                "fails_count": 0
+              },
+              "constraint_tool_output_checks_path_writable": {
+                "constraint_id": "constraint_tool_output_checks_path_writable",
+                "verdict": true,
+                "shrunken_output": "Output path handling implemented\n",
+                "timestamp": "2026-03-14T12:19:08.975888",
+                "fails_count": 0
+              }
+            }
+          },
+          "task_toc_rendering_and_links": {
+            "feature_id": "task_toc_rendering_and_links",
+            "constraints_results": {
+              "constraint_toc_section_exists": {
+                "constraint_id": "constraint_toc_section_exists",
+                "verdict": true,
+                "shrunken_output": "\u2713 TOC section found\n",
+                "timestamp": "2026-03-14T12:19:09.331448",
+                "fails_count": 0
+              },
+              "constraint_toc_has_entries": {
+                "constraint_id": "constraint_toc_has_entries",
+                "verdict": true,
+                "shrunken_output": "\u2713 TOC entries found\n",
+                "timestamp": "2026-03-14T12:19:09.332920",
+                "fails_count": 0
+              },
+              "constraint_toc_links_format": {
+                "constraint_id": "constraint_toc_links_format",
+                "verdict": true,
+                "shrunken_output": "\u2713 Links formatted correctly\n",
+                "timestamp": "2026-03-14T12:19:09.334372",
+                "fails_count": 0
+              },
+              "constraint_anchor_sections_exist": {
+                "constraint_id": "constraint_anchor_sections_exist",
+                "verdict": true,
+                "shrunken_output": "\u2713 All 86 TOC links have matching anchors\n",
+                "timestamp": "2026-03-14T12:19:09.357611",
+                "fails_count": 0
+              },
+              "constraint_toc_indentation": {
+                "constraint_id": "constraint_toc_indentation",
+                "verdict": true,
+                "shrunken_output": "\u2713 Proper nesting found\n",
+                "timestamp": "2026-03-14T12:19:09.359288",
+                "fails_count": 0
+              }
+            }
+          },
+          "constraint_checker_exit_code_hook": {
+            "feature_id": "constraint_checker_exit_code_hook",
+            "constraints_results": {
+              "constraint_task_checker_exits_2_on_failure": {
+                "constraint_id": "constraint_task_checker_exits_2_on_failure",
+                "verdict": false,
+                "shrunken_output": "\u2717 Recursive execution detected: task_features_checker.py cannot check itself",
+                "timestamp": "2026-03-14T12:19:09.587686",
+                "fails_count": 0
+              },
+              "constraint_handler_stop_calls_checker": {
+                "constraint_id": "constraint_handler_stop_calls_checker",
+                "verdict": true,
+                "shrunken_output": "Calls checker\n",
+                "timestamp": "2026-03-14T12:19:09.588895",
+                "fails_count": 0
+              },
+              "constraint_handler_stop_checks_exit_code": {
+                "constraint_id": "constraint_handler_stop_checks_exit_code",
+                "verdict": true,
+                "shrunken_output": "Checks exit code\n",
+                "timestamp": "2026-03-14T12:19:09.590195",
+                "fails_count": 0
+              },
+              "constraint_handler_stop_prints_decision_block": {
+                "constraint_id": "constraint_handler_stop_prints_decision_block",
+                "verdict": true,
+                "shrunken_output": "Prints decision block\n",
+                "timestamp": "2026-03-14T12:19:09.591412",
+                "fails_count": 0
+              }
+            }
+          }
+        }
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": [
+          "task_features_checker_tool",
+          "task_toc_rendering_and_links",
+          "render_spec_features_in_task"
+        ]
+      }
+    },
+    "iteration_3": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_3",
+      "metadata": {
+        "created_at": "2026-03-14T12:28:01.999879",
+        "iteration_number": 3
+      },
+      "features_stats": {
+        "features_checks": {
+          "forbid_task_status_downgrade": true,
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_checker_exit_code_hook": true
+        },
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_4": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_4",
+      "metadata": {
+        "created_at": "2026-03-17T01:39:11.093044",
+        "iteration_number": 4
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_5": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_5",
+      "metadata": {
+        "created_at": "2026-03-17T01:45:22.940894",
+        "iteration_number": 5
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_6": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_6",
+      "metadata": {
+        "created_at": "2026-03-17T02:00:05.087396",
+        "iteration_number": 6
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_7": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_7",
+      "metadata": {
+        "created_at": "2026-03-17T12:14:33.120239",
+        "iteration_number": 7
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_8": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_8",
+      "metadata": {
+        "created_at": "2026-03-17T12:16:56.001082",
+        "iteration_number": 8
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_9": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_9",
+      "metadata": {
+        "created_at": "2026-03-17T12:20:56.253632",
+        "iteration_number": 9
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_10": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_10",
+      "metadata": {
+        "created_at": "2026-03-17T12:28:09.446731",
+        "iteration_number": 10
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_11": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_11",
+      "metadata": {
+        "created_at": "2026-03-17T12:28:27.155530",
+        "iteration_number": 11
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    }
+  },
+  "opts": {
+    "render_priority": false,
+    "render_toc": true
+  }
+}

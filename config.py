@@ -36,10 +36,15 @@ else:
 
 HOOKS_LOG_LEVEL = "INFO"  # Can be: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
+# Project data directory for task iterations and spec snapshots
+PROJECT_DATA_DIR = PROJECT_ROOT / "project"
+
 
 __all__ = [
     "PLUGIN_ROOT",
     "CONSUMING_PROJECT_ROOT",
+    "PROJECT_ROOT",
+    "PROJECT_DATA_DIR",
     "CLAUDE_DIR",
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
