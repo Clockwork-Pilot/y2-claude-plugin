@@ -8,6 +8,12 @@
       - [constraint_requirement_section_exists](#constraint_requirement_section_exists)
       - [constraint_results_interpretation_guide](#constraint_results_interpretation_guide)
       - [constraint_when_to_run_documented](#constraint_when_to_run_documented)
+    - [Feature: constraint_bash_fails_count_cmd_protection](#feature-constraint_bash_fails_count_cmd_protection)
+      - [constraint_cmd_change_blocked_when_failed](#constraint_cmd_change_blocked_when_failed)
+      - [constraint_fails_count_field_exists](#constraint_fails_count_field_exists)
+      - [constraint_fails_count_not_settable_via_json](#constraint_fails_count_not_settable_via_json)
+      - [constraint_increment_fails_count_method_exists](#constraint_increment_fails_count_method_exists)
+      - [constraint_task_features_checker_increments_fails_count](#constraint_task_features_checker_increments_fails_count)
     - [Feature: constraint_checker_exit_code_hook](#feature-constraint_checker_exit_code_hook)
       - [constraint_handler_stop_calls_checker](#constraint_handler_stop_calls_checker)
       - [constraint_handler_stop_checks_exit_code](#constraint_handler_stop_checks_exit_code)
@@ -46,6 +52,15 @@
       - [constraint_no_dict_metadata_references](#constraint_no_dict_metadata_references)
       - [constraint_spec_model_uses_metadata](#constraint_spec_model_uses_metadata)
       - [constraint_task_model_uses_metadata](#constraint_task_model_uses_metadata)
+    - [Feature: project_spec_lifecycle](#feature-project_spec_lifecycle)
+      - [constraint_check_project_constraints_exists](#constraint_check_project_constraints_exists)
+      - [constraint_complete_task_runs_project_checker](#constraint_complete_task_runs_project_checker)
+      - [constraint_complete_task_runs_task_checker](#constraint_complete_task_runs_task_checker)
+      - [constraint_complete_task_script_exists](#constraint_complete_task_script_exists)
+      - [constraint_project_spec_dir_created](#constraint_project_spec_dir_created)
+      - [constraint_raw_tasks_directory_created](#constraint_raw_tasks_directory_created)
+      - [constraint_spec_snapshot_format](#constraint_spec_snapshot_format)
+      - [constraint_task_json_preserved](#constraint_task_json_preserved)
     - [Feature: remove_scope_from_constraint_bash](#feature-remove_scope_from_constraint_bash)
       - [constraint_all_model_tests_pass](#constraint_all_model_tests_pass)
       - [constraint_no_scope_field_usage](#constraint_no_scope_field_usage)
@@ -90,20 +105,6 @@
       - [constraint_toc_indentation](#constraint_toc_indentation)
       - [constraint_toc_links_format](#constraint_toc_links_format)
       - [constraint_toc_section_exists](#constraint_toc_section_exists)
-    - [Feature: two_phase_constraint_validation](#feature-two_phase_constraint_validation)
-      - [constraint_cmd_protection_verified](#constraint_cmd_protection_verified)
-      - [constraint_cmd_protection_when_proven](#constraint_cmd_protection_when_proven)
-      - [constraint_cmd_update_warning](#constraint_cmd_update_warning)
-      - [constraint_external_proven_red_blocked](#constraint_external_proven_red_blocked)
-      - [constraint_only_proven_affects_result](#constraint_only_proven_affects_result)
-      - [constraint_patch_protects_proven_red](#constraint_patch_protects_proven_red)
-      - [constraint_print_proven_summary](#constraint_print_proven_summary)
-      - [constraint_proven_red_default_none](#constraint_proven_red_default_none)
-      - [constraint_proven_red_excluded](#constraint_proven_red_excluded)
-      - [constraint_proven_red_field_exists](#constraint_proven_red_field_exists)
-      - [constraint_proven_red_in_task_json](#constraint_proven_red_in_task_json)
-      - [constraint_set_proven_red_on_failure](#constraint_set_proven_red_on_failure)
-      - [constraint_unprovided_constraints_logged_not_failed](#constraint_unprovided_constraints_logged_not_failed)
     - [Feature: update_iteration_with_features_stats](#feature-update_iteration_with_features_stats)
       - [constraint_feature_result_constraints_required](#constraint_feature_result_constraints_required)
       - [constraint_features_stats_generated](#constraint_features_stats_generated)
@@ -164,6 +165,34 @@
 - implementation: skill
 - priority: high
 - status: completed
+
+### Feature: constraint_bash_fails_count_cmd_protection
+**ConstraintBash.fails_count is maintained and protected: (1) fails_count can only be modified via increment_fails_count() method, not via snapshot/JSON loading; (2) cmd field cannot be updated when fails_count > 0, with update attempts blocked; (3) constraint can be removed entirely even when fails_count > 0; (4) knowledge base API (apply_json_patch) unchanged.**
+
+#### constraint_cmd_change_blocked_when_failed
+**Description:** Negative/Security: cmd cannot be updated when fails_count > 0
+**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='original', description='test'); c.increment_fails_count(); data = {'id': 'test', 'cmd': 'changed', 'description': 'test', 'fails_count': 1}; c2 = ConstraintBash.model_validate(data); assert c2.cmd != 'changed' or c2.fails_count == 0; print('✓ cmd change blocked when fails_count > 0')" || exit 1`
+
+#### constraint_fails_count_field_exists
+**Description:** Structural: ConstraintBash has fails_count field defaulting to 0
+**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='test', description='test'); assert hasattr(c, 'fails_count') and c.fails_count == 0; print('✓ fails_count field exists')" || exit 1`
+
+#### constraint_fails_count_not_settable_via_json
+**Description:** Negative/Security: fails_count protected from snapshot updates
+**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; data = {'id': 'test', 'cmd': 'test', 'description': 'test', 'fails_count': 5}; c = ConstraintBash.model_validate(data); assert c.fails_count != 5; print('✓ fails_count cannot be set via JSON')" || exit 1`
+
+#### constraint_increment_fails_count_method_exists
+**Description:** Structural: increment_fails_count() method increments count
+**Command:** `python3 -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='test', description='test'); c.increment_fails_count(); assert c.fails_count == 1; print('✓ increment_fails_count() works')" || exit 1`
+
+#### constraint_task_features_checker_increments_fails_count
+**Description:** Behavioral: task_features_checker increments fails_count on constraint failure
+**Command:** `grep 'constraint_obj.increment_fails_count()' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && echo '✓ increment_fails_count called on failure' || exit 1`
+
+**Metadata:**
+- priority: high
+- status: pending
+- type: implementation
 
 ### Feature: constraint_checker_exit_code_hook
 **Integrate constraint checking into handler_stop.py hook with exit code signaling. When handler_stop.py is called, it executes task_features_checker.py synchronously and checks the exit code. If exit code is 2 (constraint failures), hook prints decision block: {"decision": "block", "reason": "Constraints failed, fix them first"}. task_features_checker.py must exit with code 2 when any feature has failed constraints, code 0 on success. Hook must exit with same code as constraint checker script.**
@@ -401,6 +430,48 @@
 - priority: medium
 - status: planned
 
+### Feature: project_spec_lifecycle
+**Create project-spec lifecycle management system: establish project-spec/ directory structure, implement check_project_constraints.py stub for project-level validation, and build complete_task.py orchestration script that: (1) executes task_features_checker.py for task-level constraints, (2) executes check_project_constraints.py for project-level constraints, (3) on both succeeding, creates timestamped Spec snapshot in project-spec/raw-tasks/<timestamp>-<task-id>.k.json containing Spec data extracted from completed task.k.json, (4) preserves original task.k.json and task.k.md files without deletion.**
+
+#### constraint_check_project_constraints_exists
+**Description:** Structural: check_project_constraints.py stub script must exist in constraints_tool/
+**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/check_project_constraints.py && echo '✓ check_project_constraints.py exists' || { echo '✗ check_project_constraints.py missing'; exit 1; }`
+
+#### constraint_complete_task_runs_project_checker
+**Description:** Behavioral: complete_task.py must invoke check_project_constraints.py for project-level validation
+**Command:** `grep -q 'check_project_constraints' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '✓ calls check_project_constraints' || { echo '✗ check_project_constraints not invoked'; exit 1; }`
+
+#### constraint_complete_task_runs_task_checker
+**Description:** Behavioral: complete_task.py must invoke task_features_checker.py for task-level constraint validation
+**Command:** `grep -q 'task_features_checker' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '✓ calls task_features_checker' || { echo '✗ task_features_checker not invoked'; exit 1; }`
+
+#### constraint_complete_task_script_exists
+**Description:** Structural: complete_task.py orchestration script must exist in constraints_tool/
+**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '✓ complete_task.py exists' || { echo '✗ complete_task.py missing'; exit 1; }`
+
+#### constraint_project_spec_dir_created
+**Description:** Structural: project-spec/ directory must exist at PROJECT_ROOT
+**Command:** `test -d $PROJECT_ROOT/project-spec && echo '✓ project-spec directory exists' || { echo '✗ project-spec directory not found'; exit 1; }`
+
+#### constraint_raw_tasks_directory_created
+**Description:** Environmental: project-spec/raw-tasks/ directory must be created for storing Spec snapshots
+**Command:** `test -d $PROJECT_ROOT/project-spec/raw-tasks && echo '✓ raw-tasks directory exists' || { echo '✗ raw-tasks directory missing'; exit 1; }`
+
+#### constraint_spec_snapshot_format
+**Description:** Environmental: complete_task.py must generate Spec snapshots with ISO8601 timestamp in filename format: <timestamp>-<task-id>.k.json
+**Command:** `grep -qE 'strftime|timestamp|datetime' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '✓ timestamp handling present' || { echo '✗ timestamp generation not implemented'; exit 1; }`
+
+#### constraint_task_json_preserved
+**Description:** Negative: task.k.json must be preserved and not deleted after complete_task.py execution
+**Command:** `test -f $PROJECT_ROOT/task.k.json && echo '✓ task.k.json preserved' || { echo '✗ task.k.json was deleted'; exit 1; }`
+
+**Metadata:**
+- created_at: 2026-03-16T21:00:00
+- feature_type: lifecycle
+- implementation: constraints_tool
+- priority: high
+- status: planned
+
 ### Feature: remove_scope_from_constraint_bash
 **Remove the scope field from ConstraintBash model as it is redundant and not actively used. The scope field should be completely removed from: 1) ConstraintBash model definition in constraints_model.py, 2) Any Field() definitions with scope parameter, 3) All references to constraint.scope in the codebase. This simplifies the model and reduces unnecessary fields.**
 
@@ -509,7 +580,7 @@
 
 #### constraint_toc_rendered_by_default
 **Description:** Verify Task renders TOC by default when opts is None
-**Command:** `python3 -c "import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Doc; spec = Spec(version=1, description=Doc(id='d', label='L', metadata={})); t = Task(id='t1', spec=spec, opts=None); output = t.render(); print('✓ TOC rendered' if 'Table of Contents' in output else '✗ TOC missing')" 2>/dev/null`
+**Command:** `python3 -c "import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec; spec = Spec(version=1, description='Test spec'); t = Task(id='t1', spec=spec, opts=None); output = t.render(); print('✓ TOC rendered' if 'Table of Contents' in output else '✗ TOC missing')" 2>/dev/null`
 
 **Metadata:**
 - created_at: 2026-03-13T00:00:00
@@ -604,7 +675,7 @@
 
 #### constraint_constraints_nested_in_toc
 **Description:** Verify constraints appear as nested items in feature TOC entries
-**Command:** `python3 -c "import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Doc, Feature; spec = Spec(version=1, description=Doc(id='d', label='L', metadata={}), features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('✓ Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '✗ No constraints in TOC')" 2>/dev/null`
+**Command:** `python3 -c "import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Feature; spec = Spec(version=1, description='Test spec', features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('✓ Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '✗ No constraints in TOC')" 2>/dev/null`
 
 #### constraint_constraints_visible_in_markdown
 **Description:** Verify constraints are rendered in task.k.md TOC
@@ -658,85 +729,6 @@
 - priority: high
 - status: planned
 - depends_on: ['task_toc_includes_constraints']
-
-### Feature: two_phase_constraint_validation
-**Implement 2-phase constraint validation mechanism to prevent accidental regression of validated constraints. Add proven_red: Optional[str] field to ConstraintBash (excluded from external modifications) that captures the error message when a constraint validation fails. Phase 1: New constraints are added without proven_red. Phase 2: When task_features_checker.py detects a constraint failure, it updates task.k.json to set proven_red with the error message, marking the constraint as proven-failed. Protect cmd field: if proven_red is already set (constraint is validated), any attempt to update cmd is blocked with detailed warning suggesting deletion/recreation. External attempts to set proven_red via patch are silently ignored with warning. Only task_features_checker.py flow can legitimately set proven_red during constraint validation. Update final check logic: only constraints with proven_red affect final result; constraints without proven_red are logged but don't fail the check. Print summary of proven_red vs total constraints at end.**
-
-#### constraint_cmd_protection_verified
-**Description:** Verify _protect_cmd_updates blocks cmd changes for proven constraints with warning
-**Command:** `python3 -c "
-import json, sys, os
-sys.path.insert(0, os.path.join(os.environ.get(\"PROJECT_ROOT\", \".\"), \"knowledge_tool/knowledge_tool\"))
-from patch_knowledge_document import _protect_cmd_updates
-orig = {\"spec\": {\"features\": {\"f1\": {\"constraints\": {\"c1\": {\"proven_red\": \"error\", \"cmd\": \"original cmd\"}}}}}}
-patched = {\"spec\": {\"features\": {\"f1\": {\"constraints\": {\"c1\": {\"proven_red\": \"error\", \"cmd\": \"new cmd\"}}}}}}
-warnings = _protect_cmd_updates(orig, patched)
-assert patched[\"spec\"][\"features\"][\"f1\"][\"constraints\"][\"c1\"][\"cmd\"] == \"original cmd\", \"Cmd update not blocked\"
-assert len(warnings) > 0, \"No warning issued\"
-print(\"✓ cmd protection verified: update blocked with warning\")" 2>&1 || (echo "✗ Cmd protection test failed" && exit 1)`
-
-#### constraint_cmd_protection_when_proven
-**Description:** Verify cmd field is protected when proven_red is set
-**Command:** `grep -q "_protect_cmd_updates" knowledge_tool/knowledge_tool/patch_knowledge_document.py && echo "✓ cmd protection function exists" || (echo "✗ cmd protection missing" && exit 1)`
-
-#### constraint_cmd_update_warning
-**Description:** Verify warning message when trying to update cmd on validated constraint
-**Command:** `grep -q "Validated constraints cannot be updated, only deleted" knowledge_tool/knowledge_tool/patch_knowledge_document.py && echo "✓ Warning message exists" || (echo "✗ Warning message missing" && exit 1)`
-
-#### constraint_external_proven_red_blocked
-**Description:** Verify external attempts to set proven_red are blocked/ignored
-**Command:** `grep -q "_restore_proven_red_values" knowledge_tool/knowledge_tool/patch_knowledge_document.py && echo "✓ proven_red protection exists in patch flow" || (echo "✗ proven_red not protected in patch_knowledge_document.py" && exit 1)`
-
-#### constraint_only_proven_affects_result
-**Description:** Verify only constraints with proven_red affect final check result
-**Command:** `grep -q "is_proven" constraints_tool/constraints_tool/task_features_checker.py && echo "✓ Proven-only result logic exists" || (echo "✗ Proven result logic missing" && exit 1)`
-
-#### constraint_patch_protects_proven_red
-**Description:** Verify _restore_proven_red_values actually protects proven_red from external patches
-**Command:** `python3 -c "
-import json, sys, tempfile, os
-sys.path.insert(0, os.path.join(os.environ.get(\"PROJECT_ROOT\", \".\"), \"knowledge_tool/knowledge_tool\"))
-from patch_knowledge_document import _restore_proven_red_values
-orig = {\"spec\": {\"features\": {\"f1\": {\"constraints\": {\"c1\": {\"proven_red\": \"old error\"}}}}}}
-patched = {\"spec\": {\"features\": {\"f1\": {\"constraints\": {\"c1\": {\"proven_red\": \"new error\"}}}}}}
-warnings = _restore_proven_red_values(orig, patched)
-assert patched[\"spec\"][\"features\"][\"f1\"][\"constraints\"][\"c1\"][\"proven_red\"] == \"old error\", \"Protection failed\"
-print(\"✓ proven_red protection verified: external change was reverted\")" 2>&1 || (echo "✗ Protection test failed" && exit 1)`
-
-#### constraint_print_proven_summary
-**Description:** Verify proven vs all constraints summary is printed at end
-**Command:** `grep -q "Proven constraints.*affect result" constraints_tool/constraints_tool/task_features_checker.py && echo "✓ Proven summary printed" || (echo "✗ Proven summary missing" && exit 1)`
-
-#### constraint_proven_red_default_none
-**Description:** Verify proven_red defaults to None
-**Command:** `grep -q "proven_red.*Optional.*Field.*default=None" knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo "✓ proven_red defaults to None" || (echo "✗ Default not set correctly" && exit 1)`
-
-#### constraint_proven_red_excluded
-**Description:** Verify proven_red is excluded from external JSON modifications
-**Command:** `! (grep -A 5 "proven_red" knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q "exclude=True") && echo "✓ proven_red not excluded from serialization" || (echo "✗ proven_red has exclude=True - should be removed" && exit 1)`
-
-#### constraint_proven_red_field_exists
-**Description:** Verify proven_red Optional[str] field exists in ConstraintBash
-**Command:** `grep -q "proven_red.*Optional\[str\]" knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo "✓ proven_red field exists" || (echo "✗ proven_red field missing" && exit 1)`
-
-#### constraint_proven_red_in_task_json
-**Description:** Verify proven_red persists in task.k.json for failed constraints
-**Command:** `python3 -c "import json; data=json.load(open(\"task.k.json\")); constraints = {c_id: c for feat in (data.get(\"spec\",{}).get(\"features\",{}) or {}).values() for c_id, c in (feat.get(\"constraints\",{}) or {}).items()}; proven = [cid for cid,c in constraints.items() if c.get(\"proven_red\")]; print(f\"✓ {len(proven)} constraints have proven_red set\") if proven else print(\"ℹ No proven_red constraints yet (expected before first failure run)\")"`
-
-#### constraint_set_proven_red_on_failure
-**Description:** Verify proven_red is set when constraint fails
-**Command:** `grep -q "_set_proven_red_in_task" constraints_tool/constraints_tool/task_features_checker.py && echo "✓ _set_proven_red_in_task function exists" || (echo "✗ Function missing" && exit 1)`
-
-#### constraint_unprovided_constraints_logged_not_failed
-**Description:** Verify constraints without proven_red are logged but don't fail check
-**Command:** `grep -q "Unproven.*informational" constraints_tool/constraints_tool/task_features_checker.py && echo "✓ Unproven constraints are logged only" || (echo "✗ Unproven handling missing" && exit 1)`
-
-**Metadata:**
-- created_at: 2026-03-16T00:00:00
-- feature_type: enhancement
-- implementation: constraint_validation
-- priority: high
-- status: planned
 
 ### Feature: update_iteration_with_features_stats
 **Update Iteration model and task lifecycle tool to track feature constraint validation results. Add features_stats field containing complete feature validation status and failed feature details. FeaturesStats model includes: features_checks (Dict[str, bool] with all task features), failed (Dict[str, FeatureResult] with only features having failed constraints). FeatureResult.constraints_results field is required (Dict, not optional). Display iteration stats every time iteration is added or rendered.**

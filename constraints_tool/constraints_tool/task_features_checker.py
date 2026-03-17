@@ -264,6 +264,49 @@ def check_task_features(
         features_results=features_results if features_results else None
     )
 
+    # Build JSON Patch operations to increment fails_count for failed constraints
+    patch_ops = []
+    locked_constraints = []  # Track constraints that become locked
+    if checks_results.features_results and task.spec.features:
+        for feature_id, feature_result in checks_results.features_results.items():
+            feature_obj = task.spec.features.get(feature_id)
+            if not feature_obj or not feature_result.constraints_results:
+                continue
+
+            for constraint_id, result in feature_result.constraints_results.items():
+                # Generate patch to increment fails_count for failed bash constraints
+                if isinstance(result, ConstraintBashResult) and not result.verdict:
+                    constraint_obj = feature_obj.constraints.get(constraint_id) if feature_obj.constraints else None
+                    if isinstance(constraint_obj, ConstraintBash):
+                        # Get current fails_count and increment it
+                        current_fails_count = constraint_obj.fails_count
+                        new_fails_count = current_fails_count + 1
+                        # Add patch operation to increment fails_count
+                        patch_ops.append({
+                            "op": "replace",
+                            "path": f"/spec/features/{feature_id}/constraints/{constraint_id}/fails_count",
+                            "value": new_fails_count
+                        })
+                        # Track if constraint is becoming locked (fails_count > 0)
+                        if current_fails_count == 0:
+                            locked_constraints.append(f"{feature_id}.{constraint_id}")
+
+    # Save updated task with incremented fails_count using knowledge API
+    if patch_ops:
+        print("🔄 Updating fails_count for failed constraints...")
+        error = apply_json_patch(str(task_path), json.dumps(patch_ops))
+        if error:
+            print(f"⚠️  Failed to update fails_count: {error.error}")
+        else:
+            print(f"✓ Updated fails_count for {len(patch_ops)} constraint(s)")
+
+            # Warn about newly locked constraints
+            if locked_constraints:
+                print(f"\n⚠️  {len(locked_constraints)} constraint(s) now locked (cmd cannot be changed):")
+                for constraint in locked_constraints:
+                    print(f"   • {constraint}")
+                print("   Options: (1) Fix constraint to pass, or (2) Remove constraint entirely")
+
     # Save ChecksResults to file
     if output_checks_path:
         output_path = Path(output_checks_path)

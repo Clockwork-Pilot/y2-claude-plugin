@@ -5,6 +5,7 @@
   "spec": {
     "type": "Spec",
     "model_version": 1,
+    "version": 1,
     "description": "### Project Summary\n\n**Status**: \u2713 Complete and Functional\n\n**Components Built**:\n\u2713 Knowledge Tool - JSON patching and markdown rendering\n\u2713 Lifecycle Tool - Task creation and management\n\u2713 File Protection System - Auto-protected documents\n\u2713 Testing - 29 tests all passing\n\u2713 Documentation - CLAUDE.md, skills, README\n\n**Technology**: Python 3.11+, Pydantic, RFC 6902, Git submodules",
     "features": {
       "render_spec_features_in_task": {
@@ -16,12 +17,16 @@
           "constraint_feature_section_in_markdown": {
             "id": "constraint_feature_section_in_markdown",
             "cmd": "grep -q '## Features\\|### .*:' $PROJECT_ROOT/task.k.md && echo '\u2713 Features section found in markdown' || echo '\u26a0 Features section not found'",
-            "description": "Verify that 'Features' section is rendered in task.k.md markdown output"
+            "tags": [],
+            "description": "Verify that 'Features' section is rendered in task.k.md markdown output",
+            "fails_count": 0
           },
           "constraint_constraint_details_in_markdown": {
             "id": "constraint_constraint_details_in_markdown",
             "cmd": "grep -q 'Bash\\|Prompt\\|constraint\\|cmd\\|prompt' $PROJECT_ROOT/task.k.md && echo '\u2713 Constraint details found' || echo '\u26a0 Constraint details not found'",
-            "description": "Verify that constraint details (bash commands, prompt validations) are rendered in markdown"
+            "tags": [],
+            "description": "Verify that constraint details (bash commands, prompt validations) are rendered in markdown",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -44,47 +49,65 @@
           "constraint_tool_exists": {
             "id": "constraint_tool_exists",
             "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 tool exists' || echo '\u2717 tool missing'",
-            "description": "Verify task_features_checker.py exists in constraints_tool/"
+            "tags": [],
+            "description": "Verify task_features_checker.py exists in constraints_tool/",
+            "fails_count": 0
           },
           "constraint_tool_accepts_task_path": {
             "id": "constraint_tool_accepts_task_path",
             "cmd": "grep -q \"parser.add_argument.*task_path\\|positional arguments\" constraints_tool/constraints_tool/task_features_checker.py && echo 'Task path argument defined' || echo 'Task path argument missing'",
-            "description": "Verify tool accepts task document path argument"
+            "tags": [],
+            "description": "Verify tool accepts task document path argument",
+            "fails_count": 0
           },
           "constraint_tool_accepts_features_arg": {
             "id": "constraint_tool_accepts_features_arg",
             "cmd": "grep -q \"add_argument.*--features\" constraints_tool/constraints_tool/task_features_checker.py && echo '--features arg defined' || echo '--features arg missing'",
-            "description": "Verify tool accepts optional --features argument to filter feature IDs"
+            "tags": [],
+            "description": "Verify tool accepts optional --features argument to filter feature IDs",
+            "fails_count": 0
           },
           "constraint_tool_accepts_output_checks_path_arg": {
             "id": "constraint_tool_accepts_output_checks_path_arg",
             "cmd": "grep -q \"add_argument.*--output-checks-path\" constraints_tool/constraints_tool/task_features_checker.py && echo '--output-checks-path arg defined' || echo '--output-checks-path arg missing'",
-            "description": "Verify tool accepts optional --output-checks-path argument for ChecksResults file path"
+            "tags": [],
+            "description": "Verify tool accepts optional --output-checks-path argument for ChecksResults file path",
+            "fails_count": 0
           },
           "constraint_tool_returns_checks_results": {
             "id": "constraint_tool_returns_checks_results",
             "cmd": "grep -q \"ChecksResults\\|check_task_features.*ChecksResults\" constraints_tool/constraints_tool/task_features_checker.py && echo 'ChecksResults usage found' || echo 'ChecksResults not found'",
-            "description": "Verify tool returns results in ChecksResults model format"
+            "tags": [],
+            "description": "Verify tool returns results in ChecksResults model format",
+            "fails_count": 0
           },
           "constraint_tool_saves_results_to_file": {
             "id": "constraint_tool_saves_results_to_file",
             "cmd": "grep -q \"output_path.write_text\\|if not output_path.exists\" constraints_tool/constraints_tool/task_features_checker.py && grep -q \"apply_json_patch\" constraints_tool/constraints_tool/task_features_checker.py && echo 'File save logic implemented' || echo 'File save logic missing'",
-            "description": "Verify tool saves ChecksResults to file when --output-checks-path provided"
+            "tags": [],
+            "description": "Verify tool saves ChecksResults to file when --output-checks-path provided",
+            "fails_count": 0
           },
           "constraint_recursive_execution_prevention": {
             "id": "constraint_recursive_execution_prevention",
             "cmd": "grep -q '_check_recursive_execution' constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 Recursive execution prevention found' || echo '\u2717 Missing'",
-            "description": "Verify recursive execution detection is implemented"
+            "tags": [],
+            "description": "Verify recursive execution detection is implemented",
+            "fails_count": 0
           },
           "constraint_project_root_substitution": {
             "id": "constraint_project_root_substitution",
             "cmd": "grep -q '_substitute_project_root' constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 PROJECT_ROOT substitution found' || echo '\u2717 Missing'",
-            "description": "Verify PROJECT_ROOT placeholder substitution is implemented"
+            "tags": [],
+            "description": "Verify PROJECT_ROOT placeholder substitution is implemented",
+            "fails_count": 0
           },
           "constraint_tool_output_checks_path_writable": {
             "id": "constraint_tool_output_checks_path_writable",
             "cmd": "grep -q \"Path(output_checks_path)\\|output_path.write_text\" constraints_tool/constraints_tool/task_features_checker.py && echo 'Output path handling implemented' || echo 'Output path handling missing'",
-            "description": "Verify output checks path is writable and ChecksResults file can be created/updated"
+            "tags": [],
+            "description": "Verify output checks path is writable and ChecksResults file can be created/updated",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -114,22 +137,30 @@
           "constraint_goals_field_exists": {
             "id": "constraint_goals_field_exists",
             "cmd": "grep -q 'goals.*List\\|goals.*list\\[str\\]' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Goals field exists' || echo '\u2717 Goals field missing'",
-            "description": "Verify goals field is defined in Feature model"
+            "tags": [],
+            "description": "Verify goals field is defined in Feature model",
+            "fails_count": 0
           },
           "constraint_goals_rendered_in_markdown": {
             "id": "constraint_goals_rendered_in_markdown",
             "cmd": "grep -q '## Goals\\|Goals section' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Goals rendering found' || echo '\u2717 Goals rendering missing'",
-            "description": "Verify goals are rendered in markdown output"
+            "tags": [],
+            "description": "Verify goals are rendered in markdown output",
+            "fails_count": 0
           },
           "constraint_goals_in_toc": {
             "id": "constraint_goals_in_toc",
             "cmd": "grep -q 'Goals.*toc\\|toc.*Goals\\|\\[Goals\\]' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Goals in TOC found' || echo '\u2717 Goals in TOC missing'",
-            "description": "Verify goals are included in table of contents"
+            "tags": [],
+            "description": "Verify goals are included in table of contents",
+            "fails_count": 0
           },
           "constraint_goals_field_in_task": {
             "id": "constraint_goals_field_in_task",
             "cmd": "grep -q '\"goals\"' task.k.json && echo '\u2713 Goals in task.k.json' || echo '\u2717 Goals not in task.k.json'",
-            "description": "Verify goals field appears in task.k.json features"
+            "tags": [],
+            "description": "Verify goals field appears in task.k.json features",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -158,22 +189,30 @@
           "constraint_default_toc_when_opts_missing": {
             "id": "constraint_default_toc_when_opts_missing",
             "cmd": "grep -q 'if not self.opts\\|self.opts is None' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Default opts handling found' || echo '\u2717 Missing'",
-            "description": "Verify Task checks if opts is None/missing to set defaults"
+            "tags": [],
+            "description": "Verify Task checks if opts is None/missing to set defaults",
+            "fails_count": 0
           },
           "constraint_render_toc_default_true": {
             "id": "constraint_render_toc_default_true",
             "cmd": "grep -q 'render_toc.*True\\|Opts.*render_toc.*True' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Default render_toc=True found' || echo '\u2717 Missing'",
-            "description": "Verify render_toc defaults to True when opts not specified"
+            "tags": [],
+            "description": "Verify render_toc defaults to True when opts not specified",
+            "fails_count": 0
           },
           "constraint_explicit_false_respected": {
             "id": "constraint_explicit_false_respected",
             "cmd": "grep -q 'render_toc.*False\\|not.*render_toc' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Explicit False handling found' || echo '\u2717 Missing'",
-            "description": "Verify explicit opts.render_toc=False is respected"
+            "tags": [],
+            "description": "Verify explicit opts.render_toc=False is respected",
+            "fails_count": 0
           },
           "constraint_toc_rendered_by_default": {
             "id": "constraint_toc_rendered_by_default",
             "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec; spec = Spec(version=1, description='Test spec'); t = Task(id='t1', spec=spec, opts=None); output = t.render(); print('\u2713 TOC rendered' if 'Table of Contents' in output else '\u2717 TOC missing')\" 2>/dev/null",
-            "description": "Verify Task renders TOC by default when opts is None"
+            "tags": [],
+            "description": "Verify Task renders TOC by default when opts is None",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -199,17 +238,23 @@
           "constraint_toc_includes_constraints": {
             "id": "constraint_toc_includes_constraints",
             "cmd": "grep -q 'constraint.*render_toc\\|constraints.*in.*toc' knowledge_tool/knowledge_tool/src/models/task_model.py && echo '\u2713 Constraint rendering in TOC found' || echo '\u2717 Missing'",
-            "description": "Verify Task._generate_toc() includes constraints from features"
+            "tags": [],
+            "description": "Verify Task._generate_toc() includes constraints from features",
+            "fails_count": 0
           },
           "constraint_constraints_nested_in_toc": {
             "id": "constraint_constraints_nested_in_toc",
             "cmd": "python3 -c \"import sys; sys.path.insert(0, 'knowledge_tool/knowledge_tool/src'); from models import Task, Spec, Feature; spec = Spec(version=1, description='Test spec', features={'f1': Feature(id='f1', description='test', constraints={'c1': {'id': 'c1', 'cmd': 'true', 'description': 'test'}})}); t = Task(id='t', spec=spec); toc = t.render_toc(); print('\u2713 Constraints in TOC' if any('constraint' in str(line).lower() for line in toc) else '\u2717 No constraints in TOC')\" 2>/dev/null",
-            "description": "Verify constraints appear as nested items in feature TOC entries"
+            "tags": [],
+            "description": "Verify constraints appear as nested items in feature TOC entries",
+            "fails_count": 0
           },
           "constraint_constraints_visible_in_markdown": {
             "id": "constraint_constraints_visible_in_markdown",
             "cmd": "grep -q 'constraint.*toc\\|Constraint' task.k.md && echo '\u2713 Constraints visible in markdown' || echo '\u2717 Not visible'",
-            "description": "Verify constraints are rendered in task.k.md TOC"
+            "tags": [],
+            "description": "Verify constraints are rendered in task.k.md TOC",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -238,27 +283,37 @@
           "constraint_toc_section_exists": {
             "id": "constraint_toc_section_exists",
             "cmd": "grep -q '## Table of Contents' task.k.md && echo '\u2713 TOC section found' || echo '\u2717 Missing'",
-            "description": "Verify 'Table of Contents' section header exists in task.k.md"
+            "tags": [],
+            "description": "Verify 'Table of Contents' section header exists in task.k.md",
+            "fails_count": 0
           },
           "constraint_toc_has_entries": {
             "id": "constraint_toc_has_entries",
             "cmd": "grep -A 20 '## Table of Contents' task.k.md | grep -q '^-' && echo '\u2713 TOC entries found' || echo '\u2717 No entries'",
-            "description": "Verify TOC contains markdown list entries (lines starting with -)"
+            "tags": [],
+            "description": "Verify TOC contains markdown list entries (lines starting with -)",
+            "fails_count": 0
           },
           "constraint_toc_links_format": {
             "id": "constraint_toc_links_format",
             "cmd": "grep '## Table of Contents' -A 20 task.k.md | grep -q '\\[.*\\](#' && echo '\u2713 Links formatted correctly' || echo '\u2717 Bad format'",
-            "description": "Verify TOC links follow markdown format [text](#anchor)"
+            "tags": [],
+            "description": "Verify TOC links follow markdown format [text](#anchor)",
+            "fails_count": 0
           },
           "constraint_anchor_sections_exist": {
             "id": "constraint_anchor_sections_exist",
             "cmd": "python3 constraints_scripts/validate_toc_links.py task.k.md",
-            "description": "Verify all TOC links have corresponding heading anchors"
+            "tags": [],
+            "description": "Verify all TOC links have corresponding heading anchors",
+            "fails_count": 0
           },
           "constraint_toc_indentation": {
             "id": "constraint_toc_indentation",
             "cmd": "grep '## Table of Contents' -A 50 task.k.md | grep -E '^  -|^    -' | wc -l | grep -qE '[1-9]' && echo '\u2713 Proper nesting found' || echo '\u2717 Missing'",
-            "description": "Verify TOC has proper indentation for nested items"
+            "tags": [],
+            "description": "Verify TOC has proper indentation for nested items",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -287,17 +342,23 @@
           "constraint_scripts_directory_exists": {
             "id": "constraint_scripts_directory_exists",
             "cmd": "test -d constraints_scripts && echo '\u2713 constraints_scripts/ directory exists' || echo '\u2717 Missing'",
-            "description": "Verify constraints_scripts/ directory exists"
+            "tags": [],
+            "description": "Verify constraints_scripts/ directory exists",
+            "fails_count": 0
           },
           "constraint_scripts_readme_exists": {
             "id": "constraint_scripts_readme_exists",
             "cmd": "test -f constraints_scripts/README.md && echo '\u2713 README.md exists' || echo '\u2717 Missing'",
-            "description": "Verify constraints_scripts/README.md documentation exists"
+            "tags": [],
+            "description": "Verify constraints_scripts/README.md documentation exists",
+            "fails_count": 0
           },
           "constraint_scripts_documented": {
             "id": "constraint_scripts_documented",
             "cmd": "grep -q 'constraint.*script\\|script.*location' constraints_scripts/README.md && echo '\u2713 Documentation found' || echo '\u2717 Incomplete'",
-            "description": "Verify constraints_scripts/ purpose is documented"
+            "tags": [],
+            "description": "Verify constraints_scripts/ purpose is documented",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -323,32 +384,44 @@
           "constraint_bash_render_method": {
             "id": "constraint_bash_render_method",
             "cmd": "grep -q 'class ConstraintBash' knowledge_tool/knowledge_tool/src/models/constraints_model.py && grep -q 'def render.*include_toc' knowledge_tool/knowledge_tool/src/models/constraints_model.py && echo '\u2713 ConstraintBash.render() exists' || echo '\u2717 Missing'",
-            "description": "Verify ConstraintBash has render() method"
+            "tags": [],
+            "description": "Verify ConstraintBash has render() method",
+            "fails_count": 0
           },
           "constraint_prompt_render_method": {
             "id": "constraint_prompt_render_method",
             "cmd": "grep -A 50 'class ConstraintPrompt' knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'def render' && echo '\u2713 ConstraintPrompt.render() exists' || echo '\u2717 Missing'",
-            "description": "Verify ConstraintPrompt has render() method"
+            "tags": [],
+            "description": "Verify ConstraintPrompt has render() method",
+            "fails_count": 0
           },
           "constraint_bash_render_toc_method": {
             "id": "constraint_bash_render_toc_method",
             "cmd": "grep -A 100 'class ConstraintBash' knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'def render_toc' && echo '\u2713 ConstraintBash.render_toc() exists' || echo '\u2717 Missing'",
-            "description": "Verify ConstraintBash has render_toc() method"
+            "tags": [],
+            "description": "Verify ConstraintBash has render_toc() method",
+            "fails_count": 0
           },
           "constraint_prompt_render_toc_method": {
             "id": "constraint_prompt_render_toc_method",
             "cmd": "grep -A 150 'class ConstraintPrompt' knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'def render_toc' && echo '\u2713 ConstraintPrompt.render_toc() exists' || echo '\u2717 Missing'",
-            "description": "Verify ConstraintPrompt has render_toc() method"
+            "tags": [],
+            "description": "Verify ConstraintPrompt has render_toc() method",
+            "fails_count": 0
           },
           "constraint_feature_uses_render_toc": {
             "id": "constraint_feature_uses_render_toc",
             "cmd": "grep -q 'constraint.render_toc\\|render_toc()' knowledge_tool/knowledge_tool/src/models/feature_model.py && echo '\u2713 Feature uses constraint.render_toc()' || echo '\u2717 Missing'",
-            "description": "Verify Feature.render_toc() uses constraint rendering methods"
+            "tags": [],
+            "description": "Verify Feature.render_toc() uses constraint rendering methods",
+            "fails_count": 0
           },
           "constraint_rendering_displays_type": {
             "id": "constraint_rendering_displays_type",
             "cmd": "grep -q \"Type:.*Bash\" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py || (echo 'Type not in render output' && exit 1)",
-            "description": "Verify constraint rendering displays type information"
+            "tags": [],
+            "description": "Verify constraint rendering displays type information",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -376,17 +449,23 @@
           "constraint_shrunken_output_field_exists": {
             "id": "constraint_shrunken_output_field_exists",
             "cmd": "grep -A 3 'class ConstraintBashResult' knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q 'shrunken_output.*str' && echo 'shrunken_output required field' || echo 'Field missing or optional'",
-            "description": "Verify ConstraintBashResult has shrunken_output: str field (required, not optional)"
+            "tags": [],
+            "description": "Verify ConstraintBashResult has shrunken_output: str field (required, not optional)",
+            "fails_count": 0
           },
           "constraint_output_populated_on_failure": {
             "id": "constraint_output_populated_on_failure",
             "cmd": "grep -q 'shrunken_output=output\\|verdict.*False' constraints_tool/constraints_tool/task_features_checker.py && echo 'Output captured on failure' || echo 'Not captured'",
-            "description": "Verify shrunken_output is populated when constraint fails"
+            "tags": [],
+            "description": "Verify shrunken_output is populated when constraint fails",
+            "fails_count": 0
           },
           "constraint_output_rendered_in_markdown": {
             "id": "constraint_output_rendered_in_markdown",
             "cmd": "grep -q 'if result.shrunken_output\\|Output:' knowledge_tool/knowledge_tool/src/models/results_model.py && echo 'Output rendered' || echo 'Not rendered'",
-            "description": "Verify shrunken_output is displayed in ChecksResults markdown"
+            "tags": [],
+            "description": "Verify shrunken_output is displayed in ChecksResults markdown",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -415,17 +494,23 @@
           "constraint_requirement_section_exists": {
             "id": "constraint_requirement_section_exists",
             "cmd": "grep -q 'MUST RUN\\|Requirement.*Constraint\\|Constraint.*Checks.*MUST' skills/features-checks-tool/SKILL.md && echo 'Requirement section found' || echo 'Missing'",
-            "description": "Verify requirement section exists in skill documentation"
+            "tags": [],
+            "description": "Verify requirement section exists in skill documentation",
+            "fails_count": 0
           },
           "constraint_when_to_run_documented": {
             "id": "constraint_when_to_run_documented",
             "cmd": "grep -q 'When to Run\\|REQUIRED scenarios' skills/features-checks-tool/SKILL.md && echo 'When section documented' || echo 'Not documented'",
-            "description": "Verify documentation on when to run constraint checks"
+            "tags": [],
+            "description": "Verify documentation on when to run constraint checks",
+            "fails_count": 0
           },
           "constraint_results_interpretation_guide": {
             "id": "constraint_results_interpretation_guide",
             "cmd": "grep -q 'Interpreting\\|Success.*PASS\\|Failure.*FAIL' skills/features-checks-tool/SKILL.md && echo 'Interpretation guide exists' || echo 'Missing'",
-            "description": "Verify guide for interpreting constraint results is documented"
+            "tags": [],
+            "description": "Verify guide for interpreting constraint results is documented",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -454,37 +539,51 @@
           "constraint_features_stats_model_exists": {
             "id": "constraint_features_stats_model_exists",
             "cmd": "grep -q 'class FeaturesStats' knowledge_tool/knowledge_tool/src/models/results_model.py && grep -q 'features_checks.*Dict' knowledge_tool/knowledge_tool/src/models/results_model.py && echo 'FeaturesStats with proper fields' || echo 'Model incomplete'",
-            "description": "Verify FeaturesStats model exists with features_checks (Dict[str,bool]) and failed (Dict[str,FeatureResult]) fields"
+            "tags": [],
+            "description": "Verify FeaturesStats model exists with features_checks (Dict[str,bool]) and failed (Dict[str,FeatureResult]) fields",
+            "fails_count": 0
           },
           "constraint_features_stats_in_iteration": {
             "id": "constraint_features_stats_in_iteration",
             "cmd": "grep -q 'features_stats.*FeaturesStats' knowledge_tool/knowledge_tool/src/models/task_model.py && echo 'Field in Iteration' || echo 'Not found'",
-            "description": "Verify features_stats field exists in Iteration model"
+            "tags": [],
+            "description": "Verify features_stats field exists in Iteration model",
+            "fails_count": 0
           },
           "constraint_features_stats_generated": {
             "id": "constraint_features_stats_generated",
             "cmd": "grep -q 'generate_features_stats\\|FeaturesStats(' constraints_tool/constraints_tool/task_features_checker.py && echo 'Generation implemented' || echo 'Not implemented'",
-            "description": "Verify task_features_checker.py generates FeaturesStats"
+            "tags": [],
+            "description": "Verify task_features_checker.py generates FeaturesStats",
+            "fails_count": 0
           },
           "constraint_features_stats_rendered": {
             "id": "constraint_features_stats_rendered",
             "cmd": "grep -q 'Feature Constraint Validation\\|features_stats' knowledge_tool/knowledge_tool/src/models/task_model.py && echo 'Rendering implemented' || echo 'Not implemented'",
-            "description": "Verify Iteration.render() displays features_stats"
+            "tags": [],
+            "description": "Verify Iteration.render() displays features_stats",
+            "fails_count": 0
           },
           "constraint_skill_documentation_updated": {
             "id": "constraint_skill_documentation_updated",
             "cmd": "grep -q 'features_stats.*Feature Constraint\\|Iteration.*features_stats' skills/task-lifecycle-tool/SKILL.md && echo 'Skill docs updated' || echo 'Not updated'",
-            "description": "Verify task lifecycle tool skill documents features_stats"
+            "tags": [],
+            "description": "Verify task lifecycle tool skill documents features_stats",
+            "fails_count": 0
           },
           "constraint_stats_displayed_on_iteration": {
             "id": "constraint_stats_displayed_on_iteration",
             "cmd": "grep -q 'iteration_1' task.k.json && jq '.iterations.iteration_1.features_stats' task.k.json | grep -q 'features_checks' && echo 'Stats in iteration' || echo 'Not in iteration'",
-            "description": "Verify iteration contains features_stats in task document"
+            "tags": [],
+            "description": "Verify iteration contains features_stats in task document",
+            "fails_count": 0
           },
           "constraint_feature_result_constraints_required": {
             "id": "constraint_feature_result_constraints_required",
             "cmd": "grep -A 3 'class FeatureResult' knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q 'constraints_results.*Dict.*Union\\|constraints_results.*\\.\\.\\.' && echo 'constraints_results required' || echo 'Still optional'",
-            "description": "Verify FeatureResult.constraints_results field is required (Dict, not Optional)"
+            "tags": [],
+            "description": "Verify FeatureResult.constraints_results field is required (Dict, not Optional)",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -512,22 +611,30 @@
           "constraint_task_checker_exits_2_on_failure": {
             "id": "constraint_task_checker_exits_2_on_failure",
             "cmd": "grep -q 'return 2' constraints_tool/constraints_tool/task_features_checker.py && echo 'Exit code 2 implemented' || echo 'Not found'",
-            "description": "Verify task_features_checker.py exits with code 2 when constraints fail"
+            "tags": [],
+            "description": "Verify task_features_checker.py exits with code 2 when constraints fail",
+            "fails_count": 0
           },
           "constraint_handler_stop_calls_checker": {
             "id": "constraint_handler_stop_calls_checker",
             "cmd": "grep -q 'task_features_checker\\|constraints_tool' hooks/handler_stop.py && echo 'Calls checker' || echo 'Not called'",
-            "description": "Verify handler_stop.py calls task_features_checker.py"
+            "tags": [],
+            "description": "Verify handler_stop.py calls task_features_checker.py",
+            "fails_count": 0
           },
           "constraint_handler_stop_checks_exit_code": {
             "id": "constraint_handler_stop_checks_exit_code",
             "cmd": "grep -q '\\$?\\|returncode\\|exit.*2' hooks/handler_stop.py && echo 'Checks exit code' || echo 'Not checked'",
-            "description": "Verify handler_stop.py checks exit code from checker"
+            "tags": [],
+            "description": "Verify handler_stop.py checks exit code from checker",
+            "fails_count": 0
           },
           "constraint_handler_stop_prints_decision_block": {
             "id": "constraint_handler_stop_prints_decision_block",
             "cmd": "grep -q '\"decision\".*\"block\"\\|Constraints failed' hooks/handler_stop.py && echo 'Prints decision block' || echo 'Not printed'",
-            "description": "Verify handler_stop.py prints decision block for constraint failures"
+            "tags": [],
+            "description": "Verify handler_stop.py prints decision block for constraint failures",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -555,22 +662,30 @@
           "constraint_features_stats_diff_model_exists": {
             "id": "constraint_features_stats_diff_model_exists",
             "cmd": "grep -q 'class FeaturesStatsDiff' knowledge_tool/knowledge_tool/src/models/results_model.py && echo 'Model exists' || echo 'Missing'",
-            "description": "Verify FeaturesStatsDiff model is defined"
+            "tags": [],
+            "description": "Verify FeaturesStatsDiff model is defined",
+            "fails_count": 0
           },
           "constraint_features_stats_has_diff_method": {
             "id": "constraint_features_stats_has_diff_method",
             "cmd": "grep -A 50 'class FeaturesStats' knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q 'def diff' && echo 'diff() method exists' || echo 'Missing'",
-            "description": "Verify FeaturesStats has diff() method"
+            "tags": [],
+            "description": "Verify FeaturesStats has diff() method",
+            "fails_count": 0
           },
           "constraint_iteration_has_diff_field": {
             "id": "constraint_iteration_has_diff_field",
             "cmd": "grep -q 'features_stats_diff.*FeaturesStatsDiff' knowledge_tool/knowledge_tool/src/models/task_model.py && echo 'Field exists' || echo 'Missing'",
-            "description": "Verify Iteration has features_stats_diff field"
+            "tags": [],
+            "description": "Verify Iteration has features_stats_diff field",
+            "fails_count": 0
           },
           "constraint_diff_rendered_in_iteration": {
             "id": "constraint_diff_rendered_in_iteration",
             "cmd": "grep -A 100 'def render' knowledge_tool/knowledge_tool/src/models/task_model.py | grep -q 'features_stats_diff\\|improved\\|regressed' && echo 'Rendering implemented' || echo 'Not implemented'",
-            "description": "Verify Iteration.render() displays features_stats_diff"
+            "tags": [],
+            "description": "Verify Iteration.render() displays features_stats_diff",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -600,27 +715,37 @@
           "constraint_script_exists": {
             "id": "constraint_script_exists",
             "cmd": "test -f skills/task-lifecycle-tool/task-add-iteration.py && echo 'Script exists' || echo 'Missing'",
-            "description": "Verify task-add-iteration.py exists"
+            "tags": [],
+            "description": "Verify task-add-iteration.py exists",
+            "fails_count": 0
           },
           "constraint_script_uses_knowledge_tool": {
             "id": "constraint_script_uses_knowledge_tool",
             "cmd": "grep -q 'patch_knowledge_document\\|knowledge_tool' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Uses knowledge tool' || echo 'Not used'",
-            "description": "Verify script uses knowledge tool for updates"
+            "tags": [],
+            "description": "Verify script uses knowledge tool for updates",
+            "fails_count": 0
           },
           "constraint_script_runs_checker": {
             "id": "constraint_script_runs_checker",
             "cmd": "grep -q 'task_features_checker\\|check_task_features' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Runs checker' || echo 'Not implemented'",
-            "description": "Verify script runs task_features_checker.py"
+            "tags": [],
+            "description": "Verify script runs task_features_checker.py",
+            "fails_count": 0
           },
           "constraint_script_populates_features_stats": {
             "id": "constraint_script_populates_features_stats",
             "cmd": "grep -q 'features_stats\\|FeaturesStats' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Populates stats' || echo 'Not implemented'",
-            "description": "Verify script populates features_stats in iteration"
+            "tags": [],
+            "description": "Verify script populates features_stats in iteration",
+            "fails_count": 0
           },
           "constraint_skill_documentation_updated": {
             "id": "constraint_skill_documentation_updated",
             "cmd": "grep -q 'task-add-iteration\\|add.*Iteration' skills/task-lifecycle-tool/SKILL.md && echo 'Documented' || echo 'Not documented'",
-            "description": "Verify task-lifecycle-tool skill documents the script"
+            "tags": [],
+            "description": "Verify task-lifecycle-tool skill documents the script",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -640,37 +765,51 @@
           "constraint_constraint_model_uses_metadata": {
             "id": "constraint_constraint_model_uses_metadata",
             "cmd": "test -f $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/metadata_model.py || (echo 'Metadata model not found' && exit 1)",
-            "description": "Verify ConstraintBash and ConstraintPrompt use Metadata model instead of Dict"
+            "tags": [],
+            "description": "Verify ConstraintBash and ConstraintPrompt use Metadata model instead of Dict",
+            "fails_count": 0
           },
           "constraint_task_model_uses_metadata": {
             "id": "constraint_task_model_uses_metadata",
             "cmd": "test -f $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/task_model.py || (echo 'Task model not found' && exit 1)",
-            "description": "Verify Task model uses Metadata model instead of Dict"
+            "tags": [],
+            "description": "Verify Task model uses Metadata model instead of Dict",
+            "fails_count": 0
           },
           "constraint_spec_model_uses_metadata": {
             "id": "constraint_spec_model_uses_metadata",
             "cmd": "test -f $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/spec_model.py || (echo 'Spec model not found' && exit 1)",
-            "description": "Verify Spec model uses Metadata model instead of Dict"
+            "tags": [],
+            "description": "Verify Spec model uses Metadata model instead of Dict",
+            "fails_count": 0
           },
           "constraint_feature_model_uses_metadata": {
             "id": "constraint_feature_model_uses_metadata",
             "cmd": "test -f $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/feature_model.py || (echo 'Feature model not found' && exit 1)",
-            "description": "Verify Feature model uses Metadata model instead of Dict"
+            "tags": [],
+            "description": "Verify Feature model uses Metadata model instead of Dict",
+            "fails_count": 0
           },
           "constraint_doc_model_uses_metadata": {
             "id": "constraint_doc_model_uses_metadata",
             "cmd": "test -f $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/doc_model.py || (echo 'Doc model not found' && exit 1)",
-            "description": "Verify Doc model uses Metadata model instead of Dict"
+            "tags": [],
+            "description": "Verify Doc model uses Metadata model instead of Dict",
+            "fails_count": 0
           },
           "constraint_metadata_import": {
             "id": "constraint_metadata_import",
             "cmd": "test -f $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/metadata_model.py || (echo 'Metadata module not found' && exit 1)",
-            "description": "Verify Metadata is imported in all model files"
+            "tags": [],
+            "description": "Verify Metadata is imported in all model files",
+            "fails_count": 0
           },
           "constraint_no_dict_metadata_references": {
             "id": "constraint_no_dict_metadata_references",
             "cmd": "grep -c 'metadata_model' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/*.py | grep -qE '^[1-9]' || true",
-            "description": "Verify no models still use Dict for metadata field"
+            "tags": [],
+            "description": "Verify no models still use Dict for metadata field",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -690,22 +829,30 @@
           "constraint_selective_patch_logic": {
             "id": "constraint_selective_patch_logic",
             "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)",
-            "description": "Verify selective patch logic exists when --features argument is provided"
+            "tags": [],
+            "description": "Verify selective patch logic exists when --features argument is provided",
+            "fails_count": 0
           },
           "constraint_preserves_other_features": {
             "id": "constraint_preserves_other_features",
             "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)",
-            "description": "Verify that when --features is used, only those features are patched and others are preserved"
+            "tags": [],
+            "description": "Verify that when --features is used, only those features are patched and others are preserved",
+            "fails_count": 0
           },
           "constraint_patch_uses_add_op": {
             "id": "constraint_patch_uses_add_op",
             "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)",
-            "description": "Verify patch operations use add/merge strategy instead of replace for selective updates"
+            "tags": [],
+            "description": "Verify patch operations use add/merge strategy instead of replace for selective updates",
+            "fails_count": 0
           },
           "constraint_feature_results_filtering": {
             "id": "constraint_feature_results_filtering",
             "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)",
-            "description": "Verify feature results are filtered based on --features argument"
+            "tags": [],
+            "description": "Verify feature results are filtered based on --features argument",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -725,22 +872,30 @@
           "constraint_scope_field_removed_from_definition": {
             "id": "constraint_scope_field_removed_from_definition",
             "cmd": "! grep -A 10 'class ConstraintBash' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'scope:' || (echo 'Scope field still present in ConstraintBash' && exit 1)",
-            "description": "Verify scope field is removed from ConstraintBash class definition"
+            "tags": [],
+            "description": "Verify scope field is removed from ConstraintBash class definition",
+            "fails_count": 0
           },
           "constraint_no_scope_in_constraint_bash": {
             "id": "constraint_no_scope_in_constraint_bash",
             "cmd": "grep -A 10 'class ConstraintBash' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -v 'proven_red' | grep -q 'scope' && (echo 'Scope still present' && exit 1) || true",
-            "description": "Confirm scope field is completely removed from ConstraintBash model"
+            "tags": [],
+            "description": "Confirm scope field is completely removed from ConstraintBash model",
+            "fails_count": 0
           },
           "constraint_no_scope_field_usage": {
             "id": "constraint_no_scope_field_usage",
             "cmd": "grep -A 10 'class ConstraintBash' $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/constraints_model.py | grep -q 'self.scope' && (echo 'Found self.scope in ConstraintBash' && exit 1) || true",
-            "description": "Verify no references to scope field remain in constraints_model.py"
+            "tags": [],
+            "description": "Verify no references to scope field remain in constraints_model.py",
+            "fails_count": 0
           },
           "constraint_all_model_tests_pass": {
             "id": "constraint_all_model_tests_pass",
             "cmd": "test -f $PROJECT_ROOT/knowledge_tool/knowledge_tool/tests/test_constraints_model.py && echo 'Tests exist' || (echo 'Test file not found' && exit 1)",
-            "description": "Verify constraint model tests still exist and pass without scope field"
+            "tags": [],
+            "description": "Verify constraint model tests still exist and pass without scope field",
+            "fails_count": 0
           }
         },
         "metadata": {
@@ -750,9 +905,139 @@
           "priority": "low",
           "status": "planned"
         }
+      },
+      "project_spec_lifecycle": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "project_spec_lifecycle",
+        "description": "Create project-spec lifecycle management system: establish project-spec/ directory structure, implement check_project_constraints.py stub for project-level validation, and build complete_task.py orchestration script that: (1) executes task_features_checker.py for task-level constraints, (2) executes check_project_constraints.py for project-level constraints, (3) on both succeeding, creates timestamped Spec snapshot in project-spec/raw-tasks/<timestamp>-<task-id>.k.json containing Spec data extracted from completed task.k.json, (4) preserves original task.k.json and task.k.md files without deletion.",
+        "constraints": {
+          "constraint_project_spec_dir_created": {
+            "id": "constraint_project_spec_dir_created",
+            "cmd": "test -d $PROJECT_ROOT/project-spec && echo '\u2713 project-spec directory exists' || { echo '\u2717 project-spec directory not found'; exit 1; }",
+            "tags": [],
+            "description": "Structural: project-spec/ directory must exist at PROJECT_ROOT",
+            "fails_count": 0
+          },
+          "constraint_check_project_constraints_exists": {
+            "id": "constraint_check_project_constraints_exists",
+            "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/check_project_constraints.py && echo '\u2713 check_project_constraints.py exists' || { echo '\u2717 check_project_constraints.py missing'; exit 1; }",
+            "tags": [],
+            "description": "Structural: check_project_constraints.py stub script must exist in constraints_tool/",
+            "fails_count": 0
+          },
+          "constraint_complete_task_script_exists": {
+            "id": "constraint_complete_task_script_exists",
+            "cmd": "test -f $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '\u2713 complete_task.py exists' || { echo '\u2717 complete_task.py missing'; exit 1; }",
+            "tags": [],
+            "description": "Structural: complete_task.py orchestration script must exist in constraints_tool/",
+            "fails_count": 0
+          },
+          "constraint_complete_task_runs_task_checker": {
+            "id": "constraint_complete_task_runs_task_checker",
+            "cmd": "grep -q 'task_features_checker' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '\u2713 calls task_features_checker' || { echo '\u2717 task_features_checker not invoked'; exit 1; }",
+            "tags": [],
+            "description": "Behavioral: complete_task.py must invoke task_features_checker.py for task-level constraint validation",
+            "fails_count": 0
+          },
+          "constraint_complete_task_runs_project_checker": {
+            "id": "constraint_complete_task_runs_project_checker",
+            "cmd": "grep -q 'check_project_constraints' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '\u2713 calls check_project_constraints' || { echo '\u2717 check_project_constraints not invoked'; exit 1; }",
+            "tags": [],
+            "description": "Behavioral: complete_task.py must invoke check_project_constraints.py for project-level validation",
+            "fails_count": 0
+          },
+          "constraint_raw_tasks_directory_created": {
+            "id": "constraint_raw_tasks_directory_created",
+            "cmd": "test -d $PROJECT_ROOT/project-spec/raw-tasks && echo '\u2713 raw-tasks directory exists' || { echo '\u2717 raw-tasks directory missing'; exit 1; }",
+            "tags": [],
+            "description": "Environmental: project-spec/raw-tasks/ directory must be created for storing Spec snapshots",
+            "fails_count": 0
+          },
+          "constraint_task_json_preserved": {
+            "id": "constraint_task_json_preserved",
+            "cmd": "test -f $PROJECT_ROOT/task.k.json && echo '\u2713 task.k.json preserved' || { echo '\u2717 task.k.json was deleted'; exit 1; }",
+            "tags": [],
+            "description": "Negative: task.k.json must be preserved and not deleted after complete_task.py execution",
+            "fails_count": 0
+          },
+          "constraint_spec_snapshot_format": {
+            "id": "constraint_spec_snapshot_format",
+            "cmd": "grep -qE 'strftime|timestamp|datetime' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '\u2713 timestamp handling present' || { echo '\u2717 timestamp generation not implemented'; exit 1; }",
+            "tags": [],
+            "description": "Environmental: complete_task.py must generate Spec snapshots with ISO8601 timestamp in filename format: <timestamp>-<task-id>.k.json",
+            "fails_count": 0
+          }
+        },
+        "metadata": {
+          "created_at": "2026-03-16T21:00:00",
+          "feature_type": "lifecycle",
+          "implementation": "constraints_tool",
+          "priority": "high",
+          "status": "planned"
+        }
+      },
+      "constraint_bash_fails_count_cmd_protection": {
+        "type": "Feature",
+        "model_version": 1,
+        "id": "constraint_bash_fails_count_cmd_protection",
+        "description": "ConstraintBash.fails_count is maintained and protected: (1) fails_count can only be modified via increment_fails_count() method, not via snapshot/JSON loading; (2) cmd field cannot be updated when fails_count > 0, with update attempts blocked; (3) constraint can be removed entirely even when fails_count > 0; (4) knowledge base API (apply_json_patch) unchanged.",
+        "constraints": {
+          "constraint_fails_count_field_exists": {
+            "id": "constraint_fails_count_field_exists",
+            "cmd": "python3 -c \"from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='test', description='test'); assert hasattr(c, 'fails_count') and c.fails_count == 0; print('\u2713 fails_count field exists')\" || exit 1",
+            "tags": [
+              "structure"
+            ],
+            "description": "Structural: ConstraintBash has fails_count field defaulting to 0",
+            "fails_count": 0
+          },
+          "constraint_increment_fails_count_method_exists": {
+            "id": "constraint_increment_fails_count_method_exists",
+            "cmd": "python3 -c \"from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='test', description='test'); c.increment_fails_count(); assert c.fails_count == 1; print('\u2713 increment_fails_count() works')\" || exit 1",
+            "tags": [
+              "structure"
+            ],
+            "description": "Structural: increment_fails_count() method increments count",
+            "fails_count": 0
+          },
+          "constraint_fails_count_not_settable_via_json": {
+            "id": "constraint_fails_count_not_settable_via_json",
+            "cmd": "python3 -c \"from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; data = {'id': 'test', 'cmd': 'test', 'description': 'test', 'fails_count': 5}; c = ConstraintBash.model_validate(data); assert c.fails_count != 5; print('\u2713 fails_count cannot be set via JSON')\" || exit 1",
+            "tags": [
+              "API",
+              "usability"
+            ],
+            "description": "Negative/Security: fails_count protected from snapshot updates",
+            "fails_count": 2
+          },
+          "constraint_cmd_change_blocked_when_failed": {
+            "id": "constraint_cmd_change_blocked_when_failed",
+            "cmd": "python3 -c \"from pathlib import Path; import sys; sys.path.insert(0, str(Path('$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'))); from models import ConstraintBash; c = ConstraintBash(id='test', cmd='original', description='test'); c.increment_fails_count(); data = {'id': 'test', 'cmd': 'changed', 'description': 'test', 'fails_count': 1}; c2 = ConstraintBash.model_validate(data); assert c2.cmd != 'changed' or c2.fails_count == 0; print('\u2713 cmd change blocked when fails_count > 0')\" || exit 1",
+            "tags": [
+              "API",
+              "usability"
+            ],
+            "description": "Negative/Security: cmd cannot be updated when fails_count > 0",
+            "fails_count": 2
+          },
+          "constraint_task_features_checker_increments_fails_count": {
+            "id": "constraint_task_features_checker_increments_fails_count",
+            "cmd": "grep 'constraint_obj.increment_fails_count()' $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && echo '\u2713 increment_fails_count called on failure' || exit 1",
+            "tags": [
+              "structure"
+            ],
+            "description": "Behavioral: task_features_checker increments fails_count on constraint failure",
+            "fails_count": 2
+          }
+        },
+        "metadata": {
+          "priority": "high",
+          "status": "pending",
+          "type": "implementation"
+        }
       }
-    },
-    "do_not_touch_fails_history": {}
+    }
   },
   "iterations": {
     "iteration_1": {
@@ -970,8 +1255,8 @@
         "regressed": {},
         "still_failing": [
           "task_toc_rendering_and_links",
-          "render_spec_features_in_task",
-          "task_features_checker_tool"
+          "task_features_checker_tool",
+          "render_spec_features_in_task"
         ]
       }
     },
