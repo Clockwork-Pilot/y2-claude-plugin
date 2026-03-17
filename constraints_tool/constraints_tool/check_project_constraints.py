@@ -2,7 +2,7 @@
 """Project-level constraint validation stub.
 
 This script validates project-level constraints that are not tied to specific task features.
-It complements task_features_checker.py by running project-wide checks.
+It complements check_spec_constraints.py by running project-wide checks.
 
 Status: Stub implementation - ready for project constraint definitions.
 """

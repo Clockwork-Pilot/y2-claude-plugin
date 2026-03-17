@@ -1,6 +1,6 @@
 ---
 name: features-checks
-description: Execute and validate feature constraints from task-iterations.k.json, capturing results to checks_results.json using task_features_checker.py
+description: Execute and validate feature constraints from task-iterations.k.json, capturing results to checks_results.json using check_spec_constraints.py
 ---
 
 # Features Checks Tool
@@ -16,13 +16,13 @@ This skill validates feature constraints embedded in task documents:
 - Aggregate results into a ChecksResults document
 - Track constraint execution history and outcomes with full output details
 
-## ⚠️ CRITICAL: Use task_features_checker.py EXCLUSIVELY
+## ⚠️ CRITICAL: Use check_spec_constraints.py EXCLUSIVELY
 
 **DO NOT manually run constraint commands or create custom validation scripts.**
 
 The ONLY authoritative tool for checking constraints is:
 ```bash
-python3 constraints_tool/constraints_tool/task_features_checker.py task-iterations.k.json
+python3 constraints_tool/constraints_tool/check_spec_constraints.py task-iterations.k.json
 ```
 
 All constraint validation, failure tracking, and history recording MUST use this tool. Manual testing bypasses:
@@ -57,7 +57,7 @@ For constraint validation with the spec-decoupled architecture:
 
 ## How It Works
 
-The skill uses task_features_checker.py to validate constraints from task documents:
+The skill uses check_spec_constraints.py to validate constraints from task documents:
 1. Load specification document (task-spec.k.json) containing features with embedded constraints
 2. Extract constraints from specified features (or all if none specified)
 3. Execute each constraint:
@@ -110,7 +110,7 @@ Executor reads:
 
 ### Command Pattern
 ```bash
-python3 constraints_tool/constraints_tool/task_features_checker.py \
+python3 constraints_tool/constraints_tool/check_spec_constraints.py \
     <task-iterations.k.json> \
     [--features feature1,feature2,...] \
     [--output-checks-path checks_results.json]
@@ -124,15 +124,15 @@ python3 constraints_tool/constraints_tool/task_features_checker.py \
 ### Example
 ```bash
 # Check all features and their constraints
-python3 constraints_tool/constraints_tool/task_features_checker.py task-iterations.k.json
+python3 constraints_tool/constraints_tool/check_spec_constraints.py task-iterations.k.json
 
 # Check specific features only
-python3 constraints_tool/constraints_tool/task_features_checker.py \
+python3 constraints_tool/constraints_tool/check_spec_constraints.py \
     task-iterations.k.json \
     --features forbid_task_status_downgrade,render_spec_features_in_task
 
 # Save results to file with markdown rendering via patch_knowledge_document.py
-python3 constraints_tool/constraints_tool/task_features_checker.py \
+python3 constraints_tool/constraints_tool/check_spec_constraints.py \
     task-iterations.k.json \
     --output-checks-path checks_results.json
 ```
@@ -163,7 +163,7 @@ python3 constraints_tool/constraints_tool/task_features_checker.py \
 
 ## Implementation
 
-- **File**: `constraints_tool/constraints_tool/task_features_checker.py`
+- **File**: `constraints_tool/constraints_tool/check_spec_constraints.py`
 - **Features**:
   - Load Task document and extract features with constraints
   - Filter features by optional `--features` argument
@@ -265,7 +265,7 @@ For full output or debugging:
 1. Read constraint description - understand what's required
 2. Run the constraint command manually to debug
 3. Fix the underlying issue in code
-4. Re-run `task_features_checker.py` to validate
+4. Re-run `check_spec_constraints.py` to validate
 5. Repeat until all constraints pass
 
 ## Exit Code Rules (Critical for Constraints)

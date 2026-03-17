@@ -198,7 +198,7 @@
 **Goals:**
 - Add --project-data-dir argument to complete_task.py (defaults to PROJECT_DATA_DIR)
 - Load both task-iterations.k.json and task-spec.k.json from project data dir
-- Run task_features_checker.py for task-level constraints
+- Run check_spec_constraints.py for task-level constraints
 - Run check_project_constraints.py for project-level constraints
 - Move completed task to iterations/<timestamp>-<task-id>.k.json on success
 - Move task-spec to raw-specs/<timestamp>-<spec-id>.k.json on success
@@ -247,18 +247,18 @@
 - type: implementation
 
 ### Feature: constraint_checker_exit_code_hook
-**Integrate constraint checking into handler_stop.py hook with exit code signaling. When handler_stop.py is called, it executes task_features_checker.py synchronously and checks the exit code. If exit code is 2 (constraint failures), hook prints decision block: {"decision": "block", "reason": "Constraints failed, fix them first"}. task_features_checker.py must exit with code 2 when any feature has failed constraints, code 0 on success. Hook must exit with same code as constraint checker script.**
+**Integrate constraint checking into handler_stop.py hook with exit code signaling. When handler_stop.py is called, it executes check_spec_constraints.py synchronously and checks the exit code. If exit code is 2 (constraint failures), hook prints decision block: {"decision": "block", "reason": "Constraints failed, fix them first"}. check_spec_constraints.py must exit with code 2 when any feature has failed constraints, code 0 on success. Hook must exit with same code as constraint checker script.**
 
 **Goals:**
-- Update task_features_checker.py to exit with code 2 when constraint failures detected
-- Modify handler_stop.py hook to call task_features_checker.py synchronously
+- Update check_spec_constraints.py to exit with code 2 when constraint failures detected
+- Modify handler_stop.py hook to call check_spec_constraints.py synchronously
 - Parse exit code from constraint checker execution
 - Print decision block when exit code is 2 with reason message
 - Ensure hook propagates same exit code to caller
 - Document exit code behavior: 0=success, 1=error, 2=constraint_failures
 
 #### constraint_handler_stop_calls_checker
-**Description:** Verify handler_stop.py calls task_features_checker.py
+**Description:** Verify handler_stop.py calls check_spec_constraints.py
 **Command:** `grep -q 'task_features_checker\|constraints_tool' hooks/handler_stop.py && echo 'Calls checker' || echo 'Not called'`
 
 #### constraint_handler_stop_checks_exit_code
@@ -270,13 +270,13 @@
 **Command:** `grep -q '"decision".*"block"\|Constraints failed' hooks/handler_stop.py && echo 'Prints decision block' || echo 'Not printed'`
 
 #### constraint_task_checker_exits_2_on_failure
-**Description:** Verify task_features_checker.py exits with code 2 when constraints fail
-**Command:** `grep -q 'return 2' constraints_tool/constraints_tool/task_features_checker.py && echo 'Exit code 2 implemented' || echo 'Not found'`
+**Description:** Verify check_spec_constraints.py exits with code 2 when constraints fail
+**Command:** `grep -q 'return 2' constraints_tool/constraints_tool/check_spec_constraints.py && echo 'Exit code 2 implemented' || echo 'Not found'`
 
 **Metadata:**
 - created_at: 2026-03-14T00:00:00
 - feature_type: integration
-- implementation: handler_stop.py, task_features_checker.py
+- implementation: handler_stop.py, check_spec_constraints.py
 - priority: high
 - status: pending
 
@@ -391,7 +391,7 @@
 
 #### constraint_output_populated_on_failure
 **Description:** Verify shrunken_output is populated when constraint fails
-**Command:** `grep -q 'shrunken_output=output\|verdict.*False' constraints_tool/constraints_tool/task_features_checker.py && echo 'Output captured on failure' || echo 'Not captured'`
+**Command:** `grep -q 'shrunken_output=output\|verdict.*False' constraints_tool/constraints_tool/check_spec_constraints.py && echo 'Output captured on failure' || echo 'Not captured'`
 
 #### constraint_output_rendered_in_markdown
 **Description:** Verify shrunken_output is displayed in ChecksResults markdown
@@ -570,7 +570,7 @@
 **Command:** `grep -q 'check_project_constraints' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '✓ calls check_project_constraints' || { echo '✗ check_project_constraints not invoked'; exit 1; }`
 
 #### constraint_complete_task_runs_task_checker
-**Description:** Behavioral: complete_task.py must invoke task_features_checker.py for task-level constraint validation
+**Description:** Behavioral: complete_task.py must invoke check_spec_constraints.py for task-level constraint validation
 **Command:** `grep -q 'task_features_checker' $PROJECT_ROOT/constraints_tool/constraints_tool/complete_task.py && echo '✓ calls task_features_checker' || { echo '✗ task_features_checker not invoked'; exit 1; }`
 
 #### constraint_complete_task_script_exists
@@ -680,7 +680,7 @@
 - depends_on: ['forbid_task_status_downgrade']
 
 ### Feature: task_add_iteration_script
-**Create task-add-iteration.py script in skills/task-lifecycle-tool/ directory. Script uses knowledge tool to update task-iterations.k.json by adding new Iteration with populated features_stats and tests_stats. Script runs task_features_checker.py, extracts results, creates FeaturesStatsDiff from previous iteration, and patches task-iterations.k.json with complete iteration data. Task lifecycle tool skill updated with documentation and usage examples.**
+**Create task-add-iteration.py script in skills/task-lifecycle-tool/ directory. Script uses knowledge tool to update task-iterations.k.json by adding new Iteration with populated features_stats and tests_stats. Script runs check_spec_constraints.py, extracts results, creates FeaturesStatsDiff from previous iteration, and patches task-iterations.k.json with complete iteration data. Task lifecycle tool skill updated with documentation and usage examples.**
 
 **Goals:**
 - Create skills/task-lifecycle-tool/task-add-iteration.py script
@@ -701,7 +701,7 @@
 **Command:** `grep -q 'features_stats\|FeaturesStats' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Populates stats' || echo 'Not implemented'`
 
 #### constraint_script_runs_checker
-**Description:** Verify script runs task_features_checker.py
+**Description:** Verify script runs check_spec_constraints.py
 **Command:** `grep -q 'task_features_checker\|check_task_features' skills/task-lifecycle-tool/task-add-iteration.py && echo 'Runs checker' || echo 'Not implemented'`
 
 #### constraint_script_uses_knowledge_tool
@@ -761,19 +761,19 @@
 
 #### constraint_feature_results_filtering
 **Description:** Verify feature results are filtered based on --features argument
-**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)`
+**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py || (echo 'Task features checker not found' && exit 1)`
 
 #### constraint_patch_uses_add_op
 **Description:** Verify patch operations use add/merge strategy instead of replace for selective updates
-**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)`
+**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py || (echo 'Task features checker not found' && exit 1)`
 
 #### constraint_preserves_other_features
 **Description:** Verify that when --features is used, only those features are patched and others are preserved
-**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)`
+**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py || (echo 'Task features checker not found' && exit 1)`
 
 #### constraint_selective_patch_logic
 **Description:** Verify selective patch logic exists when --features argument is provided
-**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py || (echo 'Task features checker not found' && exit 1)`
+**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py || (echo 'Task features checker not found' && exit 1)`
 
 **Metadata:**
 - created_at: 2026-03-16T00:00:00
@@ -795,39 +795,39 @@
 
 #### constraint_project_root_substitution
 **Description:** Verify PROJECT_ROOT placeholder substitution is implemented
-**Command:** `grep -q '_substitute_project_root' constraints_tool/constraints_tool/task_features_checker.py && echo '✓ PROJECT_ROOT substitution found' || echo '✗ Missing'`
+**Command:** `grep -q '_substitute_project_root' constraints_tool/constraints_tool/check_spec_constraints.py && echo '✓ PROJECT_ROOT substitution found' || echo '✗ Missing'`
 
 #### constraint_recursive_execution_prevention
 **Description:** Verify recursive execution detection is implemented
-**Command:** `grep -q '_check_recursive_execution' constraints_tool/constraints_tool/task_features_checker.py && echo '✓ Recursive execution prevention found' || echo '✗ Missing'`
+**Command:** `grep -q '_check_recursive_execution' constraints_tool/constraints_tool/check_spec_constraints.py && echo '✓ Recursive execution prevention found' || echo '✗ Missing'`
 
 #### constraint_tool_accepts_features_arg
 **Description:** Verify tool accepts optional --features argument to filter feature IDs
-**Command:** `grep -q "add_argument.*--features" constraints_tool/constraints_tool/task_features_checker.py && echo '--features arg defined' || echo '--features arg missing'`
+**Command:** `grep -q "add_argument.*--features" constraints_tool/constraints_tool/check_spec_constraints.py && echo '--features arg defined' || echo '--features arg missing'`
 
 #### constraint_tool_accepts_output_checks_path_arg
 **Description:** Verify tool accepts optional --output-checks-path argument for ChecksResults file path
-**Command:** `grep -q "add_argument.*--output-checks-path" constraints_tool/constraints_tool/task_features_checker.py && echo '--output-checks-path arg defined' || echo '--output-checks-path arg missing'`
+**Command:** `grep -q "add_argument.*--output-checks-path" constraints_tool/constraints_tool/check_spec_constraints.py && echo '--output-checks-path arg defined' || echo '--output-checks-path arg missing'`
 
 #### constraint_tool_accepts_task_path
 **Description:** Verify tool accepts task document path argument
-**Command:** `grep -q "parser.add_argument.*task_path\|positional arguments" constraints_tool/constraints_tool/task_features_checker.py && echo 'Task path argument defined' || echo 'Task path argument missing'`
+**Command:** `grep -q "parser.add_argument.*task_path\|positional arguments" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'Task path argument defined' || echo 'Task path argument missing'`
 
 #### constraint_tool_exists
-**Description:** Verify task_features_checker.py exists in constraints_tool/
-**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/task_features_checker.py && echo '✓ tool exists' || echo '✗ tool missing'`
+**Description:** Verify check_spec_constraints.py exists in constraints_tool/
+**Command:** `test -f $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py && echo '✓ tool exists' || echo '✗ tool missing'`
 
 #### constraint_tool_output_checks_path_writable
 **Description:** Verify output checks path is writable and ChecksResults file can be created/updated
-**Command:** `grep -q "Path(output_checks_path)\|output_path.write_text" constraints_tool/constraints_tool/task_features_checker.py && echo 'Output path handling implemented' || echo 'Output path handling missing'`
+**Command:** `grep -q "Path(output_checks_path)\|output_path.write_text" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'Output path handling implemented' || echo 'Output path handling missing'`
 
 #### constraint_tool_returns_checks_results
 **Description:** Verify tool returns results in ChecksResults model format
-**Command:** `grep -q "ChecksResults\|check_task_features.*ChecksResults" constraints_tool/constraints_tool/task_features_checker.py && echo 'ChecksResults usage found' || echo 'ChecksResults not found'`
+**Command:** `grep -q "ChecksResults\|check_task_features.*ChecksResults" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'ChecksResults usage found' || echo 'ChecksResults not found'`
 
 #### constraint_tool_saves_results_to_file
 **Description:** Verify tool saves ChecksResults to file when --output-checks-path provided
-**Command:** `grep -q "output_path.write_text\|if not output_path.exists" constraints_tool/constraints_tool/task_features_checker.py && grep -q "apply_json_patch" constraints_tool/constraints_tool/task_features_checker.py && echo 'File save logic implemented' || echo 'File save logic missing'`
+**Command:** `grep -q "output_path.write_text\|if not output_path.exists" constraints_tool/constraints_tool/check_spec_constraints.py && grep -q "apply_json_patch" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'File save logic implemented' || echo 'File save logic missing'`
 
 **Metadata:**
 - created_at: 2026-03-13T00:00:00
@@ -912,7 +912,7 @@
 - Create FeaturesStats pydantic model with features_checks and failed Dict fields
 - Add features_stats: Optional[FeaturesStats] field to Iteration model
 - Make FeatureResult.constraints_results field required (Dict, not Optional)
-- Update task_features_checker.py to generate FeaturesStats from ChecksResults
+- Update check_spec_constraints.py to generate FeaturesStats from ChecksResults
 - Update Iteration.render() to display feature validation stats with pass/fail summary
 - Update task lifecycle tool skill documentation with FeaturesStats schema details
 - Ensure iteration stats display including passed/failed feature counts when rendered
@@ -922,8 +922,8 @@
 **Command:** `grep -A 3 'class FeatureResult' knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q 'constraints_results.*Dict.*Union\|constraints_results.*\.\.\.' && echo 'constraints_results required' || echo 'Still optional'`
 
 #### constraint_features_stats_generated
-**Description:** Verify task_features_checker.py generates FeaturesStats
-**Command:** `grep -q 'generate_features_stats\|FeaturesStats(' constraints_tool/constraints_tool/task_features_checker.py && echo 'Generation implemented' || echo 'Not implemented'`
+**Description:** Verify check_spec_constraints.py generates FeaturesStats
+**Command:** `grep -q 'generate_features_stats\|FeaturesStats(' constraints_tool/constraints_tool/check_spec_constraints.py && echo 'Generation implemented' || echo 'Not implemented'`
 
 #### constraint_features_stats_in_iteration
 **Description:** Verify features_stats field exists in Iteration model

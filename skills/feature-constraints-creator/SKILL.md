@@ -25,7 +25,7 @@ Each `Feature` has:
 - `constraints` — dict of `ConstraintBash` objects
 - `metadata` — optional tags (priority, status, depends_on, etc.)
 
-Constraints are executed by `task_features_checker.py` (see `y2:features-checks-tool`). **Never run constraint commands manually** — always use that tool.
+Constraints are executed by `check_spec_constraints.py` (see `y2:features-checks-tool`). **Never run constraint commands manually** — always use that tool.
 
 ---
 
@@ -164,7 +164,7 @@ python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_docum
 After adding constraints, verify them with the features-checks-tool:
 
 ```bash
-python3 constraints_tool/constraints_tool/task_features_checker.py \
+python3 constraints_tool/constraints_tool/check_spec_constraints.py \
     task-iterations.k.json \
     --features my_feature \
     --output-checks-path checks_results.k.json

@@ -204,7 +204,7 @@
               "constraint_task_checker_exits_2_on_failure": {
                 "constraint_id": "constraint_task_checker_exits_2_on_failure",
                 "verdict": false,
-                "shrunken_output": "\u2717 Recursive execution detected: task_features_checker.py cannot check itself",
+                "shrunken_output": "\u2717 Recursive execution detected: check_spec_constraints.py cannot check itself",
                 "timestamp": "2026-03-14T12:19:09.587686",
                 "fails_count": 0
               },

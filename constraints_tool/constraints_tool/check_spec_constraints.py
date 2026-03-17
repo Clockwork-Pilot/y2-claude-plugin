@@ -51,7 +51,7 @@ def _substitute_project_root(cmd: str) -> str:
 
 
 def _check_recursive_execution(cmd: str) -> bool:
-    """Check if command would execute task_features_checker.py recursively.
+    """Check if command would execute check_spec_constraints.py recursively.
 
     Only flags commands that actually invoke the script (python, python3, ./ etc),
     not just references to it in grep patterns or other searches.
@@ -65,8 +65,8 @@ def _check_recursive_execution(cmd: str) -> bool:
     script_name = Path(__file__).name
     script_path = str(Path(__file__).resolve())
 
-    # Check if command actually executes task_features_checker.py
-    # Match: python/python3 ... task_features_checker.py or ./task_features_checker.py
+    # Check if command actually executes check_spec_constraints.py
+    # Match: python/python3 ... check_spec_constraints.py or ./check_spec_constraints.py
     import re
     execution_patterns = [
         r'python\s+.*task_features_checker\.py',
@@ -98,7 +98,7 @@ def execute_constraint(
         if _check_recursive_execution(constraint.cmd):
             return constraint.create_result(
                 False,
-                "✗ Recursive execution detected: task_features_checker.py cannot check itself"
+                "✗ Recursive execution detected: check_spec_constraints.py cannot check itself"
             )
 
         # Substitute PROJECT_ROOT placeholders
@@ -359,16 +359,16 @@ def main():
         epilog="""
 Examples:
   # Check all features in task-spec.k.json
-  python3 task_features_checker.py task-spec.k.json
+  python3 check_spec_constraints.py task-spec.k.json
 
   # Check specific features
-  python3 task_features_checker.py task-spec.k.json --features feature_1,feature_2
+  python3 check_spec_constraints.py task-spec.k.json --features feature_1,feature_2
 
   # Check and save results
-  python3 task_features_checker.py task-spec.k.json --output-checks-path checks_results.k.json
+  python3 check_spec_constraints.py task-spec.k.json --output-checks-path checks_results.k.json
 
   # Check specific features and save results
-  python3 task_features_checker.py task-spec.k.json \\
+  python3 check_spec_constraints.py task-spec.k.json \\
     --features forbid_task_status_downgrade,render_spec_features_in_task \\
     --output-checks-path checks_results.k.json
         """

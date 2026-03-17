@@ -41,7 +41,7 @@ def check_constraints() -> int:
     if not task_json.exists():
         return 0
 
-    checker_script = PLUGIN_ROOT / "constraints_tool" / "constraints_tool" / "task_features_checker.py"
+    checker_script = PLUGIN_ROOT / "constraints_tool" / "constraints_tool" / "check_spec_constraints.py"
 
     try:
         result = subprocess.run(
