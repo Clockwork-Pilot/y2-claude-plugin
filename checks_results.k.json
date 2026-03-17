@@ -28,14 +28,14 @@
           "constraint_id": "constraint_feature_section_in_markdown",
           "verdict": true,
           "shrunken_output": "\u2713 Features section found in markdown\n",
-          "timestamp": "2026-03-17T02:02:30.392551",
+          "timestamp": "2026-03-17T12:28:24.963902",
           "fails_count": 0
         },
         "constraint_constraint_details_in_markdown": {
           "constraint_id": "constraint_constraint_details_in_markdown",
           "verdict": true,
           "shrunken_output": "\u2713 Constraint details found\n",
-          "timestamp": "2026-03-17T02:02:30.393865",
+          "timestamp": "2026-03-17T12:28:24.965321",
           "fails_count": 0
         }
       }
@@ -47,63 +47,63 @@
           "constraint_id": "constraint_tool_exists",
           "verdict": true,
           "shrunken_output": "\u2713 tool exists\n",
-          "timestamp": "2026-03-17T02:02:30.394523",
+          "timestamp": "2026-03-17T12:28:24.966009",
           "fails_count": 0
         },
         "constraint_tool_accepts_task_path": {
           "constraint_id": "constraint_tool_accepts_task_path",
           "verdict": true,
           "shrunken_output": "Task path argument missing\n",
-          "timestamp": "2026-03-17T02:02:30.395903",
+          "timestamp": "2026-03-17T12:28:24.967481",
           "fails_count": 0
         },
         "constraint_tool_accepts_features_arg": {
           "constraint_id": "constraint_tool_accepts_features_arg",
           "verdict": true,
           "shrunken_output": "--features arg missing\n",
-          "timestamp": "2026-03-17T02:02:30.397246",
+          "timestamp": "2026-03-17T12:28:24.969052",
           "fails_count": 0
         },
         "constraint_tool_accepts_output_checks_path_arg": {
           "constraint_id": "constraint_tool_accepts_output_checks_path_arg",
           "verdict": true,
           "shrunken_output": "--output-checks-path arg missing\n",
-          "timestamp": "2026-03-17T02:02:30.398564",
+          "timestamp": "2026-03-17T12:28:24.970541",
           "fails_count": 0
         },
         "constraint_tool_returns_checks_results": {
           "constraint_id": "constraint_tool_returns_checks_results",
           "verdict": true,
           "shrunken_output": "ChecksResults usage found\n",
-          "timestamp": "2026-03-17T02:02:30.399930",
+          "timestamp": "2026-03-17T12:28:24.971907",
           "fails_count": 0
         },
         "constraint_tool_saves_results_to_file": {
           "constraint_id": "constraint_tool_saves_results_to_file",
           "verdict": true,
           "shrunken_output": "File save logic implemented\n",
-          "timestamp": "2026-03-17T02:02:30.402065",
+          "timestamp": "2026-03-17T12:28:24.973849",
           "fails_count": 0
         },
         "constraint_recursive_execution_prevention": {
           "constraint_id": "constraint_recursive_execution_prevention",
           "verdict": true,
           "shrunken_output": "\u2713 Recursive execution prevention found\n",
-          "timestamp": "2026-03-17T02:02:30.403349",
+          "timestamp": "2026-03-17T12:28:24.975070",
           "fails_count": 0
         },
         "constraint_project_root_substitution": {
           "constraint_id": "constraint_project_root_substitution",
           "verdict": true,
           "shrunken_output": "\u2713 PROJECT_ROOT substitution found\n",
-          "timestamp": "2026-03-17T02:02:30.404603",
+          "timestamp": "2026-03-17T12:28:24.976302",
           "fails_count": 0
         },
         "constraint_tool_output_checks_path_writable": {
           "constraint_id": "constraint_tool_output_checks_path_writable",
           "verdict": true,
           "shrunken_output": "Output path handling implemented\n",
-          "timestamp": "2026-03-17T02:02:30.406201",
+          "timestamp": "2026-03-17T12:28:24.977639",
           "fails_count": 0
         }
       }
@@ -115,28 +115,28 @@
           "constraint_id": "constraint_goals_field_exists",
           "verdict": true,
           "shrunken_output": "\u2713 Goals field exists\n",
-          "timestamp": "2026-03-17T02:02:30.407574",
+          "timestamp": "2026-03-17T12:28:24.979044",
           "fails_count": 0
         },
         "constraint_goals_rendered_in_markdown": {
           "constraint_id": "constraint_goals_rendered_in_markdown",
           "verdict": true,
           "shrunken_output": "\u2713 Goals rendering found\n",
-          "timestamp": "2026-03-17T02:02:30.408883",
+          "timestamp": "2026-03-17T12:28:24.980382",
           "fails_count": 0
         },
         "constraint_goals_in_toc": {
           "constraint_id": "constraint_goals_in_toc",
           "verdict": true,
           "shrunken_output": "\u2713 Goals in TOC found\n",
-          "timestamp": "2026-03-17T02:02:30.410195",
+          "timestamp": "2026-03-17T12:28:24.981725",
           "fails_count": 0
         },
         "constraint_goals_field_in_task": {
           "constraint_id": "constraint_goals_field_in_task",
           "verdict": true,
           "shrunken_output": "\u2713 Goals in task.k.json\n",
-          "timestamp": "2026-03-17T02:02:30.411470",
+          "timestamp": "2026-03-17T12:28:24.983207",
           "fails_count": 0
         }
       }
@@ -148,28 +148,28 @@
           "constraint_id": "constraint_default_toc_when_opts_missing",
           "verdict": true,
           "shrunken_output": "\u2713 Default opts handling found\n",
-          "timestamp": "2026-03-17T02:02:30.412812",
+          "timestamp": "2026-03-17T12:28:24.984716",
           "fails_count": 0
         },
         "constraint_render_toc_default_true": {
           "constraint_id": "constraint_render_toc_default_true",
           "verdict": true,
           "shrunken_output": "\u2713 Default render_toc=True found\n",
-          "timestamp": "2026-03-17T02:02:30.414125",
+          "timestamp": "2026-03-17T12:28:24.986045",
           "fails_count": 0
         },
         "constraint_explicit_false_respected": {
           "constraint_id": "constraint_explicit_false_respected",
           "verdict": true,
           "shrunken_output": "\u2713 Explicit False handling found\n",
-          "timestamp": "2026-03-17T02:02:30.415472",
+          "timestamp": "2026-03-17T12:28:24.987458",
           "fails_count": 0
         },
         "constraint_toc_rendered_by_default": {
           "constraint_id": "constraint_toc_rendered_by_default",
           "verdict": true,
           "shrunken_output": "\u2713 TOC rendered\n",
-          "timestamp": "2026-03-17T02:02:30.584907",
+          "timestamp": "2026-03-17T12:28:25.160717",
           "fails_count": 0
         }
       }
@@ -181,21 +181,21 @@
           "constraint_id": "constraint_toc_includes_constraints",
           "verdict": true,
           "shrunken_output": "\u2717 Missing\n",
-          "timestamp": "2026-03-17T02:02:30.586645",
+          "timestamp": "2026-03-17T12:28:25.162393",
           "fails_count": 0
         },
         "constraint_constraints_nested_in_toc": {
           "constraint_id": "constraint_constraints_nested_in_toc",
           "verdict": true,
           "shrunken_output": "\u2717 No constraints in TOC\n",
-          "timestamp": "2026-03-17T02:02:30.757314",
+          "timestamp": "2026-03-17T12:28:25.338752",
           "fails_count": 0
         },
         "constraint_constraints_visible_in_markdown": {
           "constraint_id": "constraint_constraints_visible_in_markdown",
           "verdict": true,
           "shrunken_output": "\u2713 Constraints visible in markdown\n",
-          "timestamp": "2026-03-17T02:02:30.758958",
+          "timestamp": "2026-03-17T12:28:25.340390",
           "fails_count": 0
         }
       }
@@ -207,35 +207,35 @@
           "constraint_id": "constraint_toc_section_exists",
           "verdict": true,
           "shrunken_output": "\u2713 TOC section found\n",
-          "timestamp": "2026-03-17T02:02:30.760306",
+          "timestamp": "2026-03-17T12:28:25.341739",
           "fails_count": 0
         },
         "constraint_toc_has_entries": {
           "constraint_id": "constraint_toc_has_entries",
           "verdict": true,
           "shrunken_output": "\u2713 TOC entries found\n",
-          "timestamp": "2026-03-17T02:02:30.761712",
+          "timestamp": "2026-03-17T12:28:25.343232",
           "fails_count": 0
         },
         "constraint_toc_links_format": {
           "constraint_id": "constraint_toc_links_format",
           "verdict": true,
           "shrunken_output": "\u2713 Links formatted correctly\n",
-          "timestamp": "2026-03-17T02:02:30.763149",
+          "timestamp": "2026-03-17T12:28:25.344797",
           "fails_count": 0
         },
         "constraint_anchor_sections_exist": {
           "constraint_id": "constraint_anchor_sections_exist",
           "verdict": true,
-          "shrunken_output": "\u2713 All 115 TOC links have matching anchors\n",
-          "timestamp": "2026-03-17T02:02:30.786538",
+          "shrunken_output": "\u2713 All 119 TOC links have matching anchors\n",
+          "timestamp": "2026-03-17T12:28:25.368375",
           "fails_count": 0
         },
         "constraint_toc_indentation": {
           "constraint_id": "constraint_toc_indentation",
           "verdict": true,
           "shrunken_output": "\u2713 Proper nesting found\n",
-          "timestamp": "2026-03-17T02:02:30.788448",
+          "timestamp": "2026-03-17T12:28:25.370058",
           "fails_count": 0
         }
       }
@@ -247,21 +247,21 @@
           "constraint_id": "constraint_scripts_directory_exists",
           "verdict": true,
           "shrunken_output": "\u2713 constraints_scripts/ directory exists\n",
-          "timestamp": "2026-03-17T02:02:30.789147",
+          "timestamp": "2026-03-17T12:28:25.370792",
           "fails_count": 0
         },
         "constraint_scripts_readme_exists": {
           "constraint_id": "constraint_scripts_readme_exists",
           "verdict": true,
           "shrunken_output": "\u2713 README.md exists\n",
-          "timestamp": "2026-03-17T02:02:30.789772",
+          "timestamp": "2026-03-17T12:28:25.371429",
           "fails_count": 0
         },
         "constraint_scripts_documented": {
           "constraint_id": "constraint_scripts_documented",
           "verdict": true,
           "shrunken_output": "\u2713 Documentation found\n",
-          "timestamp": "2026-03-17T02:02:30.791078",
+          "timestamp": "2026-03-17T12:28:25.372878",
           "fails_count": 0
         }
       }
@@ -273,42 +273,42 @@
           "constraint_id": "constraint_bash_render_method",
           "verdict": true,
           "shrunken_output": "\u2713 ConstraintBash.render() exists\n",
-          "timestamp": "2026-03-17T02:02:30.792919",
+          "timestamp": "2026-03-17T12:28:25.375060",
           "fails_count": 0
         },
         "constraint_prompt_render_method": {
           "constraint_id": "constraint_prompt_render_method",
           "verdict": true,
           "shrunken_output": "\u2717 Missing\n",
-          "timestamp": "2026-03-17T02:02:30.794341",
+          "timestamp": "2026-03-17T12:28:25.376448",
           "fails_count": 0
         },
         "constraint_bash_render_toc_method": {
           "constraint_id": "constraint_bash_render_toc_method",
           "verdict": true,
           "shrunken_output": "\u2713 ConstraintBash.render_toc() exists\n",
-          "timestamp": "2026-03-17T02:02:30.795754",
+          "timestamp": "2026-03-17T12:28:25.377893",
           "fails_count": 0
         },
         "constraint_prompt_render_toc_method": {
           "constraint_id": "constraint_prompt_render_toc_method",
           "verdict": true,
           "shrunken_output": "\u2717 Missing\n",
-          "timestamp": "2026-03-17T02:02:30.797144",
+          "timestamp": "2026-03-17T12:28:25.379230",
           "fails_count": 0
         },
         "constraint_feature_uses_render_toc": {
           "constraint_id": "constraint_feature_uses_render_toc",
           "verdict": true,
           "shrunken_output": "\u2713 Feature uses constraint.render_toc()\n",
-          "timestamp": "2026-03-17T02:02:30.798476",
+          "timestamp": "2026-03-17T12:28:25.380487",
           "fails_count": 0
         },
         "constraint_rendering_displays_type": {
           "constraint_id": "constraint_rendering_displays_type",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.799755",
+          "timestamp": "2026-03-17T12:28:25.381781",
           "fails_count": 0
         }
       }
@@ -320,21 +320,21 @@
           "constraint_id": "constraint_shrunken_output_field_exists",
           "verdict": true,
           "shrunken_output": "Field missing or optional\n",
-          "timestamp": "2026-03-17T02:02:30.801247",
+          "timestamp": "2026-03-17T12:28:25.383224",
           "fails_count": 0
         },
         "constraint_output_populated_on_failure": {
           "constraint_id": "constraint_output_populated_on_failure",
           "verdict": true,
           "shrunken_output": "Not captured\n",
-          "timestamp": "2026-03-17T02:02:30.802636",
+          "timestamp": "2026-03-17T12:28:25.384558",
           "fails_count": 0
         },
         "constraint_output_rendered_in_markdown": {
           "constraint_id": "constraint_output_rendered_in_markdown",
           "verdict": true,
           "shrunken_output": "Output rendered\n",
-          "timestamp": "2026-03-17T02:02:30.804004",
+          "timestamp": "2026-03-17T12:28:25.385877",
           "fails_count": 0
         }
       }
@@ -346,21 +346,21 @@
           "constraint_id": "constraint_requirement_section_exists",
           "verdict": true,
           "shrunken_output": "Requirement section found\n",
-          "timestamp": "2026-03-17T02:02:30.805287",
+          "timestamp": "2026-03-17T12:28:25.387290",
           "fails_count": 0
         },
         "constraint_when_to_run_documented": {
           "constraint_id": "constraint_when_to_run_documented",
           "verdict": true,
           "shrunken_output": "When section documented\n",
-          "timestamp": "2026-03-17T02:02:30.806515",
+          "timestamp": "2026-03-17T12:28:25.388543",
           "fails_count": 0
         },
         "constraint_results_interpretation_guide": {
           "constraint_id": "constraint_results_interpretation_guide",
           "verdict": true,
           "shrunken_output": "Interpretation guide exists\n",
-          "timestamp": "2026-03-17T02:02:30.807877",
+          "timestamp": "2026-03-17T12:28:25.389835",
           "fails_count": 0
         }
       }
@@ -372,49 +372,49 @@
           "constraint_id": "constraint_features_stats_model_exists",
           "verdict": true,
           "shrunken_output": "FeaturesStats with proper fields\n",
-          "timestamp": "2026-03-17T02:02:30.809715",
+          "timestamp": "2026-03-17T12:28:25.391871",
           "fails_count": 0
         },
         "constraint_features_stats_in_iteration": {
           "constraint_id": "constraint_features_stats_in_iteration",
           "verdict": true,
           "shrunken_output": "Field in Iteration\n",
-          "timestamp": "2026-03-17T02:02:30.811064",
+          "timestamp": "2026-03-17T12:28:25.393249",
           "fails_count": 0
         },
         "constraint_features_stats_generated": {
           "constraint_id": "constraint_features_stats_generated",
           "verdict": true,
           "shrunken_output": "Generation implemented\n",
-          "timestamp": "2026-03-17T02:02:30.812406",
+          "timestamp": "2026-03-17T12:28:25.394560",
           "fails_count": 0
         },
         "constraint_features_stats_rendered": {
           "constraint_id": "constraint_features_stats_rendered",
           "verdict": true,
           "shrunken_output": "Rendering implemented\n",
-          "timestamp": "2026-03-17T02:02:30.813714",
+          "timestamp": "2026-03-17T12:28:25.395872",
           "fails_count": 0
         },
         "constraint_skill_documentation_updated": {
           "constraint_id": "constraint_skill_documentation_updated",
           "verdict": true,
           "shrunken_output": "Skill docs updated\n",
-          "timestamp": "2026-03-17T02:02:30.815029",
+          "timestamp": "2026-03-17T12:28:25.397295",
           "fails_count": 0
         },
         "constraint_stats_displayed_on_iteration": {
           "constraint_id": "constraint_stats_displayed_on_iteration",
           "verdict": true,
           "shrunken_output": "Stats in iteration\n",
-          "timestamp": "2026-03-17T02:02:30.843461",
+          "timestamp": "2026-03-17T12:28:25.426302",
           "fails_count": 0
         },
         "constraint_feature_result_constraints_required": {
           "constraint_id": "constraint_feature_result_constraints_required",
           "verdict": true,
           "shrunken_output": "Still optional\n",
-          "timestamp": "2026-03-17T02:02:30.845087",
+          "timestamp": "2026-03-17T12:28:25.428032",
           "fails_count": 0
         }
       }
@@ -426,28 +426,28 @@
           "constraint_id": "constraint_task_checker_exits_2_on_failure",
           "verdict": true,
           "shrunken_output": "Exit code 2 implemented\n",
-          "timestamp": "2026-03-17T02:02:30.846413",
+          "timestamp": "2026-03-17T12:28:25.429268",
           "fails_count": 0
         },
         "constraint_handler_stop_calls_checker": {
           "constraint_id": "constraint_handler_stop_calls_checker",
           "verdict": true,
           "shrunken_output": "Calls checker\n",
-          "timestamp": "2026-03-17T02:02:30.847701",
+          "timestamp": "2026-03-17T12:28:25.430586",
           "fails_count": 0
         },
         "constraint_handler_stop_checks_exit_code": {
           "constraint_id": "constraint_handler_stop_checks_exit_code",
           "verdict": true,
           "shrunken_output": "Checks exit code\n",
-          "timestamp": "2026-03-17T02:02:30.849018",
+          "timestamp": "2026-03-17T12:28:25.431876",
           "fails_count": 0
         },
         "constraint_handler_stop_prints_decision_block": {
           "constraint_id": "constraint_handler_stop_prints_decision_block",
           "verdict": true,
           "shrunken_output": "Prints decision block\n",
-          "timestamp": "2026-03-17T02:02:30.850355",
+          "timestamp": "2026-03-17T12:28:25.433168",
           "fails_count": 0
         }
       }
@@ -459,28 +459,28 @@
           "constraint_id": "constraint_features_stats_diff_model_exists",
           "verdict": true,
           "shrunken_output": "Model exists\n",
-          "timestamp": "2026-03-17T02:02:30.851586",
+          "timestamp": "2026-03-17T12:28:25.434454",
           "fails_count": 0
         },
         "constraint_features_stats_has_diff_method": {
           "constraint_id": "constraint_features_stats_has_diff_method",
           "verdict": true,
           "shrunken_output": "diff() method exists\n",
-          "timestamp": "2026-03-17T02:02:30.852949",
+          "timestamp": "2026-03-17T12:28:25.435792",
           "fails_count": 0
         },
         "constraint_iteration_has_diff_field": {
           "constraint_id": "constraint_iteration_has_diff_field",
           "verdict": true,
           "shrunken_output": "Field exists\n",
-          "timestamp": "2026-03-17T02:02:30.854290",
+          "timestamp": "2026-03-17T12:28:25.437113",
           "fails_count": 0
         },
         "constraint_diff_rendered_in_iteration": {
           "constraint_id": "constraint_diff_rendered_in_iteration",
           "verdict": true,
           "shrunken_output": "Not implemented\n",
-          "timestamp": "2026-03-17T02:02:30.855764",
+          "timestamp": "2026-03-17T12:28:25.438583",
           "fails_count": 0
         }
       }
@@ -492,35 +492,35 @@
           "constraint_id": "constraint_script_exists",
           "verdict": true,
           "shrunken_output": "Script exists\n",
-          "timestamp": "2026-03-17T02:02:30.856332",
+          "timestamp": "2026-03-17T12:28:25.439228",
           "fails_count": 0
         },
         "constraint_script_uses_knowledge_tool": {
           "constraint_id": "constraint_script_uses_knowledge_tool",
           "verdict": true,
           "shrunken_output": "Uses knowledge tool\n",
-          "timestamp": "2026-03-17T02:02:30.857541",
+          "timestamp": "2026-03-17T12:28:25.440486",
           "fails_count": 0
         },
         "constraint_script_runs_checker": {
           "constraint_id": "constraint_script_runs_checker",
           "verdict": true,
           "shrunken_output": "Runs checker\n",
-          "timestamp": "2026-03-17T02:02:30.858843",
+          "timestamp": "2026-03-17T12:28:25.441775",
           "fails_count": 0
         },
         "constraint_script_populates_features_stats": {
           "constraint_id": "constraint_script_populates_features_stats",
           "verdict": true,
           "shrunken_output": "Populates stats\n",
-          "timestamp": "2026-03-17T02:02:30.860080",
+          "timestamp": "2026-03-17T12:28:25.442992",
           "fails_count": 0
         },
         "constraint_skill_documentation_updated": {
           "constraint_id": "constraint_skill_documentation_updated",
           "verdict": true,
           "shrunken_output": "Documented\n",
-          "timestamp": "2026-03-17T02:02:30.861343",
+          "timestamp": "2026-03-17T12:28:25.444304",
           "fails_count": 0
         }
       }
@@ -532,49 +532,49 @@
           "constraint_id": "constraint_constraint_model_uses_metadata",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.861941",
+          "timestamp": "2026-03-17T12:28:25.444951",
           "fails_count": 0
         },
         "constraint_task_model_uses_metadata": {
           "constraint_id": "constraint_task_model_uses_metadata",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.862533",
+          "timestamp": "2026-03-17T12:28:25.445587",
           "fails_count": 0
         },
         "constraint_spec_model_uses_metadata": {
           "constraint_id": "constraint_spec_model_uses_metadata",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.863109",
+          "timestamp": "2026-03-17T12:28:25.446205",
           "fails_count": 0
         },
         "constraint_feature_model_uses_metadata": {
           "constraint_id": "constraint_feature_model_uses_metadata",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.863716",
+          "timestamp": "2026-03-17T12:28:25.446856",
           "fails_count": 0
         },
         "constraint_doc_model_uses_metadata": {
           "constraint_id": "constraint_doc_model_uses_metadata",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.864309",
+          "timestamp": "2026-03-17T12:28:25.447444",
           "fails_count": 0
         },
         "constraint_metadata_import": {
           "constraint_id": "constraint_metadata_import",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.864918",
+          "timestamp": "2026-03-17T12:28:25.448076",
           "fails_count": 0
         },
         "constraint_no_dict_metadata_references": {
           "constraint_id": "constraint_no_dict_metadata_references",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.866412",
+          "timestamp": "2026-03-17T12:28:25.449614",
           "fails_count": 0
         }
       }
@@ -586,28 +586,28 @@
           "constraint_id": "constraint_selective_patch_logic",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.867017",
+          "timestamp": "2026-03-17T12:28:25.450266",
           "fails_count": 0
         },
         "constraint_preserves_other_features": {
           "constraint_id": "constraint_preserves_other_features",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.867633",
+          "timestamp": "2026-03-17T12:28:25.450903",
           "fails_count": 0
         },
         "constraint_patch_uses_add_op": {
           "constraint_id": "constraint_patch_uses_add_op",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.868229",
+          "timestamp": "2026-03-17T12:28:25.451528",
           "fails_count": 0
         },
         "constraint_feature_results_filtering": {
           "constraint_id": "constraint_feature_results_filtering",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.868810",
+          "timestamp": "2026-03-17T12:28:25.452149",
           "fails_count": 0
         }
       }
@@ -619,28 +619,28 @@
           "constraint_id": "constraint_scope_field_removed_from_definition",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.870215",
+          "timestamp": "2026-03-17T12:28:25.453541",
           "fails_count": 0
         },
         "constraint_no_scope_in_constraint_bash": {
           "constraint_id": "constraint_no_scope_in_constraint_bash",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.871652",
+          "timestamp": "2026-03-17T12:28:25.454974",
           "fails_count": 0
         },
         "constraint_no_scope_field_usage": {
           "constraint_id": "constraint_no_scope_field_usage",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:30.873033",
+          "timestamp": "2026-03-17T12:28:25.456368",
           "fails_count": 0
         },
         "constraint_all_model_tests_pass": {
           "constraint_id": "constraint_all_model_tests_pass",
           "verdict": true,
           "shrunken_output": "Tests exist\n",
-          "timestamp": "2026-03-17T02:02:30.873691",
+          "timestamp": "2026-03-17T12:28:25.457009",
           "fails_count": 0
         }
       }
@@ -748,56 +748,56 @@
           "constraint_id": "constraint_project_spec_dir_created",
           "verdict": true,
           "shrunken_output": "\u2713 project-spec directory exists\n",
-          "timestamp": "2026-03-17T02:02:30.874299",
+          "timestamp": "2026-03-17T12:28:25.457639",
           "fails_count": 0
         },
         "constraint_check_project_constraints_exists": {
           "constraint_id": "constraint_check_project_constraints_exists",
           "verdict": true,
           "shrunken_output": "\u2713 check_project_constraints.py exists\n",
-          "timestamp": "2026-03-17T02:02:30.874913",
+          "timestamp": "2026-03-17T12:28:25.458207",
           "fails_count": 0
         },
         "constraint_complete_task_script_exists": {
           "constraint_id": "constraint_complete_task_script_exists",
           "verdict": true,
           "shrunken_output": "\u2713 complete_task.py exists\n",
-          "timestamp": "2026-03-17T02:02:30.875515",
+          "timestamp": "2026-03-17T12:28:25.458834",
           "fails_count": 0
         },
         "constraint_complete_task_runs_task_checker": {
           "constraint_id": "constraint_complete_task_runs_task_checker",
           "verdict": true,
           "shrunken_output": "\u2713 calls task_features_checker\n",
-          "timestamp": "2026-03-17T02:02:30.876731",
+          "timestamp": "2026-03-17T12:28:25.460050",
           "fails_count": 0
         },
         "constraint_complete_task_runs_project_checker": {
           "constraint_id": "constraint_complete_task_runs_project_checker",
           "verdict": true,
           "shrunken_output": "\u2713 calls check_project_constraints\n",
-          "timestamp": "2026-03-17T02:02:30.877972",
+          "timestamp": "2026-03-17T12:28:25.461303",
           "fails_count": 0
         },
         "constraint_raw_tasks_directory_created": {
           "constraint_id": "constraint_raw_tasks_directory_created",
           "verdict": true,
           "shrunken_output": "\u2713 raw-tasks directory exists\n",
-          "timestamp": "2026-03-17T02:02:30.878567",
+          "timestamp": "2026-03-17T12:28:25.461933",
           "fails_count": 0
         },
         "constraint_task_json_preserved": {
           "constraint_id": "constraint_task_json_preserved",
           "verdict": true,
           "shrunken_output": "\u2713 task.k.json preserved\n",
-          "timestamp": "2026-03-17T02:02:30.879193",
+          "timestamp": "2026-03-17T12:28:25.462529",
           "fails_count": 0
         },
         "constraint_spec_snapshot_format": {
           "constraint_id": "constraint_spec_snapshot_format",
           "verdict": true,
           "shrunken_output": "\u2713 timestamp handling present\n",
-          "timestamp": "2026-03-17T02:02:30.880504",
+          "timestamp": "2026-03-17T12:28:25.463757",
           "fails_count": 0
         }
       }
@@ -809,14 +809,14 @@
           "constraint_id": "constraint_no_default_fails_count_in_json",
           "verdict": true,
           "shrunken_output": "OK: no default fails_count in spec.features constraints\n",
-          "timestamp": "2026-03-17T02:02:30.900048",
+          "timestamp": "2026-03-17T12:28:25.482964",
           "fails_count": 2
         },
         "constraint_proven_constraint_removal_blocked": {
           "constraint_id": "constraint_proven_constraint_removal_blocked",
           "verdict": true,
           "shrunken_output": "",
-          "timestamp": "2026-03-17T02:02:31.443377",
+          "timestamp": "2026-03-17T12:28:26.041322",
           "fails_count": 1
         }
       }

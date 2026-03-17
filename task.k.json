@@ -12,7 +12,13 @@
         "type": "Feature",
         "model_version": 1,
         "id": "render_spec_features_in_task",
-        "description": "Render Task spec features and their constraints in the markdown output. Task.render() should include a 'Features' section that displays all features from spec.features with their descriptions and embedded constraints (bash commands and prompt validations).",
+        "description": "Render spec features and constraints in Task markdown",
+        "goals": [
+          "Add Features section to Task.render() markdown output",
+          "Display each feature with its description and constraints",
+          "Embed constraint details including bash commands and prompts",
+          "Show constraint descriptions and validation logic"
+        ],
         "constraints": {
           "constraint_feature_section_in_markdown": {
             "id": "constraint_feature_section_in_markdown",
@@ -42,7 +48,15 @@
         "type": "Feature",
         "model_version": 1,
         "id": "task_features_checker_tool",
-        "description": "Create task_features_checker.py script in constraints_tool/ directory. Script should: 1) Accept path to task document (task.k.json), 2) Accept optional --features argument with comma-separated list of feature IDs to check, 3) Accept optional --output-checks-path argument for ChecksResults.json path to save results, 4) If --features not provided, check all features in spec.features, 5) Execute constraints for selected features similar to constraints_executor.py, 6) Write results to ChecksResults model containing feature_results with constraint execution outcomes, 7) Save ChecksResults to path specified in --output-checks-path if provided, 8) Support both ConstraintBash and ConstraintPrompt types, 9) Return results showing which constraints passed/failed",
+        "description": "Script to execute constraints for selected features",
+        "goals": [
+          "Accept task.k.json path and optional --features argument for selective checking",
+          "Support --output-checks-path to specify ChecksResults.json output location",
+          "Execute all or selected feature constraints from spec.features",
+          "Support both ConstraintBash and ConstraintPrompt constraint types",
+          "Save ChecksResults model with feature_results and constraint outcomes",
+          "Preserve results from other features when updating selectively"
+        ],
         "constraints": {
           "constraint_tool_exists": {
             "id": "constraint_tool_exists",
@@ -698,7 +712,14 @@
         "type": "Feature",
         "model_version": 1,
         "id": "migrate_metadata_to_model",
-        "description": "Migrate all models from using metadata: Dict[str, Any] to using metadata: Metadata model. This provides type safety, consistency, and standardized metadata handling across all knowledge document models. Models affected: ConstraintBash, ConstraintPrompt, Task, Spec, Feature, and Doc. Each model should import the Metadata class from metadata_model and use it instead of Dict[str, Any].",
+        "description": "Migrate metadata fields to Metadata model",
+        "goals": [
+          "Replace metadata: Dict[str, Any] with Metadata model for type safety",
+          "Update ConstraintBash and ConstraintPrompt models",
+          "Update Task, Spec, Feature, and Doc models",
+          "Import Metadata class from metadata_model across all affected models",
+          "Ensure consistency and standardized metadata handling"
+        ],
         "constraints": {
           "constraint_constraint_model_uses_metadata": {
             "id": "constraint_constraint_model_uses_metadata",
@@ -755,7 +776,12 @@
         "type": "Feature",
         "model_version": 1,
         "id": "task_features_checker_selective_patch",
-        "description": "When --features argument is used with task_features_checker.py, the tool should perform selective patching of checks_results.k.json knowledge document instead of overwriting the entire file. Only the feature results specified in --features should be patched/updated, while preserving existing results for all other features in the document. This ensures that incremental validation runs don't lose results from previous checks.",
+        "description": "Selective patching of constraint check results",
+        "goals": [
+          "Patch only specified features in checks_results.k.json instead of full overwrite",
+          "Preserve existing results for unselected features",
+          "Support incremental validation runs without losing prior results"
+        ],
         "constraints": {
           "constraint_selective_patch_logic": {
             "id": "constraint_selective_patch_logic",
@@ -794,7 +820,13 @@
         "type": "Feature",
         "model_version": 1,
         "id": "remove_scope_from_constraint_bash",
-        "description": "Remove the scope field from ConstraintBash model as it is redundant and not actively used. The scope field should be completely removed from: 1) ConstraintBash model definition in constraints_model.py, 2) Any Field() definitions with scope parameter, 3) All references to constraint.scope in the codebase. This simplifies the model and reduces unnecessary fields.",
+        "description": "Remove redundant scope field from ConstraintBash",
+        "goals": [
+          "Remove scope field from ConstraintBash model definition",
+          "Remove all Field() definitions with scope parameter",
+          "Remove constraint.scope references throughout codebase",
+          "Simplify model by eliminating unused fields"
+        ],
         "constraints": {
           "constraint_scope_field_removed_from_definition": {
             "id": "constraint_scope_field_removed_from_definition",
@@ -833,7 +865,14 @@
         "type": "Feature",
         "model_version": 1,
         "id": "project_spec_lifecycle",
-        "description": "Create project-spec lifecycle management system: establish project-spec/ directory structure, implement check_project_constraints.py stub for project-level validation, and build complete_task.py orchestration script that: (1) executes task_features_checker.py for task-level constraints, (2) executes check_project_constraints.py for project-level constraints, (3) on both succeeding, creates timestamped Spec snapshot in project-spec/raw-tasks/<timestamp>-<task-id>.k.json containing Spec data extracted from completed task.k.json, (4) preserves original task.k.json and task.k.md files without deletion.",
+        "description": "Project-spec lifecycle with constraint validation and Spec snapshots",
+        "goals": [
+          "Establish project-spec/ directory structure with raw-tasks/ subdirectory",
+          "Implement check_project_constraints.py stub for project-level constraint validation",
+          "Build complete_task.py orchestration script that chains task and project constraint checks",
+          "Create timestamped Spec snapshots in project-spec/raw-tasks/ when all checks pass",
+          "Preserve original task.k.json and task.k.md files without deletion"
+        ],
         "constraints": {
           "constraint_project_spec_dir_created": {
             "id": "constraint_project_spec_dir_created",
@@ -896,7 +935,12 @@
         "type": "Feature",
         "model_version": 1,
         "id": "constraint_bash_fails_count_cmd_protection",
-        "description": "ConstraintBash.fails_count is maintained correctly: default value of 0 must not appear explicitly in task.k.json (it is the default and clutters the document). When fails_count is 0, model serialization must omit the field.",
+        "description": "ConstraintBash fails_count serialization and constraint removal protection",
+        "goals": [
+          "Omit fails_count: 0 from task.k.json serialization to reduce document clutter",
+          "Prevent removal of constraints with fails_count > 0 via model validation",
+          "Maintain fails_count state for tracking proven constraint failures"
+        ],
         "constraints": {
           "constraint_no_default_fails_count_in_json": {
             "id": "constraint_no_default_fails_count_in_json",
@@ -1284,6 +1328,196 @@
       "metadata": {
         "created_at": "2026-03-17T02:00:05.087396",
         "iteration_number": 6
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_7": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_7",
+      "metadata": {
+        "created_at": "2026-03-17T12:14:33.120239",
+        "iteration_number": 7
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_8": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_8",
+      "metadata": {
+        "created_at": "2026-03-17T12:16:56.001082",
+        "iteration_number": 8
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_9": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_9",
+      "metadata": {
+        "created_at": "2026-03-17T12:20:56.253632",
+        "iteration_number": 9
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_10": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_10",
+      "metadata": {
+        "created_at": "2026-03-17T12:28:09.446731",
+        "iteration_number": 10
+      },
+      "features_stats": {
+        "features_checks": {
+          "render_spec_features_in_task": true,
+          "task_features_checker_tool": true,
+          "feature_goals_field": true,
+          "task_default_render_toc": true,
+          "task_toc_includes_constraints": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_scripts_directory": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "add_constraint_validation_requirement_skill": true,
+          "update_iteration_with_features_stats": true,
+          "constraint_checker_exit_code_hook": true,
+          "features_stats_diff_tracking": true,
+          "task_add_iteration_script": true,
+          "migrate_metadata_to_model": true,
+          "task_features_checker_selective_patch": true,
+          "remove_scope_from_constraint_bash": true,
+          "project_spec_lifecycle": true,
+          "constraint_bash_fails_count_cmd_protection": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_11": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_11",
+      "metadata": {
+        "created_at": "2026-03-17T12:28:27.155530",
+        "iteration_number": 11
       },
       "features_stats": {
         "features_checks": {

@@ -39,9 +39,14 @@ Before writing constraints, write a clear feature definition:
   "model_version": 1,
   "id": "my_feature",
   "description": "Concise description of what must be true when this feature is complete. Include inputs, outputs, and side effects.",
+  "goals": "Primary structure for knowledge about this feature. Details here drive the constraint suite design.",
   "constraints": {}
 }
 ```
+
+**Feature Definition Fields:**
+- `description` — High-level feature summary (max 100 characters). Used for quick reference and indexing.
+- `goals` — Detailed knowledge structure about the feature. This is where the primary semantic content lives and what drives constraint design.
 
 Add it to `task.k.json` via the knowledge tool:
 

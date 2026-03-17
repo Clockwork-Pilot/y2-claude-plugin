@@ -117,6 +117,11 @@
     - [iteration_4](#iteration_4)
     - [iteration_5](#iteration_5)
     - [iteration_6](#iteration_6)
+    - [iteration_7](#iteration_7)
+    - [iteration_8](#iteration_8)
+    - [iteration_9](#iteration_9)
+    - [iteration_10](#iteration_10)
+    - [iteration_11](#iteration_11)
 
 ## Specification
 
@@ -167,7 +172,12 @@
 - status: completed
 
 ### Feature: constraint_bash_fails_count_cmd_protection
-**ConstraintBash.fails_count is maintained correctly: default value of 0 must not appear explicitly in task.k.json (it is the default and clutters the document). When fails_count is 0, model serialization must omit the field.**
+**ConstraintBash fails_count serialization and constraint removal protection**
+
+**Goals:**
+- Omit fails_count: 0 from task.k.json serialization to reduce document clutter
+- Prevent removal of constraints with fails_count > 0 via model validation
+- Maintain fails_count state for tracking proven constraint failures
 
 #### constraint_no_default_fails_count_in_json
 **Description:** task.k.json must not contain explicit fails_count: 0 values — 0 is the default and should be omitted from serialization
@@ -381,7 +391,14 @@
 - status: pending
 
 ### Feature: migrate_metadata_to_model
-**Migrate all models from using metadata: Dict[str, Any] to using metadata: Metadata model. This provides type safety, consistency, and standardized metadata handling across all knowledge document models. Models affected: ConstraintBash, ConstraintPrompt, Task, Spec, Feature, and Doc. Each model should import the Metadata class from metadata_model and use it instead of Dict[str, Any].**
+**Migrate metadata fields to Metadata model**
+
+**Goals:**
+- Replace metadata: Dict[str, Any] with Metadata model for type safety
+- Update ConstraintBash and ConstraintPrompt models
+- Update Task, Spec, Feature, and Doc models
+- Import Metadata class from metadata_model across all affected models
+- Ensure consistency and standardized metadata handling
 
 #### constraint_constraint_model_uses_metadata
 **Description:** Verify ConstraintBash and ConstraintPrompt use Metadata model instead of Dict
@@ -419,7 +436,14 @@
 - status: planned
 
 ### Feature: project_spec_lifecycle
-**Create project-spec lifecycle management system: establish project-spec/ directory structure, implement check_project_constraints.py stub for project-level validation, and build complete_task.py orchestration script that: (1) executes task_features_checker.py for task-level constraints, (2) executes check_project_constraints.py for project-level constraints, (3) on both succeeding, creates timestamped Spec snapshot in project-spec/raw-tasks/<timestamp>-<task-id>.k.json containing Spec data extracted from completed task.k.json, (4) preserves original task.k.json and task.k.md files without deletion.**
+**Project-spec lifecycle with constraint validation and Spec snapshots**
+
+**Goals:**
+- Establish project-spec/ directory structure with raw-tasks/ subdirectory
+- Implement check_project_constraints.py stub for project-level constraint validation
+- Build complete_task.py orchestration script that chains task and project constraint checks
+- Create timestamped Spec snapshots in project-spec/raw-tasks/ when all checks pass
+- Preserve original task.k.json and task.k.md files without deletion
 
 #### constraint_check_project_constraints_exists
 **Description:** Structural: check_project_constraints.py stub script must exist in constraints_tool/
@@ -461,7 +485,13 @@
 - status: planned
 
 ### Feature: remove_scope_from_constraint_bash
-**Remove the scope field from ConstraintBash model as it is redundant and not actively used. The scope field should be completely removed from: 1) ConstraintBash model definition in constraints_model.py, 2) Any Field() definitions with scope parameter, 3) All references to constraint.scope in the codebase. This simplifies the model and reduces unnecessary fields.**
+**Remove redundant scope field from ConstraintBash**
+
+**Goals:**
+- Remove scope field from ConstraintBash model definition
+- Remove all Field() definitions with scope parameter
+- Remove constraint.scope references throughout codebase
+- Simplify model by eliminating unused fields
 
 #### constraint_all_model_tests_pass
 **Description:** Verify constraint model tests still exist and pass without scope field
@@ -487,7 +517,13 @@
 - status: planned
 
 ### Feature: render_spec_features_in_task
-**Render Task spec features and their constraints in the markdown output. Task.render() should include a 'Features' section that displays all features from spec.features with their descriptions and embedded constraints (bash commands and prompt validations).**
+**Render spec features and constraints in Task markdown**
+
+**Goals:**
+- Add Features section to Task.render() markdown output
+- Display each feature with its description and constraints
+- Embed constraint details including bash commands and prompts
+- Show constraint descriptions and validation logic
 
 #### constraint_constraint_details_in_markdown
 **Description:** Verify that constraint details (bash commands, prompt validations) are rendered in markdown
@@ -578,7 +614,12 @@
 - status: planned
 
 ### Feature: task_features_checker_selective_patch
-**When --features argument is used with task_features_checker.py, the tool should perform selective patching of checks_results.k.json knowledge document instead of overwriting the entire file. Only the feature results specified in --features should be patched/updated, while preserving existing results for all other features in the document. This ensures that incremental validation runs don't lose results from previous checks.**
+**Selective patching of constraint check results**
+
+**Goals:**
+- Patch only specified features in checks_results.k.json instead of full overwrite
+- Preserve existing results for unselected features
+- Support incremental validation runs without losing prior results
 
 #### constraint_feature_results_filtering
 **Description:** Verify feature results are filtered based on --features argument
@@ -604,7 +645,15 @@
 - status: planned
 
 ### Feature: task_features_checker_tool
-**Create task_features_checker.py script in constraints_tool/ directory. Script should: 1) Accept path to task document (task.k.json), 2) Accept optional --features argument with comma-separated list of feature IDs to check, 3) Accept optional --output-checks-path argument for ChecksResults.json path to save results, 4) If --features not provided, check all features in spec.features, 5) Execute constraints for selected features similar to constraints_executor.py, 6) Write results to ChecksResults model containing feature_results with constraint execution outcomes, 7) Save ChecksResults to path specified in --output-checks-path if provided, 8) Support both ConstraintBash and ConstraintPrompt types, 9) Return results showing which constraints passed/failed**
+**Script to execute constraints for selected features**
+
+**Goals:**
+- Accept task.k.json path and optional --features argument for selective checking
+- Support --output-checks-path to specify ChecksResults.json output location
+- Execute all or selected feature constraints from spec.features
+- Support both ConstraintBash and ConstraintPrompt constraint types
+- Save ChecksResults model with feature_results and constraint outcomes
+- Preserve results from other features when updating selectively
 
 #### constraint_project_root_substitution
 **Description:** Verify PROJECT_ROOT placeholder substitution is implemented
@@ -941,6 +990,166 @@
 
 - created_at: 2026-03-17T02:00:05.087396
 - iteration_number: 6
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_7
+
+**Metadata:**
+
+- created_at: 2026-03-17T12:14:33.120239
+- iteration_number: 7
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_8
+
+**Metadata:**
+
+- created_at: 2026-03-17T12:16:56.001082
+- iteration_number: 8
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_9
+
+**Metadata:**
+
+- created_at: 2026-03-17T12:20:56.253632
+- iteration_number: 9
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_10
+
+**Metadata:**
+
+- created_at: 2026-03-17T12:28:09.446731
+- iteration_number: 10
+
+**Feature Constraint Validation Stats:**
+
+- **Overall:** 19/19 features passed
+
+**Feature Status:**
+- add_constraint_validation_requirement_skill: ✓ PASS
+- constraint_bash_fails_count_cmd_protection: ✓ PASS
+- constraint_checker_exit_code_hook: ✓ PASS
+- constraint_rendering_capability: ✓ PASS
+- constraint_scripts_directory: ✓ PASS
+- enhance_constraint_bash_result_output: ✓ PASS
+- feature_goals_field: ✓ PASS
+- features_stats_diff_tracking: ✓ PASS
+- migrate_metadata_to_model: ✓ PASS
+- project_spec_lifecycle: ✓ PASS
+- remove_scope_from_constraint_bash: ✓ PASS
+- render_spec_features_in_task: ✓ PASS
+- task_add_iteration_script: ✓ PASS
+- task_default_render_toc: ✓ PASS
+- task_features_checker_selective_patch: ✓ PASS
+- task_features_checker_tool: ✓ PASS
+- task_toc_includes_constraints: ✓ PASS
+- task_toc_rendering_and_links: ✓ PASS
+- update_iteration_with_features_stats: ✓ PASS
+
+### iteration_11
+
+**Metadata:**
+
+- created_at: 2026-03-17T12:28:27.155530
+- iteration_number: 11
 
 **Feature Constraint Validation Stats:**
 
