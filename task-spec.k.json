@@ -1249,6 +1249,51 @@
         }
       },
       "metadata": {}
+    },
+    "iteration_always_recorded_with_test_metrics": {
+      "type": "Feature",
+      "model_version": 1,
+      "id": "iteration_always_recorded_with_test_metrics",
+      "description": "Iteration is always recorded with created_at metadata and full test metrics, even when tests fail.",
+      "goals": [
+        "Metadata class has a now() factory classmethod that creates Metadata with created_at=current ISO timestamp",
+        "TaskTestMetrics extended with failed_tests: Dict[str, str] \u2014 test name to shrunk error (max 100 chars)",
+        "task-add-iteration.py populates TaskTestMetrics from pytest output (passed, total, failed_tests)",
+        "task-add-iteration.py uses Metadata.now() when building iteration metadata",
+        "Iteration is always added regardless of pytest result \u2014 pytest exit code returned at the end"
+      ],
+      "constraints": {
+        "constraint_metadata_has_now_factory": {
+          "id": "constraint_metadata_has_now_factory",
+          "cmd": "grep -qE \"def now\\b\" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/metadata_model.py || exit 1",
+          "description": "Structural: Metadata class must have a now() factory classmethod",
+          "fails_count": 1
+        },
+        "constraint_task_test_metrics_has_failed_tests": {
+          "id": "constraint_task_test_metrics_has_failed_tests",
+          "cmd": "grep -q \"failed_tests\" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/task_model.py || exit 1",
+          "description": "Structural: TaskTestMetrics must have a failed_tests field",
+          "fails_count": 1
+        },
+        "constraint_add_iteration_uses_metadata_now": {
+          "id": "constraint_add_iteration_uses_metadata_now",
+          "cmd": "grep -q \"Metadata\\.now()\" $PROJECT_ROOT/skills/task-lifecycle-tool/task-add-iteration.py || exit 1",
+          "description": "Structural: task-add-iteration.py must use Metadata.now() to populate iteration metadata",
+          "fails_count": 1
+        },
+        "constraint_add_iteration_uses_task_test_metrics": {
+          "id": "constraint_add_iteration_uses_task_test_metrics",
+          "cmd": "grep -q \"TaskTestMetrics\" $PROJECT_ROOT/skills/task-lifecycle-tool/task-add-iteration.py || exit 1",
+          "description": "Behavioral: task-add-iteration.py must instantiate TaskTestMetrics from pytest results",
+          "fails_count": 1
+        },
+        "constraint_iteration_always_added_regardless_of_tests": {
+          "id": "constraint_iteration_always_added_regardless_of_tests",
+          "cmd": "grep -q \"if run_pytest() != 0\" $PROJECT_ROOT/skills/task-lifecycle-tool/task-add-iteration.py && exit 1 || exit 0",
+          "description": "Behavioral: run_pytest() result must NOT cause early return \u2014 iteration must always be added",
+          "fails_count": 1
+        }
+      }
     }
   }
 }

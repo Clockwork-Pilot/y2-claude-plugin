@@ -4,9 +4,8 @@
 import json
 import sys
 import argparse
-import subprocess
+import pytest
 from pathlib import Path
-from datetime import datetime
 from typing import Optional, Dict, Any
 
 # Add paths for imports
@@ -19,36 +18,56 @@ sys.path.insert(0, str(_knowledge_tool_src))
 sys.path.insert(0, str(_knowledge_tool_root))
 sys.path.insert(0, str(_constraints_tool))
 
-from models import Task, FeaturesStats, FeaturesStatsDiff, Iteration
+from models import Task, FeaturesStats, FeaturesStatsDiff, Iteration, TaskTestMetrics
+from models.metadata_model import Metadata
 from patch_knowledge_document import apply_json_patch
 from check_spec_constraints import check_constraints
 
 _project_root = _script_dir
 
 
-def run_pytest() -> int:
-    """Run pytest from project root as prerequisite before adding iteration.
+class _ResultCollector:
+    """Inline pytest plugin that collects pass/fail results without subprocess."""
+
+    def __init__(self) -> None:
+        self.passed = 0
+        self.failed_tests: Dict[str, str] = {}
+
+    def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
+        if report.when != 'call':
+            return
+        if report.passed:
+            self.passed += 1
+        elif report.failed:
+            # Keep only last two node-id segments: TestClass::test_method
+            test_id = '::'.join(report.nodeid.split('::')[-2:])
+            error = ''
+            if report.longrepr:
+                lines = str(report.longrepr).splitlines()
+                error = lines[-1][:100] if lines else ''
+            self.failed_tests[test_id] = error
+
+
+def run_pytest() -> tuple:
+    """Run pytest via API from project root; return structured metrics.
 
     Returns:
-        Exit code: 0=all passed, non-zero=tests failed
+        (exit_code, TaskTestMetrics)
     """
+    collector = _ResultCollector()
     try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", "--tb=short", "-q"],
-            cwd=str(_project_root),
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-        if result.returncode != 0:
-            print("✗ Tests failed — iteration will not be added", file=sys.stderr)
-            print(result.stdout[-3000:], file=sys.stderr)
-            if result.stderr:
-                print(result.stderr[-500:], file=sys.stderr)
-        return result.returncode
+        exit_code = int(pytest.main(['--tb=line', '-q'], plugins=[collector]))
     except Exception as e:
         print(f"✗ Error running pytest: {e}", file=sys.stderr)
-        return 1
+        return 1, TaskTestMetrics()
+    metrics = TaskTestMetrics(
+        passed=collector.passed,
+        total=collector.passed + len(collector.failed_tests),
+        failed_tests=collector.failed_tests,
+    )
+    if exit_code != 0:
+        print("✗ Tests failed — recording iteration anyway", file=sys.stderr)
+    return exit_code, metrics
 
 
 def get_last_iteration_number(task: Task) -> int:
@@ -89,7 +108,7 @@ def create_iteration(
     task: Task,
     iteration_num: int,
     features_stats: Optional[FeaturesStats] = None,
-    tests_stats: Optional[Dict[str, Any]] = None,
+    tests_metrics: Optional[TaskTestMetrics] = None,
     summary: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Create iteration data structure with features_stats and diff.
@@ -98,7 +117,7 @@ def create_iteration(
         task: Task document
         iteration_num: Iteration number to create
         features_stats: FeaturesStats from constraint checking
-        tests_stats: Optional test statistics
+        tests_metrics: Optional TaskTestMetrics from pytest run
 
     Returns:
         Iteration data as dict ready for JSON patch
@@ -108,7 +127,6 @@ def create_iteration(
     # Calculate FeaturesStatsDiff if we have previous iteration
     features_stats_diff = None
     if features_stats:
-        # Find previous iteration
         previous_stats = None
         if iteration_num > 1:
             prev_iter_id = f"iteration_{iteration_num - 1}"
@@ -116,40 +134,32 @@ def create_iteration(
                 prev_iter = task.iterations[prev_iter_id]
                 if prev_iter.features_stats:
                     previous_stats = prev_iter.features_stats
-
-        # Calculate diff
         features_stats_diff = features_stats.diff(previous_stats)
+
+    # Build summary from features_stats if not provided
+    if summary is None:
+        summary = build_summary(features_stats)
+
+    # Serialize tests_metrics to dict if provided
+    tests_stats = json.loads(tests_metrics.model_dump_json(exclude_none=True)) if tests_metrics else None
 
     # Build iteration data
     iteration_data: Dict[str, Any] = {
         "type": "Iteration",
-        "model_version": 1,
+        "model_version": 2,
         "id": iteration_id,
-        "children": None,
-        "metadata": {
-            "created_at": datetime.now().isoformat(),
-            "iteration_number": iteration_num,
-        },
-        "code_stats": None,
+        "summary": summary,
+        "metadata": {**json.loads(Metadata.now().model_dump_json(exclude_none=True)), "iteration_number": iteration_num},
         "tests_stats": tests_stats,
-        "coverage_stats_by_tests": None,
         "features_stats": None,
         "features_stats_diff": None,
     }
 
-    # Add features_stats if provided
     if features_stats:
         iteration_data["features_stats"] = json.loads(features_stats.model_dump_json(exclude_none=True))
 
-    # Add features_stats_diff if calculated
     if features_stats_diff:
-        # Convert set to list for JSON serialization
-        diff_data = {
-            "improved": features_stats_diff.improved,
-            "regressed": features_stats_diff.regressed,
-            "still_failing": list(features_stats_diff.still_failing),
-        }
-        iteration_data["features_stats_diff"] = diff_data
+        iteration_data["features_stats_diff"] = json.loads(features_stats_diff.model_dump_json())
 
     return iteration_data
 
@@ -157,25 +167,23 @@ def create_iteration(
 def add_iteration_to_task(
     task_json_path: str,
     iteration_num: Optional[int] = None,
-    tests_stats: Optional[Dict[str, Any]] = None,
 ) -> int:
     """Add iteration to task document.
 
-    Runs constraint checks, creates iteration with features_stats and diff,
+    Runs pytest and constraint checks, creates iteration with features_stats and diff,
     and patches task-iterations.k.json with the new iteration.
+    Always records the iteration even when tests fail.
 
     Args:
         task_json_path: Path to task-iterations.k.json
         iteration_num: Optional iteration number (auto-incremented if not provided)
-        tests_stats: Optional test statistics to include
 
     Returns:
-        Exit code: 0=success, 1=error, 2=constraints failed
+        Exit code: 0=success, 1=error, 2=tests or constraints failed
     """
-    # Run pytest as prerequisite
+    # Run pytest as prerequisite — always continues to record iteration
     print("🧪 Running tests...")
-    if run_pytest() != 0:
-        return 2
+    pytest_exit, tests_metrics = run_pytest()
 
     task_path = Path(task_json_path)
 
@@ -188,11 +196,14 @@ def add_iteration_to_task(
         print(f"✗ Error loading task: {e}", file=sys.stderr)
         return 1
 
+    # Derive spec path (task-spec.k.json lives alongside task-iterations.k.json)
+    spec_json_path = str(task_path.parent / task_path.name.replace("task-iterations", "task-spec"))
+
     # Run constraint checks
     print("🔍 Running constraint checks...")
     try:
         checks_results, features_stats = check_constraints(
-            task_json_path,
+            spec_json_path,
             output_checks_path=None  # Don't save to file, just use for stats
         )
     except Exception as e:
@@ -207,7 +218,7 @@ def add_iteration_to_task(
     iteration_id = f"iteration_{iteration_num}"
 
     # Create iteration with stats
-    iteration_data = create_iteration(task, iteration_num, features_stats, tests_stats)
+    iteration_data = create_iteration(task, iteration_num, features_stats, tests_metrics)
 
     # Build JSON patch to add iteration
     patch_ops = [{
@@ -225,18 +236,23 @@ def add_iteration_to_task(
 
     # Print summary
     print(f"\n✅ Iteration {iteration_id} added successfully")
-    if features_stats:
-        passing = sum(1 for v in features_stats.features_checks.values() if v)
-        failing = sum(1 for v in features_stats.features_checks.values() if not v)
-        total = len(features_stats.features_checks)
-        print(f"\n📊 Feature Stats Summary:")
-        print(f"   Overall: {passing}/{total} features passed")
-        if failing > 0:
-            print(f"   Failed: {failing} features")
+    if tests_metrics.total > 0:
+        print(f"\n🧪 Tests: {tests_metrics.passed}/{tests_metrics.total} passed")
+        if tests_metrics.failed_tests:
+            for tid, err in list(tests_metrics.failed_tests.items())[:5]:
+                print(f"   ✗ {tid}" + (f": {err}" if err else ""))
+    if features_stats and features_stats.failed:
+        failing = len(features_stats.failed)
+        print(f"\n📊 Feature Stats: {failing} feature(s) failing")
+        for fid in sorted(features_stats.failed):
+            print(f"   ✗ {fid}")
 
-    # Return appropriate exit code
-    if features_stats and sum(1 for v in features_stats.features_checks.values() if not v) > 0:
-        print("\n⚠️  Some constraints failed - fix them before next iteration")
+    # Return 2 if tests failed or any constraints failed
+    if pytest_exit != 0:
+        print("\n⚠️  Tests failed — fix failing tests before next iteration")
+        return 2
+    if features_stats and features_stats.failed:
+        print("\n⚠️  Some constraints failed — fix them before next iteration")
         return 2
 
     return 0
@@ -260,19 +276,11 @@ def main():
         help='Iteration number (auto-incremented if not provided)'
     )
 
-    parser.add_argument(
-        '--tests-stats',
-        type=json.loads,
-        default=None,
-        help='Test statistics as JSON dict (e.g., \'{"passed": 10, "total": 12}\')'
-    )
-
     args = parser.parse_args()
 
     return add_iteration_to_task(
         args.task_path,
         iteration_num=args.iteration_number,
-        tests_stats=args.tests_stats,
     )
 
 

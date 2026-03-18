@@ -55,6 +55,12 @@
   - [Feature: forbid_task_status_downgrade](#forbid-task-status-downgrade)
     - [constraint_status_locked_in_executing](#forbid-task-status-downgrade-constraint-status-locked-in-executing)
     - [constraint_status_validation_exists](#forbid-task-status-downgrade-constraint-status-validation-exists)
+  - [Feature: iteration_always_recorded_with_test_metrics](#iteration-always-recorded-with-test-metrics)
+    - [constraint_add_iteration_uses_metadata_now](#iteration-always-recorded-with-test-metrics-constraint-add-iteration-uses-metadata-now)
+    - [constraint_add_iteration_uses_task_test_metrics](#iteration-always-recorded-with-test-metrics-constraint-add-iteration-uses-task-test-metrics)
+    - [constraint_iteration_always_added_regardless_of_tests](#iteration-always-recorded-with-test-metrics-constraint-iteration-always-added-regardless-of-tests)
+    - [constraint_metadata_has_now_factory](#iteration-always-recorded-with-test-metrics-constraint-metadata-has-now-factory)
+    - [constraint_task_test_metrics_has_failed_tests](#iteration-always-recorded-with-test-metrics-constraint-task-test-metrics-has-failed-tests)
   - [Feature: iteration_summary_field](#iteration-summary-field)
     - [constraint_iteration_has_summary_field](#iteration-summary-field-constraint-iteration-has-summary-field)
   - [Feature: metadata_class_adoption](#metadata-class-adoption)
@@ -180,7 +186,7 @@
 <a id="add-constraint-validation-requirement-skill-constraint-requirement-section-exists"></a>
 #### add_constraint_validation_requirement_skill.constraint_requirement_section_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.283875
+**Timestamp:** 2026-03-18T02:45:22.243490
 **Output:** `Missing
 grep: skills/check_constraints/SKILL.md: No such file or directory
 `
@@ -188,7 +194,7 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="add-constraint-validation-requirement-skill-constraint-results-interpretation-guide"></a>
 #### add_constraint_validation_requirement_skill.constraint_results_interpretation_guide
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.286370
+**Timestamp:** 2026-03-18T02:45:22.246084
 **Output:** `Missing
 grep: skills/check_constraints/SKILL.md: No such file or directory
 `
@@ -196,7 +202,7 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="add-constraint-validation-requirement-skill-constraint-when-to-run-documented"></a>
 #### add_constraint_validation_requirement_skill.constraint_when_to_run_documented
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.285094
+**Timestamp:** 2026-03-18T02:45:22.244785
 **Output:** `Not documented
 grep: skills/check_constraints/SKILL.md: No such file or directory
 `
@@ -239,14 +245,14 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="constraint-bash-fails-count-cmd-protection-constraint-no-default-fails-count-in-json"></a>
 #### constraint_bash_fails_count_cmd_protection.constraint_no_default_fails_count_in_json
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.374412
+**Timestamp:** 2026-03-18T02:45:22.338159
 **Output:** `OK: no default fails_count in spec.features constraints
 `
 
 <a id="constraint-bash-fails-count-cmd-protection-constraint-proven-constraint-removal-blocked"></a>
 #### constraint_bash_fails_count_cmd_protection.constraint_proven_constraint_removal_blocked
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.938453
+**Timestamp:** 2026-03-18T02:45:22.928244
 
 
 <a id="constraint-checker-exit-code-hook"></a>
@@ -255,28 +261,28 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="constraint-checker-exit-code-hook-constraint-handler-stop-calls-checker"></a>
 #### constraint_checker_exit_code_hook.constraint_handler_stop_calls_checker
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.324841
+**Timestamp:** 2026-03-18T02:45:22.286025
 **Output:** `Calls checker
 `
 
 <a id="constraint-checker-exit-code-hook-constraint-handler-stop-checks-exit-code"></a>
 #### constraint_checker_exit_code_hook.constraint_handler_stop_checks_exit_code
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.326133
+**Timestamp:** 2026-03-18T02:45:22.287865
 **Output:** `Checks exit code
 `
 
 <a id="constraint-checker-exit-code-hook-constraint-handler-stop-prints-decision-block"></a>
 #### constraint_checker_exit_code_hook.constraint_handler_stop_prints_decision_block
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.327371
+**Timestamp:** 2026-03-18T02:45:22.289397
 **Output:** `Prints decision block
 `
 
 <a id="constraint-checker-exit-code-hook-constraint-task-checker-exits-2-on-failure"></a>
 #### constraint_checker_exit_code_hook.constraint_task_checker_exits_2_on_failure
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.323572
+**Timestamp:** 2026-03-18T02:45:22.284597
 **Output:** `Exit code 2 implemented
 `
 
@@ -287,42 +293,42 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="constraint-rendering-capability-constraint-bash-render-method"></a>
 #### constraint_rendering_capability.constraint_bash_render_method
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.271641
+**Timestamp:** 2026-03-18T02:45:22.230946
 **Output:** `✓ ConstraintBash.render() exists
 `
 
 <a id="constraint-rendering-capability-constraint-bash-render-toc-method"></a>
 #### constraint_rendering_capability.constraint_bash_render_toc_method
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.274404
+**Timestamp:** 2026-03-18T02:45:22.233774
 **Output:** `✓ ConstraintBash.render_toc() exists
 `
 
 <a id="constraint-rendering-capability-constraint-feature-uses-render-toc"></a>
 #### constraint_rendering_capability.constraint_feature_uses_render_toc
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.277144
+**Timestamp:** 2026-03-18T02:45:22.236663
 **Output:** `✓ Feature uses constraint.render_toc()
 `
 
 <a id="constraint-rendering-capability-constraint-prompt-render-method"></a>
 #### constraint_rendering_capability.constraint_prompt_render_method
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.273031
+**Timestamp:** 2026-03-18T02:45:22.232392
 **Output:** `✗ Missing
 `
 
 <a id="constraint-rendering-capability-constraint-prompt-render-toc-method"></a>
 #### constraint_rendering_capability.constraint_prompt_render_toc_method
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.275811
+**Timestamp:** 2026-03-18T02:45:22.235288
 **Output:** `✗ Missing
 `
 
 <a id="constraint-rendering-capability-constraint-rendering-displays-type"></a>
 #### constraint_rendering_capability.constraint_rendering_displays_type
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.278479
+**Timestamp:** 2026-03-18T02:45:22.237957
 
 
 <a id="constraint-scripts-directory"></a>
@@ -331,21 +337,21 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="constraint-scripts-directory-constraint-scripts-directory-exists"></a>
 #### constraint_scripts_directory.constraint_scripts_directory_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.267739
+**Timestamp:** 2026-03-18T02:45:22.227015
 **Output:** `✓ constraints_scripts/ directory exists
 `
 
 <a id="constraint-scripts-directory-constraint-scripts-documented"></a>
 #### constraint_scripts_directory.constraint_scripts_documented
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.269695
+**Timestamp:** 2026-03-18T02:45:22.228966
 **Output:** `✓ Documentation found
 `
 
 <a id="constraint-scripts-directory-constraint-scripts-readme-exists"></a>
 #### constraint_scripts_directory.constraint_scripts_readme_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.268384
+**Timestamp:** 2026-03-18T02:45:22.227628
 **Output:** `✓ README.md exists
 `
 
@@ -356,26 +362,26 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="decouple-spec-from-task-constraint-task-spec-document-created"></a>
 #### decouple_spec_from_task.constraint_task_spec_document_created
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.939184
+**Timestamp:** 2026-03-18T02:45:22.929096
 **Output:** `task-spec.k.json exists
 `
 
 <a id="decouple-spec-from-task-constraint-task-spec-has-spec-type"></a>
 #### decouple_spec_from_task.constraint_task_spec_has_spec_type
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.959260
+**Timestamp:** 2026-03-18T02:45:22.950450
 
 <a id="decouple-spec-from-task-constraint-task-spec-markdown-rendered"></a>
 #### decouple_spec_from_task.constraint_task_spec_markdown_rendered
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.979711
+**Timestamp:** 2026-03-18T02:45:22.971593
 **Output:** `task-spec.k.md rendered
 `
 
 <a id="decouple-spec-from-task-constraint-task-spec-no-iterations"></a>
 #### decouple_spec_from_task.constraint_task_spec_no_iterations
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.978946
+**Timestamp:** 2026-03-18T02:45:22.970791
 
 
 <a id="enhance-constraint-bash-result-output"></a>
@@ -384,21 +390,21 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="enhance-constraint-bash-result-output-constraint-output-populated-on-failure"></a>
 #### enhance_constraint_bash_result_output.constraint_output_populated_on_failure
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.281242
+**Timestamp:** 2026-03-18T02:45:22.240810
 **Output:** `Not captured
 `
 
 <a id="enhance-constraint-bash-result-output-constraint-output-rendered-in-markdown"></a>
 #### enhance_constraint_bash_result_output.constraint_output_rendered_in_markdown
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.282537
+**Timestamp:** 2026-03-18T02:45:22.242129
 **Output:** `Output rendered
 `
 
 <a id="enhance-constraint-bash-result-output-constraint-shrunken-output-field-exists"></a>
 #### enhance_constraint_bash_result_output.constraint_shrunken_output_field_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.279880
+**Timestamp:** 2026-03-18T02:45:22.239403
 **Output:** `Field missing or optional
 `
 
@@ -409,28 +415,28 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="feature-goals-field-constraint-goals-field-exists"></a>
 #### feature_goals_field.constraint_goals_field_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.056672
+**Timestamp:** 2026-03-18T02:45:22.004000
 **Output:** `✓ Goals field exists
 `
 
 <a id="feature-goals-field-constraint-goals-field-in-task"></a>
 #### feature_goals_field.constraint_goals_field_in_task
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.060602
+**Timestamp:** 2026-03-18T02:45:22.007865
 **Output:** `✗ Goals not in task-iterations.k.json
 `
 
 <a id="feature-goals-field-constraint-goals-in-toc"></a>
 #### feature_goals_field.constraint_goals_in_toc
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.059282
+**Timestamp:** 2026-03-18T02:45:22.006572
 **Output:** `✓ Goals in TOC found
 `
 
 <a id="feature-goals-field-constraint-goals-rendered-in-markdown"></a>
 #### feature_goals_field.constraint_goals_rendered_in_markdown
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.057926
+**Timestamp:** 2026-03-18T02:45:22.005258
 **Output:** `✓ Goals rendering found
 `
 
@@ -441,48 +447,48 @@ grep: skills/check_constraints/SKILL.md: No such file or directory
 <a id="features-stats-diff-tracking-constraint-diff-improved-has-constraint-list"></a>
 #### features_stats_diff_tracking.constraint_diff_improved_has_constraint_list
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.334004
+**Timestamp:** 2026-03-18T02:45:22.296342
 
 <a id="features-stats-diff-tracking-constraint-diff-populates-constraint-ids"></a>
 #### features_stats_diff_tracking.constraint_diff_populates_constraint_ids
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.338065
+**Timestamp:** 2026-03-18T02:45:22.300529
 
 <a id="features-stats-diff-tracking-constraint-diff-regressed-has-constraint-list"></a>
 #### features_stats_diff_tracking.constraint_diff_regressed_has_constraint_list
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.335316
+**Timestamp:** 2026-03-18T02:45:22.297764
 
 <a id="features-stats-diff-tracking-constraint-diff-rendered-in-iteration"></a>
 #### features_stats_diff_tracking.constraint_diff_rendered_in_iteration
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.332670
+**Timestamp:** 2026-03-18T02:45:22.294910
 **Output:** `Not implemented
 `
 
 <a id="features-stats-diff-tracking-constraint-diff-still-failing-has-constraint-list"></a>
 #### features_stats_diff_tracking.constraint_diff_still_failing_has_constraint_list
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.336693
+**Timestamp:** 2026-03-18T02:45:22.299145
 
 <a id="features-stats-diff-tracking-constraint-features-stats-diff-model-exists"></a>
 #### features_stats_diff_tracking.constraint_features_stats_diff_model_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.328606
+**Timestamp:** 2026-03-18T02:45:22.290656
 **Output:** `Model exists
 `
 
 <a id="features-stats-diff-tracking-constraint-features-stats-has-diff-method"></a>
 #### features_stats_diff_tracking.constraint_features_stats_has_diff_method
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.329969
+**Timestamp:** 2026-03-18T02:45:22.292097
 **Output:** `diff() method exists
 `
 
 <a id="features-stats-diff-tracking-constraint-iteration-has-diff-field"></a>
 #### features_stats_diff_tracking.constraint_iteration_has_diff_field
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.331236
+**Timestamp:** 2026-03-18T02:45:22.293387
 **Output:** `Field exists
 `
 
@@ -508,13 +514,42 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 `
 
 
+<a id="iteration-always-recorded-with-test-metrics"></a>
+### Feature: iteration_always_recorded_with_test_metrics
+
+<a id="iteration-always-recorded-with-test-metrics-constraint-add-iteration-uses-metadata-now"></a>
+#### iteration_always_recorded_with_test_metrics.constraint_add_iteration_uses_metadata_now
+**Verdict:** ✓ PASS
+**Timestamp:** 2026-03-18T02:45:58.472337
+
+<a id="iteration-always-recorded-with-test-metrics-constraint-add-iteration-uses-task-test-metrics"></a>
+#### iteration_always_recorded_with_test_metrics.constraint_add_iteration_uses_task_test_metrics
+**Verdict:** ✓ PASS
+**Timestamp:** 2026-03-18T02:45:58.473544
+
+<a id="iteration-always-recorded-with-test-metrics-constraint-iteration-always-added-regardless-of-tests"></a>
+#### iteration_always_recorded_with_test_metrics.constraint_iteration_always_added_regardless_of_tests
+**Verdict:** ✓ PASS
+**Timestamp:** 2026-03-18T02:45:58.474816
+
+<a id="iteration-always-recorded-with-test-metrics-constraint-metadata-has-now-factory"></a>
+#### iteration_always_recorded_with_test_metrics.constraint_metadata_has_now_factory
+**Verdict:** ✓ PASS
+**Timestamp:** 2026-03-18T02:45:58.469741
+
+<a id="iteration-always-recorded-with-test-metrics-constraint-task-test-metrics-has-failed-tests"></a>
+#### iteration_always_recorded_with_test_metrics.constraint_task_test_metrics_has_failed_tests
+**Verdict:** ✓ PASS
+**Timestamp:** 2026-03-18T02:45:58.471062
+
+
 <a id="iteration-summary-field"></a>
 ### Feature: iteration_summary_field
 
 <a id="iteration-summary-field-constraint-iteration-has-summary-field"></a>
 #### iteration_summary_field.constraint_iteration_has_summary_field
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T02:04:30.754335
+**Timestamp:** 2026-03-18T02:45:25.741422
 
 
 <a id="metadata-class-adoption"></a>
@@ -523,32 +558,32 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="metadata-class-adoption-constraint-doc-metadata-uses-metadata-class"></a>
 #### metadata_class_adoption.constraint_doc_metadata_uses_metadata_class
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T02:04:30.755772
+**Timestamp:** 2026-03-18T02:45:25.742777
 
 <a id="metadata-class-adoption-constraint-feature-metadata-uses-metadata-class"></a>
 #### metadata_class_adoption.constraint_feature_metadata_uses_metadata_class
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T02:04:30.757113
+**Timestamp:** 2026-03-18T02:45:25.744053
 
 <a id="metadata-class-adoption-constraint-iteration-metadata-uses-metadata-class"></a>
 #### metadata_class_adoption.constraint_iteration_metadata_uses_metadata_class
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T02:04:30.758634
+**Timestamp:** 2026-03-18T02:45:25.745342
 
 <a id="metadata-class-adoption-constraint-metadata-imported-in-doc-model"></a>
 #### metadata_class_adoption.constraint_metadata_imported_in_doc_model
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T02:04:30.760228
+**Timestamp:** 2026-03-18T02:45:25.746810
 
 <a id="metadata-class-adoption-constraint-metadata-imported-in-feature-model"></a>
 #### metadata_class_adoption.constraint_metadata_imported_in_feature_model
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T02:04:30.761776
+**Timestamp:** 2026-03-18T02:45:25.748449
 
 <a id="metadata-class-adoption-constraint-metadata-imported-in-task-model"></a>
 #### metadata_class_adoption.constraint_metadata_imported_in_task_model
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T02:04:30.763261
+**Timestamp:** 2026-03-18T02:45:25.750144
 
 
 <a id="migrate-metadata-to-model"></a>
@@ -557,37 +592,37 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="migrate-metadata-to-model-constraint-constraint-model-uses-metadata"></a>
 #### migrate_metadata_to_model.constraint_constraint_model_uses_metadata
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.344403
+**Timestamp:** 2026-03-18T02:45:22.306886
 
 <a id="migrate-metadata-to-model-constraint-doc-model-uses-metadata"></a>
 #### migrate_metadata_to_model.constraint_doc_model_uses_metadata
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.346819
+**Timestamp:** 2026-03-18T02:45:22.309421
 
 <a id="migrate-metadata-to-model-constraint-feature-model-uses-metadata"></a>
 #### migrate_metadata_to_model.constraint_feature_model_uses_metadata
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.346197
+**Timestamp:** 2026-03-18T02:45:22.308784
 
 <a id="migrate-metadata-to-model-constraint-metadata-import"></a>
 #### migrate_metadata_to_model.constraint_metadata_import
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.347423
+**Timestamp:** 2026-03-18T02:45:22.309990
 
 <a id="migrate-metadata-to-model-constraint-no-dict-metadata-references"></a>
 #### migrate_metadata_to_model.constraint_no_dict_metadata_references
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.348884
+**Timestamp:** 2026-03-18T02:45:22.311513
 
 <a id="migrate-metadata-to-model-constraint-spec-model-uses-metadata"></a>
 #### migrate_metadata_to_model.constraint_spec_model_uses_metadata
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.345603
+**Timestamp:** 2026-03-18T02:45:22.308161
 
 <a id="migrate-metadata-to-model-constraint-task-model-uses-metadata"></a>
 #### migrate_metadata_to_model.constraint_task_model_uses_metadata
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.344996
+**Timestamp:** 2026-03-18T02:45:22.307534
 
 
 <a id="project-data-dir-structure"></a>
@@ -596,26 +631,26 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="project-data-dir-structure-constraint-config-has-project-data-dir"></a>
 #### project_data_dir_structure.constraint_config_has_project_data_dir
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:42.023869
+**Timestamp:** 2026-03-18T02:45:23.015171
 **Output:** `ok
 `
 
 <a id="project-data-dir-structure-constraint-iterations-dir-exists"></a>
 #### project_data_dir_structure.constraint_iterations_dir_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:42.047576
+**Timestamp:** 2026-03-18T02:45:23.038218
 **Output:** `ok
 `
 
 <a id="project-data-dir-structure-constraint-project-data-dir-path"></a>
 #### project_data_dir_structure.constraint_project_data_dir_path
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:42.046737
+**Timestamp:** 2026-03-18T02:45:23.037429
 
 <a id="project-data-dir-structure-constraint-raw-specs-dir-exists"></a>
 #### project_data_dir_structure.constraint_raw_specs_dir_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:42.048226
+**Timestamp:** 2026-03-18T02:45:23.038921
 **Output:** `ok
 `
 
@@ -686,12 +721,12 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="protect-constraint-updates-when-failed-constraint-cmd-update-blocked-when-failed"></a>
 #### protect_constraint_updates_when_failed.constraint_cmd_update_blocked_when_failed
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:42.599420
+**Timestamp:** 2026-03-18T02:45:23.619522
 
 <a id="protect-constraint-updates-when-failed-constraint-update-blocked-with-fails-count"></a>
 #### protect_constraint_updates_when_failed.constraint_update_blocked_with_fails_count
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:43.161599
+**Timestamp:** 2026-03-18T02:45:24.197992
 
 
 <a id="refactor-features-stats"></a>
@@ -700,42 +735,42 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="refactor-features-stats-constraint-diff-output-with-task-path"></a>
 #### refactor_features_stats.constraint_diff_output_with_task_path
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.637933
+**Timestamp:** 2026-03-18T02:45:25.739940
 
 <a id="refactor-features-stats-constraint-diff-uses-failed-keys"></a>
 #### refactor_features_stats.constraint_diff_uses_failed_keys
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.459751
+**Timestamp:** 2026-03-18T02:45:25.556883
 
 <a id="refactor-features-stats-constraint-failed-populated-on-failure"></a>
 #### refactor_features_stats.constraint_failed_populated_on_failure
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.634796
+**Timestamp:** 2026-03-18T02:45:25.736628
 
 <a id="refactor-features-stats-constraint-features-checks-not-in-model"></a>
 #### refactor_features_stats.constraint_features_checks_not_in_model
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.271550
+**Timestamp:** 2026-03-18T02:45:25.359835
 
 <a id="refactor-features-stats-constraint-generate-stats-no-features-checks"></a>
 #### refactor_features_stats.constraint_generate_stats_no_features_checks
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.273054
+**Timestamp:** 2026-03-18T02:45:25.361290
 
 <a id="refactor-features-stats-constraint-generate-stats-returns-failed"></a>
 #### refactor_features_stats.constraint_generate_stats_returns_failed
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.636424
+**Timestamp:** 2026-03-18T02:45:25.738332
 
 <a id="refactor-features-stats-constraint-script-accepts-task-iterations-path"></a>
 #### refactor_features_stats.constraint_script_accepts_task_iterations_path
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.458082
+**Timestamp:** 2026-03-18T02:45:25.555126
 
 <a id="refactor-features-stats-constraint-task-model-no-features-checks"></a>
 #### refactor_features_stats.constraint_task_model_no_features_checks
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.461258
+**Timestamp:** 2026-03-18T02:45:25.558461
 
 
 <a id="remove-scope-from-constraint-bash"></a>
@@ -744,24 +779,24 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="remove-scope-from-constraint-bash-constraint-all-model-tests-pass"></a>
 #### remove_scope_from_constraint_bash.constraint_all_model_tests_pass
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.356104
+**Timestamp:** 2026-03-18T02:45:22.318847
 **Output:** `Tests exist
 `
 
 <a id="remove-scope-from-constraint-bash-constraint-no-scope-field-usage"></a>
 #### remove_scope_from_constraint_bash.constraint_no_scope_field_usage
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.355493
+**Timestamp:** 2026-03-18T02:45:22.318262
 
 <a id="remove-scope-from-constraint-bash-constraint-no-scope-in-constraint-bash"></a>
 #### remove_scope_from_constraint_bash.constraint_no_scope_in_constraint_bash
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.354134
+**Timestamp:** 2026-03-18T02:45:22.316842
 
 <a id="remove-scope-from-constraint-bash-constraint-scope-field-removed-from-definition"></a>
 #### remove_scope_from_constraint_bash.constraint_scope_field_removed_from_definition
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.352731
+**Timestamp:** 2026-03-18T02:45:22.315378
 
 
 <a id="remove-spec-field-from-task"></a>
@@ -770,12 +805,12 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="remove-spec-field-from-task-constraint-no-spec-in-task-json"></a>
 #### remove_spec_field_from_task.constraint_no_spec_in_task_json
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:42.022364
+**Timestamp:** 2026-03-18T02:45:23.013627
 
 <a id="remove-spec-field-from-task-constraint-spec-field-removed-from-model"></a>
 #### remove_spec_field_from_task.constraint_spec_field_removed_from_model
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:42.002492
+**Timestamp:** 2026-03-18T02:45:22.994041
 
 
 <a id="render-spec-features-in-task"></a>
@@ -784,14 +819,14 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="render-spec-features-in-task-constraint-constraint-details-in-markdown"></a>
 #### render_spec_features_in_task.constraint_constraint_details_in_markdown
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.043381
+**Timestamp:** 2026-03-18T02:45:21.990537
 **Output:** `✓ Constraint details found
 `
 
 <a id="render-spec-features-in-task-constraint-feature-section-in-markdown"></a>
 #### render_spec_features_in_task.constraint_feature_section_in_markdown
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.042082
+**Timestamp:** 2026-03-18T02:45:21.989140
 **Output:** `⚠ Features section not found
 `
 
@@ -802,35 +837,35 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="task-add-iteration-script-constraint-script-exists"></a>
 #### task_add_iteration_script.constraint_script_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.338694
+**Timestamp:** 2026-03-18T02:45:22.301151
 **Output:** `Script exists
 `
 
 <a id="task-add-iteration-script-constraint-script-populates-features-stats"></a>
 #### task_add_iteration_script.constraint_script_populates_features_stats
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.342498
+**Timestamp:** 2026-03-18T02:45:22.304970
 **Output:** `Populates stats
 `
 
 <a id="task-add-iteration-script-constraint-script-runs-checker"></a>
 #### task_add_iteration_script.constraint_script_runs_checker
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.341289
+**Timestamp:** 2026-03-18T02:45:22.303696
 **Output:** `Runs checker
 `
 
 <a id="task-add-iteration-script-constraint-script-uses-knowledge-tool"></a>
 #### task_add_iteration_script.constraint_script_uses_knowledge_tool
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.340074
+**Timestamp:** 2026-03-18T02:45:22.302382
 **Output:** `Uses knowledge tool
 `
 
 <a id="task-add-iteration-script-constraint-skill-documentation-updated"></a>
 #### task_add_iteration_script.constraint_skill_documentation_updated
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.343782
+**Timestamp:** 2026-03-18T02:45:22.306304
 **Output:** `Documented
 `
 
@@ -841,28 +876,28 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="task-default-render-toc-constraint-default-toc-when-opts-missing"></a>
 #### task_default_render_toc.constraint_default_toc_when_opts_missing
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.061957
+**Timestamp:** 2026-03-18T02:45:22.009255
 **Output:** `✓ Default opts handling found
 `
 
 <a id="task-default-render-toc-constraint-explicit-false-respected"></a>
 #### task_default_render_toc.constraint_explicit_false_respected
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.064851
+**Timestamp:** 2026-03-18T02:45:22.012143
 **Output:** `✓ Explicit False handling found
 `
 
 <a id="task-default-render-toc-constraint-render-toc-default-true"></a>
 #### task_default_render_toc.constraint_render_toc_default_true
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.063338
+**Timestamp:** 2026-03-18T02:45:22.010737
 **Output:** `✓ Default render_toc=True found
 `
 
 <a id="task-default-render-toc-constraint-toc-rendered-by-default"></a>
 #### task_default_render_toc.constraint_toc_rendered_by_default
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.235524
+**Timestamp:** 2026-03-18T02:45:22.195054
 **Output:** `✓ TOC rendered
 `
 
@@ -873,22 +908,22 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="task-features-checker-selective-patch-constraint-feature-results-filtering"></a>
 #### task_features_checker_selective_patch.constraint_feature_results_filtering
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.351326
+**Timestamp:** 2026-03-18T02:45:22.313973
 
 <a id="task-features-checker-selective-patch-constraint-patch-uses-add-op"></a>
 #### task_features_checker_selective_patch.constraint_patch_uses_add_op
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.350713
+**Timestamp:** 2026-03-18T02:45:22.313403
 
 <a id="task-features-checker-selective-patch-constraint-preserves-other-features"></a>
 #### task_features_checker_selective_patch.constraint_preserves_other_features
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.350113
+**Timestamp:** 2026-03-18T02:45:22.312803
 
 <a id="task-features-checker-selective-patch-constraint-selective-patch-logic"></a>
 #### task_features_checker_selective_patch.constraint_selective_patch_logic
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.349516
+**Timestamp:** 2026-03-18T02:45:22.312169
 
 
 <a id="task-features-checker-tool"></a>
@@ -897,63 +932,63 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="task-features-checker-tool-constraint-project-root-substitution"></a>
 #### task_features_checker_tool.constraint_project_root_substitution
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.053890
+**Timestamp:** 2026-03-18T02:45:22.001297
 **Output:** `✓ PROJECT_ROOT substitution found
 `
 
 <a id="task-features-checker-tool-constraint-recursive-execution-prevention"></a>
 #### task_features_checker_tool.constraint_recursive_execution_prevention
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.052674
+**Timestamp:** 2026-03-18T02:45:21.999998
 **Output:** `✓ Recursive execution prevention found
 `
 
 <a id="task-features-checker-tool-constraint-tool-accepts-features-arg"></a>
 #### task_features_checker_tool.constraint_tool_accepts_features_arg
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.046787
+**Timestamp:** 2026-03-18T02:45:21.993929
 **Output:** `--features arg missing
 `
 
 <a id="task-features-checker-tool-constraint-tool-accepts-output-checks-path-arg"></a>
 #### task_features_checker_tool.constraint_tool_accepts_output_checks_path_arg
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.048073
+**Timestamp:** 2026-03-18T02:45:21.995203
 **Output:** `--output-checks-path arg missing
 `
 
 <a id="task-features-checker-tool-constraint-tool-accepts-task-path"></a>
 #### task_features_checker_tool.constraint_tool_accepts_task_path
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.045436
+**Timestamp:** 2026-03-18T02:45:21.992644
 **Output:** `Task path argument missing
 `
 
 <a id="task-features-checker-tool-constraint-tool-exists"></a>
 #### task_features_checker_tool.constraint_tool_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.044063
+**Timestamp:** 2026-03-18T02:45:21.991220
 **Output:** `✓ tool exists
 `
 
 <a id="task-features-checker-tool-constraint-tool-output-checks-path-writable"></a>
 #### task_features_checker_tool.constraint_tool_output_checks_path_writable
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.055186
+**Timestamp:** 2026-03-18T02:45:22.002660
 **Output:** `Output path handling implemented
 `
 
 <a id="task-features-checker-tool-constraint-tool-returns-checks-results"></a>
 #### task_features_checker_tool.constraint_tool_returns_checks_results
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.049386
+**Timestamp:** 2026-03-18T02:45:21.996565
 **Output:** `ChecksResults usage found
 `
 
 <a id="task-features-checker-tool-constraint-tool-saves-results-to-file"></a>
 #### task_features_checker_tool.constraint_tool_saves_results_to_file
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.051432
+**Timestamp:** 2026-03-18T02:45:21.998691
 **Output:** `File save logic implemented
 `
 
@@ -964,14 +999,14 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="task-toc-includes-constraints-constraint-constraints-visible-in-markdown"></a>
 #### task_toc_includes_constraints.constraint_constraints_visible_in_markdown
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.238514
+**Timestamp:** 2026-03-18T02:45:22.198200
 **Output:** `✓ Constraints visible in markdown
 `
 
 <a id="task-toc-includes-constraints-constraint-toc-includes-constraints"></a>
 #### task_toc_includes_constraints.constraint_toc_includes_constraints
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.237114
+**Timestamp:** 2026-03-18T02:45:22.196791
 **Output:** `✗ Missing
 `
 
@@ -982,35 +1017,35 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="task-toc-rendering-and-links-constraint-anchor-sections-exist"></a>
 #### task_toc_rendering_and_links.constraint_anchor_sections_exist
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.265428
-**Output:** `✓ All 17 TOC links have matching anchors
+**Timestamp:** 2026-03-18T02:45:22.224528
+**Output:** `✓ All 18 TOC links have matching anchors
 `
 
 <a id="task-toc-rendering-and-links-constraint-toc-has-entries"></a>
 #### task_toc_rendering_and_links.constraint_toc_has_entries
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.241248
+**Timestamp:** 2026-03-18T02:45:22.200872
 **Output:** `✓ TOC entries found
 `
 
 <a id="task-toc-rendering-and-links-constraint-toc-indentation"></a>
 #### task_toc_rendering_and_links.constraint_toc_indentation
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.267065
+**Timestamp:** 2026-03-18T02:45:22.226300
 **Output:** `✓ Proper nesting found
 `
 
 <a id="task-toc-rendering-and-links-constraint-toc-links-format"></a>
 #### task_toc_rendering_and_links.constraint_toc_links_format
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.242663
+**Timestamp:** 2026-03-18T02:45:22.202339
 **Output:** `✓ Links formatted correctly
 `
 
 <a id="task-toc-rendering-and-links-constraint-toc-section-exists"></a>
 #### task_toc_rendering_and_links.constraint_toc_section_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.239820
+**Timestamp:** 2026-03-18T02:45:22.199409
 **Output:** `✓ TOC section found
 `
 
@@ -1021,22 +1056,22 @@ grep: /project/hooks/__pycache__/__init__.cpython-311.pyc: binary file matches
 <a id="track-unverified-constraints-constraint-flag-false-with-all-proven"></a>
 #### track_unverified_constraints.constraint_flag_false_with_all_proven
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:43.903183
+**Timestamp:** 2026-03-18T02:45:24.969831
 
 <a id="track-unverified-constraints-constraint-flag-true-with-unproven"></a>
 #### track_unverified_constraints.constraint_flag_true_with_unproven
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:43.528449
+**Timestamp:** 2026-03-18T02:45:24.579086
 
 <a id="track-unverified-constraints-constraint-flag-updated-on-add"></a>
 #### track_unverified_constraints.constraint_flag_updated_on_add
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:44.269815
+**Timestamp:** 2026-03-18T02:45:25.358190
 
 <a id="track-unverified-constraints-constraint-spec-has-unverified-field"></a>
 #### track_unverified_constraints.constraint_spec_has_unverified_field
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:43.163106
+**Timestamp:** 2026-03-18T02:45:24.199383
 **Output:** `✓ Field exists
 `
 
@@ -1148,48 +1183,48 @@ ImportError: cannot import name '_restore_proven_red_values' from 'patch_knowled
 <a id="update-iteration-with-features-stats-constraint-feature-result-constraints-required"></a>
 #### update_iteration_with_features_stats.constraint_feature_result_constraints_required
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.322296
+**Timestamp:** 2026-03-18T02:45:22.283272
 **Output:** `Still optional
 `
 
 <a id="update-iteration-with-features-stats-constraint-features-stats-generated"></a>
 #### update_iteration_with_features_stats.constraint_features_stats_generated
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.290903
+**Timestamp:** 2026-03-18T02:45:22.250571
 **Output:** `Generation implemented
 `
 
 <a id="update-iteration-with-features-stats-constraint-features-stats-in-iteration"></a>
 #### update_iteration_with_features_stats.constraint_features_stats_in_iteration
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.289543
+**Timestamp:** 2026-03-18T02:45:22.249295
 **Output:** `Field in Iteration
 `
 
 <a id="update-iteration-with-features-stats-constraint-features-stats-model-exists"></a>
 #### update_iteration_with_features_stats.constraint_features_stats_model_exists
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.288188
+**Timestamp:** 2026-03-18T02:45:22.247999
 **Output:** `Model incomplete
 `
 
 <a id="update-iteration-with-features-stats-constraint-features-stats-rendered"></a>
 #### update_iteration_with_features_stats.constraint_features_stats_rendered
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.292211
+**Timestamp:** 2026-03-18T02:45:22.251855
 **Output:** `Rendering implemented
 `
 
 <a id="update-iteration-with-features-stats-constraint-skill-documentation-updated"></a>
 #### update_iteration_with_features_stats.constraint_skill_documentation_updated
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.293571
+**Timestamp:** 2026-03-18T02:45:22.253251
 **Output:** `Skill docs updated
 `
 
 <a id="update-iteration-with-features-stats-constraint-stats-displayed-on-iteration"></a>
 #### update_iteration_with_features_stats.constraint_stats_displayed_on_iteration
 **Verdict:** ✓ PASS
-**Timestamp:** 2026-03-18T01:57:41.320822
+**Timestamp:** 2026-03-18T02:45:22.281687
 **Output:** `Not in iteration
 `
