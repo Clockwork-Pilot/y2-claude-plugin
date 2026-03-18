@@ -43,13 +43,19 @@ ssh-add -l
 # test signature
 echo "test" | ssh-keygen -Y sign     -f ~/.ssh/id_ed25519     -n file
 
-# Set github signing key
+
+# Set git repo settings
+git config user.name  "Yaroslav Litvinov"
+git config user.email "yaroslav.litvinov@gmail.com"
+git config --list
+# Set global git settings
 git config --global user.name  "Yaroslav Litvinov"
 git config --global user.email "yaroslav.litvinov@gmail.com"
 git config --global user.signingkey ~/.ssh/id_ed25519.pub
 git config --global gpg.format ssh
 git config --global commit.gpgsign true
 git config --global --list
+
 
 # Inside of container - init specify for project
 specify init --here --ai claude
