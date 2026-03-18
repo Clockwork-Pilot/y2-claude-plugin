@@ -159,38 +159,24 @@ def generate_features_stats(
     """Generate FeaturesStats from ChecksResults for iteration tracking.
 
     Args:
-        features: Dict of features containing all features
+        features: Dict of features (used to scope results to known features)
         checks_results: ChecksResults with constraint execution results
 
     Returns:
-        FeaturesStats with features_checks status and failed features details
+        FeaturesStats with failed features populated; passing features are absent
     """
-    # Initialize features_checks with all features set to True (passing)
-    features_checks = {}
-    for feature_id in features.keys():
-        features_checks[feature_id] = True
-
-    # Build failed features dict and update features_checks for failures
     failed_features = {}
     if checks_results.features_results:
         for feature_id, feature_result in checks_results.features_results.items():
             if feature_result.constraints_results:
-                has_failure = False
-                for result in feature_result.constraints_results.values():
-                    # Check if constraint failed
-                    if isinstance(result, ConstraintBashResult) and not result.verdict:
-                        has_failure = True
-                        break
-
-                # Mark feature as failed and add to failed dict
+                has_failure = any(
+                    isinstance(result, ConstraintBashResult) and not result.verdict
+                    for result in feature_result.constraints_results.values()
+                )
                 if has_failure:
-                    features_checks[feature_id] = False
                     failed_features[feature_id] = feature_result
 
-    return FeaturesStats(
-        features_checks=features_checks,
-        failed=failed_features
-    )
+    return FeaturesStats(failed=failed_features)
 
 
 def check_constraints(
@@ -297,7 +283,15 @@ def check_constraints(
                         if current_fails_count == 0:
                             locked_constraints.append(f"{feature_id}.{constraint_id}")
 
-    # Save updated task with incremented fails_count using knowledge API
+    # Save updated task with incremented fails_count using knowledge API.
+    #
+    # NOTE: apply_json_patch intentionally blocks fails_count changes for verified
+    # constraints (fails_count > 0) — see feature_model.py protection guard.
+    # This means the batch will fail when any already-verified constraint is failing
+    # again. That warning is expected and non-fatal: the checker's primary output
+    # (verdicts, ChecksResults, exit code) is correct regardless.
+    # DO NOT replace apply_json_patch with a direct file write to work around this —
+    # fails_count tracking for verified constraints is handled by the protection design.
     if patch_ops:
         print("🔄 Updating fails_count for failed constraints...")
         error = apply_json_patch(str(spec_path), json.dumps(patch_ops))
@@ -393,6 +387,13 @@ Examples:
         default='checks_results.k.json'
     )
 
+    parser.add_argument(
+        '--task-iterations-path',
+        help='Path to task-iterations.k.json; computes FeaturesStatsDiff against the last iteration',
+        type=str,
+        default='task-iterations.k.json'
+    )
+
     args = parser.parse_args()
 
     # Parse feature IDs if provided
@@ -412,6 +413,21 @@ Examples:
             output_checks_path=args.output_checks_path
         )
 
+        # Compute FeaturesStatsDiff against last iteration in task-iterations.k.json
+        features_stats_diff = None
+        if features_stats and args.task_iterations_path:
+            task_path = Path(args.task_iterations_path)
+            if task_path.exists():
+                from models import Task
+                task_data = json.loads(task_path.read_text())
+                task = Task.model_validate(task_data)
+                iterations = task.iterations or {}
+                if iterations:
+                    last_iter = iterations[max(iterations.keys())]
+                    features_stats_diff = features_stats.diff(last_iter.features_stats)
+            else:
+                features_stats_diff = features_stats.diff(None)
+
 
         # Print tested features summary
         print("\n📋 Tested Features:")
@@ -430,13 +446,29 @@ Examples:
         failing_count = 0
         if features_stats:
             print("\n📈 Feature Validation Stats (proven constraints only):")
-            passing = sum(1 for v in features_stats.features_checks.values() if v)
-            failing = sum(1 for v in features_stats.features_checks.values() if not v)
+            failing = len(features_stats.failed)
             failing_count = failing
-            total = len(features_stats.features_checks)
+            total = len(spec.features or {})
+            passing = total - failing
             print(f"  Overall: {passing}/{total} features passed")
             if failing > 0:
                 print(f"  Failed: {failing} features (proven constraints failing)")
+            if features_stats_diff:
+                if features_stats_diff.improved:
+                    print(f"  Improved ({len(features_stats_diff.improved)}):")
+                    for fid in sorted(features_stats_diff.improved):
+                        cids = features_stats_diff.improved[fid]
+                        print(f"    ✓ {fid}: {', '.join(cids)}")
+                if features_stats_diff.regressed:
+                    print(f"  Regressed ({len(features_stats_diff.regressed)}):")
+                    for fid in sorted(features_stats_diff.regressed):
+                        cids = features_stats_diff.regressed[fid]
+                        print(f"    ✗ {fid}: {', '.join(cids)}")
+                if features_stats_diff.still_failing:
+                    print(f"  Still failing ({len(features_stats_diff.still_failing)}):")
+                    for fid in sorted(features_stats_diff.still_failing):
+                        cids = features_stats_diff.still_failing[fid]
+                        print(f"    ✗ {fid}: {', '.join(cids)}")
 
         # Print detailed error information for failed constraints
         if features_stats and features_stats.failed:

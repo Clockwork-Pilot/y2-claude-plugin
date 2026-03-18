@@ -23,6 +23,33 @@ from models import Task, FeaturesStats, FeaturesStatsDiff, Iteration
 from patch_knowledge_document import apply_json_patch
 from check_spec_constraints import check_constraints
 
+_project_root = _script_dir
+
+
+def run_pytest() -> int:
+    """Run pytest from project root as prerequisite before adding iteration.
+
+    Returns:
+        Exit code: 0=all passed, non-zero=tests failed
+    """
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", "--tb=short", "-q"],
+            cwd=str(_project_root),
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if result.returncode != 0:
+            print("✗ Tests failed — iteration will not be added", file=sys.stderr)
+            print(result.stdout[-3000:], file=sys.stderr)
+            if result.stderr:
+                print(result.stderr[-500:], file=sys.stderr)
+        return result.returncode
+    except Exception as e:
+        print(f"✗ Error running pytest: {e}", file=sys.stderr)
+        return 1
+
 
 def get_last_iteration_number(task: Task) -> int:
     """Get the last iteration number from task document.
@@ -49,11 +76,21 @@ def get_last_iteration_number(task: Task) -> int:
     return max(numbers) if numbers else 0
 
 
+def build_summary(features_stats: Optional[FeaturesStats]) -> str:
+    """Auto-generate iteration summary from constraint results."""
+    if not features_stats or not features_stats.failed:
+        return "All features passing"
+    failing = sorted(features_stats.failed.keys())
+    summary = f"{len(failing)} feature(s) failing: {', '.join(failing)}"
+    return summary[:100]
+
+
 def create_iteration(
     task: Task,
     iteration_num: int,
     features_stats: Optional[FeaturesStats] = None,
     tests_stats: Optional[Dict[str, Any]] = None,
+    summary: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Create iteration data structure with features_stats and diff.
 
@@ -135,6 +172,11 @@ def add_iteration_to_task(
     Returns:
         Exit code: 0=success, 1=error, 2=constraints failed
     """
+    # Run pytest as prerequisite
+    print("🧪 Running tests...")
+    if run_pytest() != 0:
+        return 2
+
     task_path = Path(task_json_path)
 
     # Load task document

@@ -57,10 +57,23 @@
       - [constraint_goals_in_toc](#constraint_goals_in_toc)
       - [constraint_goals_rendered_in_markdown](#constraint_goals_rendered_in_markdown)
     - [Feature: features_stats_diff_tracking](#features_stats_diff_tracking)
+      - [constraint_diff_improved_has_constraint_list](#constraint_diff_improved_has_constraint_list)
+      - [constraint_diff_populates_constraint_ids](#constraint_diff_populates_constraint_ids)
+      - [constraint_diff_regressed_has_constraint_list](#constraint_diff_regressed_has_constraint_list)
       - [constraint_diff_rendered_in_iteration](#constraint_diff_rendered_in_iteration)
+      - [constraint_diff_still_failing_has_constraint_list](#constraint_diff_still_failing_has_constraint_list)
       - [constraint_features_stats_diff_model_exists](#constraint_features_stats_diff_model_exists)
       - [constraint_features_stats_has_diff_method](#constraint_features_stats_has_diff_method)
       - [constraint_iteration_has_diff_field](#constraint_iteration_has_diff_field)
+    - [Feature: iteration_summary_field](#iteration_summary_field)
+      - [constraint_iteration_has_summary_field](#constraint_iteration_has_summary_field)
+    - [Feature: metadata_class_adoption](#metadata_class_adoption)
+      - [constraint_doc_metadata_uses_metadata_class](#constraint_doc_metadata_uses_metadata_class)
+      - [constraint_feature_metadata_uses_metadata_class](#constraint_feature_metadata_uses_metadata_class)
+      - [constraint_iteration_metadata_uses_metadata_class](#constraint_iteration_metadata_uses_metadata_class)
+      - [constraint_metadata_imported_in_doc_model](#constraint_metadata_imported_in_doc_model)
+      - [constraint_metadata_imported_in_feature_model](#constraint_metadata_imported_in_feature_model)
+      - [constraint_metadata_imported_in_task_model](#constraint_metadata_imported_in_task_model)
     - [Feature: migrate_metadata_to_model](#migrate_metadata_to_model)
       - [constraint_constraint_model_uses_metadata](#constraint_constraint_model_uses_metadata)
       - [constraint_doc_model_uses_metadata](#constraint_doc_model_uses_metadata)
@@ -77,6 +90,15 @@
     - [Feature: protect_constraint_updates_when_failed](#protect_constraint_updates_when_failed)
       - [constraint_cmd_update_blocked_when_failed](#constraint_cmd_update_blocked_when_failed)
       - [constraint_update_blocked_with_fails_count](#constraint_update_blocked_with_fails_count)
+    - [Feature: refactor_features_stats](#refactor_features_stats)
+      - [constraint_diff_output_with_task_path](#constraint_diff_output_with_task_path)
+      - [constraint_diff_uses_failed_keys](#constraint_diff_uses_failed_keys)
+      - [constraint_failed_populated_on_failure](#constraint_failed_populated_on_failure)
+      - [constraint_features_checks_not_in_model](#constraint_features_checks_not_in_model)
+      - [constraint_generate_stats_no_features_checks](#constraint_generate_stats_no_features_checks)
+      - [constraint_generate_stats_returns_failed](#constraint_generate_stats_returns_failed)
+      - [constraint_script_accepts_task_iterations_path](#constraint_script_accepts_task_iterations_path)
+      - [constraint_task_model_no_features_checks](#constraint_task_model_no_features_checks)
     - [Feature: remove_scope_from_constraint_bash](#remove_scope_from_constraint_bash)
       - [constraint_all_model_tests_pass](#constraint_all_model_tests_pass)
       - [constraint_no_scope_field_usage](#constraint_no_scope_field_usage)
@@ -396,9 +418,25 @@
 - Populate features_stats_diff when creating iterations via task-add-iteration.py
 - Track iteration-over-iteration progress toward constraint compliance
 
+#### constraint_diff_improved_has_constraint_list
+**Description:** Structural: FeaturesStatsDiff.improved must be Dict[str, List[str]] — constraint IDs per feature
+**Command:** `grep -q "improved.*Dict\[str.*List\[str\]\]\|improved.*Dict\[str.*list\[str\]\]" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/results_model.py || exit 1`
+
+#### constraint_diff_populates_constraint_ids
+**Description:** Behavioral: diff() must access constraints_results to populate constraint IDs in the diff output
+**Command:** `grep -A 40 "def diff" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q "constraints_results" || exit 1`
+
+#### constraint_diff_regressed_has_constraint_list
+**Description:** Structural: FeaturesStatsDiff.regressed must be Dict[str, List[str]] — constraint IDs per feature
+**Command:** `grep -q "regressed.*Dict\[str.*List\[str\]\]\|regressed.*Dict\[str.*list\[str\]\]" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/results_model.py || exit 1`
+
 #### constraint_diff_rendered_in_iteration
 **Description:** Verify Iteration.render() displays features_stats_diff
 **Command:** `grep -A 100 'def render' knowledge_tool/knowledge_tool/src/models/task_model.py | grep -q 'features_stats_diff\|improved\|regressed' && echo 'Rendering implemented' || echo 'Not implemented'`
+
+#### constraint_diff_still_failing_has_constraint_list
+**Description:** Structural: FeaturesStatsDiff.still_failing must be Dict[str, List[str]], not set[str]
+**Command:** `grep -q "still_failing.*Dict\[str.*List\[str\]\]\|still_failing.*Dict\[str.*list\[str\]\]" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/results_model.py || exit 1`
 
 #### constraint_features_stats_diff_model_exists
 **Description:** Verify FeaturesStatsDiff model is defined
@@ -418,6 +456,52 @@
 - implementation: results_model, task_model
 - priority: high
 - status: pending
+
+### Feature: iteration_summary_field
+**Add summary: Optional[str] field to Iteration model for human-readable iteration description.**
+
+**Goals:**
+- Iteration model gains a top-level summary field (Optional[str], default None)
+- Field is omitted from serialized JSON when None (existing wrap serializer handles this)
+- No model_version bump required — purely additive change
+
+#### constraint_iteration_has_summary_field
+**Description:** Structural: Iteration must declare summary: str as a mandatory field (max 100 chars)
+**Command:** `grep -qE "^\s+summary: str" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/task_model.py || exit 1`
+
+### Feature: metadata_class_adoption
+**Replace metadata: Dict[str, Any] with metadata: Optional[Metadata] in Doc, Feature, and Iteration models.**
+
+**Goals:**
+- Doc.metadata typed as Optional[Metadata] instead of Dict[str, Any]
+- Feature.metadata typed as Optional[Metadata] instead of Dict[str, Any]
+- Iteration.metadata typed as Optional[Metadata] instead of Dict[str, Any]
+- Metadata class imported in doc_model.py, feature_model.py, task_model.py
+- Existing data with extra keys (feature_type, status, etc.) must still load — Metadata class must accept extra fields
+
+#### constraint_doc_metadata_uses_metadata_class
+**Description:** Structural: Doc.metadata must be typed Optional[Metadata]
+**Command:** `grep -q "metadata.*Optional\[Metadata\]" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/doc_model.py || exit 1`
+
+#### constraint_feature_metadata_uses_metadata_class
+**Description:** Structural: Feature.metadata must be typed Optional[Metadata]
+**Command:** `grep -q "metadata.*Optional\[Metadata\]" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/feature_model.py || exit 1`
+
+#### constraint_iteration_metadata_uses_metadata_class
+**Description:** Structural: Iteration.metadata must be typed Optional[Metadata]
+**Command:** `grep -q "metadata.*Optional\[Metadata\]" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/task_model.py || exit 1`
+
+#### constraint_metadata_imported_in_doc_model
+**Description:** Structural: Metadata class must be imported in doc_model.py
+**Command:** `grep -q "from.*metadata_model import Metadata\|from.*import.*\bMetadata\b" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/doc_model.py || exit 1`
+
+#### constraint_metadata_imported_in_feature_model
+**Description:** Structural: Metadata class must be imported in feature_model.py
+**Command:** `grep -q "from.*metadata_model import Metadata\|from.*import.*\bMetadata\b" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/feature_model.py || exit 1`
+
+#### constraint_metadata_imported_in_task_model
+**Description:** Structural: Metadata class must be imported in task_model.py
+**Command:** `grep -q "from.*metadata_model import Metadata\|from.*import.*\bMetadata\b" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/task_model.py || exit 1`
 
 ### Feature: migrate_metadata_to_model
 **Migrate metadata fields to Metadata model**
@@ -520,6 +604,49 @@
 - priority: high
 - status: planned
 - depends_on: ['constraint_bash_fails_count_cmd_protection']
+
+### Feature: refactor_features_stats
+**Remove features_checks from FeaturesStats; script populates failed dict and diff**
+
+**Goals:**
+- Remove features_checks: Dict[str, bool] from FeaturesStats model — it is redundant since failed dict already captures all failures; passing = not in failed
+- generate_features_stats() in check_spec_constraints.py must populate the failed dict with FeatureResult entries for every feature whose constraints have at least one verdict=False
+- check_spec_constraints.py accepts optional --task-path argument pointing to task-iterations.k.json to read the last iteration
+- When --task-path is provided and task has at least one previous iteration, compute FeaturesStatsDiff via FeaturesStats.diff(previous_stats) and include it in output
+- FeaturesStats.diff() must use only the failed dict keys (not features_checks) to determine improvements, regressions, and still-failing
+- All callers (task_model.py, check_spec_constraints.py output) updated to not reference features_checks
+
+#### constraint_diff_output_with_task_path
+**Description:** Behavioral: check_spec_constraints.py must read --task-path and compute FeaturesStatsDiff against previous iteration
+**Command:** `grep -n "task.path\|task_path" $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py | grep -q "." || exit 1`
+
+#### constraint_diff_uses_failed_keys
+**Description:** Structural: FeaturesStats.diff() must not reference features_checks — must use failed dict keys only
+**Command:** `grep -A30 "def diff" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/results_model.py | grep -q "features_checks" && exit 1 || exit 0`
+
+#### constraint_failed_populated_on_failure
+**Description:** Behavioral: FeaturesStats must be instantiatable with only failed dict — no features_checks required
+**Command:** `python3 -c "import sys; sys.path.insert(0, '$PROJECT_ROOT/knowledge_tool/knowledge_tool/src'); from models.results_model import FeaturesStats; fs = FeaturesStats(failed={}); print('ok')" 2>&1 | grep -q ok || exit 1`
+
+#### constraint_features_checks_not_in_model
+**Description:** Structural: features_checks Field declaration must be removed from FeaturesStats in results_model.py
+**Command:** `grep -n "features_checks" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/results_model.py | grep -v "#\|diff\|previous\|still_fail" | grep -q "Field\|Dict" && exit 1 || exit 0`
+
+#### constraint_generate_stats_no_features_checks
+**Description:** Structural: check_spec_constraints.py must not reference features_checks after refactor
+**Command:** `grep -n "features_checks" $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py | grep -v "#" | grep -q "." && exit 1 || exit 0`
+
+#### constraint_generate_stats_returns_failed
+**Description:** Structural: generate_features_stats must not assign features_checks[feature_id] — removed dict after refactor
+**Command:** `grep -A30 "def generate_features_stats" $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py | grep -q "features_checks\[" && exit 1 || exit 0`
+
+#### constraint_script_accepts_task_iterations_path
+**Description:** Structural: check_spec_constraints.py must expose --task-iterations-path CLI argument
+**Command:** `python3 $PROJECT_ROOT/constraints_tool/constraints_tool/check_spec_constraints.py --help 2>&1 | grep -q "task-iterations-path" || exit 1`
+
+#### constraint_task_model_no_features_checks
+**Description:** Environmental: task_model.py rendering must not reference features_checks after removal
+**Command:** `grep -n "features_checks" $PROJECT_ROOT/knowledge_tool/knowledge_tool/src/models/task_model.py | grep -v "#" | grep -q "." && exit 1 || exit 0`
 
 ### Feature: remove_scope_from_constraint_bash
 **Remove redundant scope field from ConstraintBash**

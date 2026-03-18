@@ -3,7 +3,7 @@
 
 import sys
 import json
-import subprocess  # still needed for check_constraints()
+import subprocess
 
 from pathlib import Path
 from datetime import datetime
@@ -16,18 +16,7 @@ from config import PROJECT_ROOT
 logger = setup_logger(__name__)
 
 PLUGIN_ROOT = Path(__file__).parent.parent
-
-# Import add_iteration_to_task directly from task-add-iteration.py
 _iteration_script = PLUGIN_ROOT / "skills" / "task-lifecycle-tool" / "task-add-iteration.py"
-if _iteration_script.exists():
-    import importlib.util as _ilu
-    _spec = _ilu.spec_from_file_location("task_add_iteration", _iteration_script)
-    _mod = _ilu.module_from_spec(_spec)
-    _spec.loader.exec_module(_mod)
-    add_iteration_to_task = _mod.add_iteration_to_task
-else:
-    add_iteration_to_task = None
-
 
 
 def check_constraints() -> int:
@@ -59,21 +48,32 @@ def check_constraints() -> int:
 
 
 def add_iteration() -> int:
-    """Record this iteration using add_iteration_to_task.
+    """Record this iteration by calling task-add-iteration.py via subprocess.
 
     Returns:
-        Exit code: 0=success, non-zero=error
+        Exit code: 0=success, 2=tests failed, non-zero=error
     """
-    if add_iteration_to_task is None:
-        logger.warning("add_iteration_to_task not available")
-        return 0
-
     task_json = PROJECT_ROOT / "task-iterations.k.json"
     if not task_json.exists():
         return 0
 
+    if not _iteration_script.exists():
+        logger.warning(f"task-add-iteration.py not found at {_iteration_script}")
+        return 0
+
     try:
-        return add_iteration_to_task(str(task_json))
+        result = subprocess.run(
+            [sys.executable, str(_iteration_script), str(task_json)],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        if result.stdout:
+            logger.info(result.stdout)
+        if result.returncode != 0 and result.stderr:
+            logger.warning(result.stderr)
+        return result.returncode
     except Exception as e:
         logger.error(f"Error adding iteration: {e}")
         return 1
@@ -151,8 +151,21 @@ def main():
             }))
             sys.exit(2)
 
-        # Constraints passed — record iteration
-        add_iteration()
+        # Constraints passed — record iteration (runs pytest internally).
+        # Chain: add_iteration() → subprocess task-add-iteration.py → run_pytest()
+        #        → if exit 2, propagates back to add_iteration() → main() blocks with decision: block.
+        iteration_exit_code = add_iteration()
+
+        if iteration_exit_code == 2:
+            print(json.dumps({"decision": "block", "reason": "Tests failed — fix failing tests before stopping."}))
+            logger.info(json.dumps({
+                'timestamp': datetime.now().isoformat(),
+                'event': 'Stop',
+                'status': 'blocked',
+                'reason': 'Tests failed',
+                'data': hook_input,
+            }))
+            sys.exit(2)
 
         logger.info(json.dumps({
             'timestamp': datetime.now().isoformat(),
