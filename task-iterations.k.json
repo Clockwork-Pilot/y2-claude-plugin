@@ -237,9 +237,9 @@
         "improved": {},
         "regressed": {},
         "still_failing": [
-          "task_features_checker_tool",
           "task_toc_rendering_and_links",
-          "render_spec_features_in_task"
+          "render_spec_features_in_task",
+          "task_features_checker_tool"
         ]
       }
     },
@@ -582,6 +582,50 @@
       },
       "features_stats_diff": {
         "improved": {},
+        "regressed": {},
+        "still_failing": []
+      }
+    },
+    "iteration_12": {
+      "type": "Iteration",
+      "model_version": 1,
+      "id": "iteration_12",
+      "metadata": {
+        "created_at": "2026-03-18T00:00:00",
+        "iteration_number": 12
+      },
+      "features_stats": {
+        "features_checks": {
+          "decouple_spec_from_task": true,
+          "features_stats_diff_tracking": true,
+          "constraint_scripts_directory": true,
+          "remove_spec_field_from_task": true,
+          "task_features_checker_selective_patch": true,
+          "constraint_rendering_capability": true,
+          "enhance_constraint_bash_result_output": true,
+          "task_toc_rendering_and_links": true,
+          "constraint_bash_fails_count_cmd_protection": true,
+          "task_default_render_toc": true,
+          "render_spec_features_in_task": true,
+          "task_add_iteration_script": true,
+          "remove_scope_from_constraint_bash": true,
+          "update_iteration_with_features_stats": true,
+          "task_features_checker_tool": true,
+          "project_data_dir_structure": true,
+          "feature_goals_field": true,
+          "add_constraint_validation_requirement_skill": true,
+          "constraint_checker_exit_code_hook": true,
+          "protect_constraint_updates_when_failed": true,
+          "track_unverified_constraints": true,
+          "task_toc_includes_constraints": true,
+          "migrate_metadata_to_model": true
+        },
+        "failed": {}
+      },
+      "features_stats_diff": {
+        "improved": {
+          "protect_constraint_updates_when_failed": true
+        },
         "regressed": {},
         "still_failing": []
       }

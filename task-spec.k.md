@@ -76,7 +76,6 @@
       - [constraint_raw_specs_dir_exists](#constraint_raw_specs_dir_exists)
     - [Feature: protect_constraint_updates_when_failed](#protect_constraint_updates_when_failed)
       - [constraint_cmd_update_blocked_when_failed](#constraint_cmd_update_blocked_when_failed)
-      - [constraint_description_update_blocked_when_failed](#constraint_description_update_blocked_when_failed)
       - [constraint_update_blocked_with_fails_count](#constraint_update_blocked_with_fails_count)
     - [Feature: remove_scope_from_constraint_bash](#remove_scope_from_constraint_bash)
       - [constraint_all_model_tests_pass](#constraint_all_model_tests_pass)
@@ -137,9 +136,6 @@
       - [constraint_features_stats_rendered](#constraint_features_stats_rendered)
       - [constraint_skill_documentation_updated](#constraint_skill_documentation_updated)
       - [constraint_stats_displayed_on_iteration](#constraint_stats_displayed_on_iteration)
-    - [Feature: y2_skills_update](#y2_skills_update)
-      - [constraint_features_checks_tool_updated](#constraint_features_checks_tool_updated)
-      - [constraint_knowledge_tool_docs_updated](#constraint_knowledge_tool_docs_updated)
 
 ## Features
 
@@ -512,10 +508,6 @@
 #### constraint_cmd_update_blocked_when_failed
 **Description:** Verify that updating cmd field is blocked when constraint has fails_count > 0
 **Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo original","description":"t","fails_count":1}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features/f1/constraints/c1/cmd","value":"echo modified"}]' 2>&1 | grep -q "fails_count"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
-
-#### constraint_description_update_blocked_when_failed
-**Description:** Verify that updating description field is blocked when constraint has fails_count > 0
-**Command:** `F=$(mktemp /tmp/XXXX.k.json); rm "$F"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec "$F" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features","value":{"f1":{"type":"Feature","model_version":1,"id":"f1","description":"t","constraints":{"c1":{"id":"c1","cmd":"echo t","description":"original","fails_count":1}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py "$F" '[{"op":"replace","path":"/features/f1/constraints/c1/description","value":"modified"}]' 2>&1 | grep -q "fails_count"; E=$?; rm -f "$F" "${F%.k.json}.k.md"; exit $E`
 
 #### constraint_update_blocked_with_fails_count
 **Description:** Verify that constraint cmd updates are blocked when fails_count > 0
@@ -911,27 +903,3 @@
 - implementation: task_model, results_model, task_features_checker, skills
 - priority: high
 - status: completed
-
-### Feature: y2_skills_update
-**Update y2 skills to work with separate task-spec document**
-
-**Goals:**
-- Update y2:knowledge_document_tools skill doc to reference task-spec.k.json patterns
-- Add section documenting task-spec document structure
-- Update y2:task-lifecycle-tool to handle task-spec operations
-- Update y2:check_constraints to work with task-spec features
-- Document when to use task-iterations.k.json vs task-spec.k.json
-- Review constraint-related skills for spec-field references
-
-#### constraint_features_checks_tool_updated
-**Description:** Documentation: check_constraints must reference task-spec document
-**Command:** `grep -q 'task-spec' $PROJECT_ROOT/skills/check_constraints/SKILL.md && echo 'ok' || exit 1`
-
-#### constraint_knowledge_tool_docs_updated
-**Description:** Documentation: knowledge_document_tools skill must document task-spec usage
-**Command:** `grep -i 'task-spec\|task_spec' $PROJECT_ROOT/skills/knowledge_document_tools/SKILL.md && echo 'ok' || exit 1`
-
-**Metadata:**
-- priority: medium
-- status: pending
-- type: documentation

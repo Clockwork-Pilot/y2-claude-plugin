@@ -1003,39 +1003,6 @@
         "type": "infrastructure"
       }
     },
-    "y2_skills_update": {
-      "type": "Feature",
-      "model_version": 1,
-      "id": "y2_skills_update",
-      "description": "Update y2 skills to work with separate task-spec document",
-      "goals": [
-        "Update y2:knowledge_document_tools skill doc to reference task-spec.k.json patterns",
-        "Add section documenting task-spec document structure",
-        "Update y2:task-lifecycle-tool to handle task-spec operations",
-        "Update y2:check_constraints to work with task-spec features",
-        "Document when to use task-iterations.k.json vs task-spec.k.json",
-        "Review constraint-related skills for spec-field references"
-      ],
-      "constraints": {
-        "constraint_knowledge_tool_docs_updated": {
-          "id": "constraint_knowledge_tool_docs_updated",
-          "cmd": "grep -i 'task-spec\\|task_spec' $PROJECT_ROOT/skills/knowledge_document_tools/SKILL.md && echo 'ok' || exit 1",
-          "description": "Documentation: knowledge_document_tools skill must document task-spec usage",
-          "fails_count": 4
-        },
-        "constraint_features_checks_tool_updated": {
-          "id": "constraint_features_checks_tool_updated",
-          "cmd": "grep -q 'task-spec' $PROJECT_ROOT/skills/check_constraints/SKILL.md && echo 'ok' || exit 1",
-          "description": "Documentation: check_constraints must reference task-spec document",
-          "fails_count": 5
-        }
-      },
-      "metadata": {
-        "priority": "medium",
-        "status": "pending",
-        "type": "documentation"
-      }
-    },
     "protect_constraint_updates_when_failed": {
       "type": "Feature",
       "model_version": 1,
@@ -1052,12 +1019,6 @@
           "id": "constraint_cmd_update_blocked_when_failed",
           "cmd": "F=$(mktemp /tmp/XXXX.k.json); rm \"$F\"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec \"$F\" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"replace\",\"path\":\"/features\",\"value\":{\"f1\":{\"type\":\"Feature\",\"model_version\":1,\"id\":\"f1\",\"description\":\"t\",\"constraints\":{\"c1\":{\"id\":\"c1\",\"cmd\":\"echo original\",\"description\":\"t\",\"fails_count\":1}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"replace\",\"path\":\"/features/f1/constraints/c1/cmd\",\"value\":\"echo modified\"}]' 2>&1 | grep -q \"fails_count\"; E=$?; rm -f \"$F\" \"${F%.k.json}.k.md\"; exit $E",
           "description": "Verify that updating cmd field is blocked when constraint has fails_count > 0",
-          "fails_count": 6
-        },
-        "constraint_description_update_blocked_when_failed": {
-          "id": "constraint_description_update_blocked_when_failed",
-          "cmd": "F=$(mktemp /tmp/XXXX.k.json); rm \"$F\"; python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/create_knowledge_document.py Spec \"$F\" >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"replace\",\"path\":\"/features\",\"value\":{\"f1\":{\"type\":\"Feature\",\"model_version\":1,\"id\":\"f1\",\"description\":\"t\",\"constraints\":{\"c1\":{\"id\":\"c1\",\"cmd\":\"echo t\",\"description\":\"original\",\"fails_count\":1}}}}}]' >/dev/null && python3 $PROJECT_ROOT/knowledge_tool/knowledge_tool/patch_knowledge_document.py \"$F\" '[{\"op\":\"replace\",\"path\":\"/features/f1/constraints/c1/description\",\"value\":\"modified\"}]' 2>&1 | grep -q \"fails_count\"; E=$?; rm -f \"$F\" \"${F%.k.json}.k.md\"; exit $E",
-          "description": "Verify that updating description field is blocked when constraint has fails_count > 0",
           "fails_count": 6
         },
         "constraint_update_blocked_with_fails_count": {
