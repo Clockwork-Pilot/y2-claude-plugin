@@ -2,6 +2,25 @@
 
 A minimal Claude plugin written in Python that implements hook handlers and logs all hook invocations.
 
+## The Flow
+
+1. User start Claude with y2 plugin
+2. User asks "Load y2 skills, Add feature: <Create bla bla bla>, Add constraints."
+3. Claude loads skills from y2 plugin
+4. y2:knowledge_document_tools skills instructs Claude to use knowledge tool
+5. y2:features_and_constraints instructs Claude to create/patch `task-spec.k.json` knowledge file
+6. Claude adds feature and related constraints to `task-spec.k.json` using above tools
+7. Right after constraints were added they immediately affect development enforcing constraints verification. 
+   If there are any freshly added constraints didn't fail yet - plugin treats them as 
+   unverified blocking constraints and all Edit|Write operations rejected on any files.
+   Claude instructed to run `check_spec_constraints.py` that performs constraints checks.
+   At soon as constraints proven to fail at least once - Edit|Write operations are allowed.
+9. Claude starts implementing features, and worwking until all constraints checks are OK.
+10. As soon as plugin "Stop" hook called it runs `check_spec_constraints.py` script and
+    if there are still failing constraints left - it blocks stop operation keeping dev in loop.
+11. Claude stops if tests pass, and constraints checks successfull.
+
+
 ## Submodules
 
 This project includes the following Git submodules:
