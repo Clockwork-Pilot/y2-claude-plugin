@@ -11,7 +11,10 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
-from config import PROJECT_ROOT
+from config import PROJECT_ROOT, GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP
+
+# Import get_vars from local hooks module
+from hooks import get_vars
 
 logger = setup_logger(__name__)
 
@@ -25,16 +28,16 @@ def check_constraints() -> int:
     Returns:
         Exit code: 0=all passed, 2=constraints failed, 1=error
     """
-    task_json = PROJECT_ROOT / "task-iterations.k.json"
+    spec_json = PROJECT_ROOT / "task-spec.k.json"
 
-    if not task_json.exists():
+    if not spec_json.exists():
         return 0
 
     checker_script = PLUGIN_ROOT / "constraints_tool" / "constraints_tool" / "check_spec_constraints.py"
 
     try:
         result = subprocess.run(
-            [sys.executable, str(checker_script), str(task_json)],
+            [sys.executable, str(checker_script), str(spec_json)],
             cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,
@@ -138,17 +141,23 @@ def main():
             reason = "Constraints violated, fix features implementation to satisfy them."
             if recurring:
                 reason += f" Recurring failures (3+ iterations): {', '.join(sorted(recurring))}."
+            
+            # Add guide message
+            reason += "\n\n" + GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP
 
-            print(json.dumps({"decision": "block", "reason": reason}))
+            output = {"decision": "block", "reason": reason, "vars": get_vars()}
+            print(json.dumps(output))
 
-            logger.info(json.dumps({
+            log_output = {
                 'timestamp': datetime.now().isoformat(),
                 'event': 'Stop',
                 'status': 'blocked',
                 'reason': 'Constraint checks failed',
                 'recurring_failures': recurring,
                 'data': hook_input,
-            }))
+                'vars': get_vars(),
+            }
+            logger.info(json.dumps(log_output))
             sys.exit(2)
 
         # Constraints passed — record iteration (runs pytest internally).
@@ -157,22 +166,28 @@ def main():
         iteration_exit_code = add_iteration()
 
         if iteration_exit_code == 2:
-            print(json.dumps({"decision": "block", "reason": "Tests failed — fix failing tests before stopping."}))
-            logger.info(json.dumps({
+            output = {"decision": "block", "reason": "Tests failed — fix failing tests before stopping.", "vars": get_vars()}
+            print(json.dumps(output))
+
+            log_output = {
                 'timestamp': datetime.now().isoformat(),
                 'event': 'Stop',
                 'status': 'blocked',
                 'reason': 'Tests failed',
                 'data': hook_input,
-            }))
+                'vars': get_vars(),
+            }
+            logger.info(json.dumps(log_output))
             sys.exit(2)
 
-        logger.info(json.dumps({
+        log_output = {
             'timestamp': datetime.now().isoformat(),
             'event': 'Stop',
             'status': 'allowed',
             'data': hook_input,
-        }))
+            'vars': get_vars(),
+        }
+        logger.info(json.dumps(log_output))
         sys.exit(0)
 
     except Exception as e:

@@ -14,6 +14,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
+from config import GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS
 from hooks import is_knowledge_file, is_edit_blocked_by_unverified_constraints, send_error
 
 logger = setup_logger(__name__)
@@ -27,7 +28,7 @@ def main():
         # Check if editing is blocked due to unverified constraints
         file_path = hook_input.get('tool_input', {}).get('file_path')
         if is_edit_blocked_by_unverified_constraints(file_path):
-            error_msg = "Cannot edit: task-spec.k.json contains unverified constraints.\n\nUnverified constraints must be removed or fixed before modifications are allowed."
+            error_msg = "Cannot edit: task-spec.k.json contains unverified constraints.\n\nUnverified constraints must be removed or fixed before modifications are allowed.\n\n" + GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS
             send_error(error_msg, file_path)
             logger.error(f"Edit blocked due to unverified constraints: {file_path}")
             sys.exit(2)

@@ -2,7 +2,20 @@
 
 import sys
 import json
+import os
 from pathlib import Path
+from typing import Dict
+
+def get_vars() -> Dict[str, str]:
+    """Return a dict with PROJECT_ROOT and PLUGIN_ROOT environment variables.
+
+    Returns:
+        dict: Contains PROJECT_ROOT and PLUGIN_ROOT paths
+    """
+    return {
+        "PROJECT_ROOT": os.getenv("PROJECT_ROOT", os.getcwd()),
+        "PLUGIN_ROOT": os.getenv("PLUGIN_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    }
 
 
 def send_error(message: str, file_path: str = None) -> None:
@@ -84,6 +97,7 @@ def is_edit_blocked_by_unverified_constraints(file_path: str = None) -> bool:
 
 
 __all__ = [
+    "get_vars",
     "send_error",
     "is_knowledge_file",
     "have_unverified_constraints",

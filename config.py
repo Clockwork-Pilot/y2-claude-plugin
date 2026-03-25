@@ -6,6 +6,27 @@ This serves as the single source of truth for all project paths.
 import os
 from pathlib import Path
 
+# Message to a Claude when it forced to dev loop because of failing constraints
+GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP = """
+Constraints violation happened -one or more constraints are failing.
+You should not be trying to remove these constraints, as once constraint is verified it becomes
+unstoppable like Tsunami. The only thing you can do is to change implementation of related feature,
+to satisfy constraint.
+Do not try removing constraint - you will fail.
+Do not try manipulating with fails_count value - you will fail.
+"""
+
+GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS = """
+Current task spec `task-spec.k.json` contains unverified never failed constraints.
+Unverified constraint is a no go way! You should be carefull according to y2:features_and_constraints
+when add new constraints. If constraint never fails - you will never be allowed to modify source code
+until constrait will fail at least once. You can not modify source code if you add non failing constraint.
+Always add carefully crafted failing constraint, so it will expected to pass as soon as feature will be
+properly implemented. Badly crafted constraints will cause either block source code changes or will cause
+an a dev loop before constraint will be satisfied. Remember that constraint is a function of source code.
+Be aware adding constraint that unconditionally fail - it will block you entirely.
+"""
+
 # Plugin root directory
 PLUGIN_ROOT = Path(__file__).parent.resolve()
 
@@ -13,6 +34,12 @@ PLUGIN_ROOT = Path(__file__).parent.resolve()
 # Defaults to current working directory, can be overridden by env var
 CONSUMING_PROJECT_ROOT = Path(os.getenv("CLAUDE_PROJECT_ROOT", os.getcwd())).resolve()
 PROJECT_ROOT = CONSUMING_PROJECT_ROOT
+
+# Executables paths for external executables discovery
+PATH = ':'.join([
+    os.path.join(PLUGIN_ROOT, "constraints_tool/constraints_tool"),
+    os.path.join(PLUGIN_ROOT, "knowledge_tool/knowledge_tool"),
+])
 
 # Use consuming project's .claude directory for logs
 CLAUDE_DIR = CONSUMING_PROJECT_ROOT / ".claude"
@@ -29,8 +56,7 @@ KNOWN_KNOWLEDGE_FILES_PATH = PROJECT_ROOT / "protected_files.txt"
 # If None, logs go to consuming project's .claude directory (default behavior)
 HOOK_LOGS_BASE_DIR = os.getenv("CLAUDE_DOCKER_HOOK_LOGS_BASE_DIR", None)
 if HOOK_LOGS_BASE_DIR is not None:
-    CONSUMING_PROJECT_NAME = CONSUMING_PROJECT_ROOT.name
-    HOOKS_LOG_FILE = Path(HOOK_LOGS_BASE_DIR) / CONSUMING_PROJECT_NAME / ".claude" / "hooks.log"
+    HOOKS_LOG_FILE = Path(HOOK_LOGS_BASE_DIR) / CONSUMING_PROJECT_ROOT.name / ".claude" / "hooks.log"
 else:
     HOOKS_LOG_FILE = CLAUDE_DIR / "hooks.log"
 

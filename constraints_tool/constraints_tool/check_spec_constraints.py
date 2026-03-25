@@ -321,9 +321,58 @@ def check_constraints(
             }
             output_path.write_text(json.dumps(initial_structure, indent=2))
 
-        # Build JSON Patch to add each feature result
-        # Features are merged, not replaced
+        # Build JSON Patch operations
         patch_ops = []
+
+        # First, remove features and constraints from checks_results that no longer exist in the spec
+        if output_path.exists():
+            try:
+                with open(output_path, 'r') as f:
+                    checks_data = json.load(f)
+
+                if checks_data.get("features_results"):
+                    existing_features = set(checks_data["features_results"].keys())
+                    current_spec_features = set(features.keys()) if features else set()
+
+                    # Remove features that are no longer in the spec
+                    features_to_remove = existing_features - current_spec_features
+                    if features_to_remove:
+                        print(f"🗑️  Removing {len(features_to_remove)} feature(s) from checks_results (no longer in spec):")
+                        for feature_id in sorted(features_to_remove):
+                            print(f"   • {feature_id}")
+                            patch_ops.append({
+                                "op": "remove",
+                                "path": f"/features_results/{feature_id}"
+                            })
+
+                    # For each existing feature, remove constraints that no longer exist in the spec
+                    constraints_to_remove = []
+                    for feature_id in existing_features & current_spec_features:
+                        feature_result = checks_data["features_results"].get(feature_id)
+                        spec_feature = features.get(feature_id)
+
+                        if feature_result and feature_result.get("constraints_results") and spec_feature and spec_feature.constraints:
+                            existing_constraints = set(feature_result["constraints_results"].keys())
+                            current_spec_constraints = set(spec_feature.constraints.keys())
+
+                            # Identify constraints to remove
+                            constraints_removed = existing_constraints - current_spec_constraints
+                            for constraint_id in constraints_removed:
+                                constraints_to_remove.append((feature_id, constraint_id))
+
+                    if constraints_to_remove:
+                        print(f"🗑️  Removing {len(constraints_to_remove)} constraint(s) from checks_results (no longer in spec):")
+                        for feature_id, constraint_id in sorted(constraints_to_remove):
+                            print(f"   • {feature_id}.{constraint_id}")
+                            patch_ops.append({
+                                "op": "remove",
+                                "path": f"/features_results/{feature_id}/constraints_results/{constraint_id}"
+                            })
+            except Exception as e:
+                print(f"⚠️  Could not verify checks_results consistency: {e}")
+
+        # Add each feature result from current spec
+        # Features are merged, not replaced
         for feature_id, feature_result in features_results.items():
             patch_ops.append({
                 "op": "add",
@@ -338,6 +387,8 @@ def check_constraints(
                 print(f"⚠️  Failed to save results: {error.error}")
             else:
                 print(f"✓ Results saved to {output_checks_path}")
+        else:
+            print(f"ℹ️  No changes to ChecksResults (same features as before)")
 
     # Generate FeaturesStats for iteration tracking
     features_stats = generate_features_stats(features, checks_results)
