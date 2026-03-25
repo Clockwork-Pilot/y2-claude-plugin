@@ -1,8 +1,0 @@
-{
-    "name": "y2",
-    "description": "A minimal Claude plugin written in Python that implements hook handlers and logs all hook invocations.",
-    "version": "1.0.0",
-    "author": {
-        "name": "Y2"
-    }
-}
