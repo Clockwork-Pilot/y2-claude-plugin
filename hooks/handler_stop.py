@@ -41,7 +41,7 @@ def check_constraints() -> int:
             cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=CONSTRAINTS_TIMEOUT,
         )
         return result.returncode
 

@@ -115,7 +115,7 @@ def execute_constraint(
                 shell=True,
                 capture_output=True,
                 text=True,
-                timeout=30,
+                timeout=CONSTRAINTS_TIMEOUT,
                 env=env
             )
             verdict = result.returncode == 0
