@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
 from config import PROJECT_ROOT, GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP
+from config import CONSTRAINTS_TIMEOUT
 
 # Import get_vars from local hooks module
 from hooks import get_vars

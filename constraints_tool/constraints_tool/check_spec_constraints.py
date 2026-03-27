@@ -30,6 +30,7 @@ from patch_knowledge_document import apply_json_patch
 # Import config for PROJECT_ROOT
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from config import PROJECT_ROOT as CONFIG_PROJECT_ROOT
+from config import CONSTRAINTS_TIMEOUT
 
 
 
