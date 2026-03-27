@@ -41,7 +41,8 @@ PATH = ':'.join([
     os.path.join(PLUGIN_ROOT, "knowledge_tool/knowledge_tool"),
 ])
 
-CONSTRAINTS_TIMEOUT = 120
+STOP_HANDLER_TIMEOUT = 120
+CONSTRAINTS_TIMEOUT = 240
 
 # Use consuming project's .claude directory for logs
 CLAUDE_DIR = CONSUMING_PROJECT_ROOT / ".claude"
