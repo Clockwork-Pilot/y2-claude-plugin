@@ -151,7 +151,7 @@ After adding constraints, immediately proceed to Phase 2 to validate them.
 ## Command
 
 ```bash
-python3 constraints_tool/constraints_tool/check_spec_constraints.py \
+python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py \
     <task-spec.k.json> \
     [--features feature1,feature2,...] \
     [--output-checks-path checks_results.k.json]
