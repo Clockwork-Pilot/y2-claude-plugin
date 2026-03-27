@@ -12,9 +12,12 @@ def get_vars() -> Dict[str, str]:
     Returns:
         dict: Contains PROJECT_ROOT and PLUGIN_ROOT paths
     """
+    from config import PLUGIN_ROOT, PROJECT_ROOT, WORKSPACE_ROOT
+    # 
     return {
-        "PROJECT_ROOT": os.getenv("PROJECT_ROOT", os.getcwd()),
-        "PLUGIN_ROOT": os.getenv("PLUGIN_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "PROJECT_ROOT": str(PROJECT_ROOT),
+        "PLUGIN_ROOT": str(PLUGIN_ROOT),
+        "WORKSPACE_ROOT": str(WORKSPACE_ROOT),
     }
 
 

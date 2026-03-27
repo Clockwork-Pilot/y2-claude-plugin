@@ -29,6 +29,7 @@ Be aware adding constraint that unconditionally fail - it will block you entirel
 
 # Plugin root directory
 PLUGIN_ROOT = Path(__file__).parent.resolve()
+WORKSPACE_ROOT = Path(os.getenv("WORKSPACE_ROOT", os.getcwd())).resolve()
 
 # Consuming project root (when used as a plugin, this is the target project)
 # Defaults to current working directory, can be overridden by env var
