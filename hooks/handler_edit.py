@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
 from config import GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS
-from hooks import is_knowledge_file, is_edit_blocked_by_unverified_constraints, send_error
+from hooks import is_knowledge_file, is_edit_blocked_by_unverified_constraints, send_error, get_rules_for_file
 
 logger = setup_logger(__name__)
 
@@ -32,6 +32,15 @@ def main():
             send_error(error_msg, file_path)
             logger.error(f"Edit blocked due to unverified constraints: {file_path}")
             sys.exit(2)
+
+        # Check file-rules deny list
+        if file_path:
+            rules = get_rules_for_file(file_path)
+            if rules:
+                error_msg = f"Cannot edit {file_path}: denied by file rules: {', '.join(rules)}"
+                send_error(error_msg, file_path)
+                logger.error(f"Edit blocked by file rules {rules}: {file_path}")
+                sys.exit(2)
 
         # Check if the file being edited is a registered knowledge file
         # Hook input has file_path in tool_input (actual structure from hook data)

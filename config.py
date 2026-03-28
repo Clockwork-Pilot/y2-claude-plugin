@@ -66,6 +66,9 @@ else:
 
 HOOKS_LOG_LEVEL = "INFO"  # Can be: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
+# File rules config path — implementation lives in hooks/__init__.py
+FILE_RULES_PATH = os.getenv("CLAUDE_FILE_RULES", None)
+
 # Project data directory for task iterations and spec snapshots
 PROJECT_DATA_DIR = PROJECT_ROOT / "project"
 

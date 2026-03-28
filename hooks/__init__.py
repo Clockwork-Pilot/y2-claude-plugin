@@ -2,6 +2,7 @@
 
 import sys
 import json
+import fnmatch
 import os
 from pathlib import Path
 from typing import Dict
@@ -84,6 +85,27 @@ def have_unverified_constraints() -> bool:
         return False
 
 
+def get_rules_for_file(path: str) -> list[str]:
+    """Return all rules matching the given file path via glob patterns.
+
+    Rules are loaded from the JSON file pointed to by CLAUDE_FILE_RULES env var.
+    Each entry: {"glob": "src/**/*.rs", "rules": ["rule_a", "rule_b"]}
+    """
+    from config import FILE_RULES_PATH
+
+    if not FILE_RULES_PATH:
+        return []
+    rules_path = Path(FILE_RULES_PATH)
+    if not rules_path.exists():
+        return []
+    entries = json.loads(rules_path.read_text())
+    rules = []
+    for entry in entries:
+        if fnmatch.fnmatch(path, entry.get("glob", "")):
+            rules.extend(entry.get("rules", []))
+    return rules
+
+
 def is_edit_blocked_by_unverified_constraints(file_path: str = None) -> bool:
     """Check if editing is blocked due to unverified constraints.
 
@@ -104,5 +126,6 @@ __all__ = [
     "send_error",
     "is_knowledge_file",
     "have_unverified_constraints",
-    "is_edit_blocked_by_unverified_constraints"
+    "is_edit_blocked_by_unverified_constraints",
+    "get_rules_for_file",
 ]
