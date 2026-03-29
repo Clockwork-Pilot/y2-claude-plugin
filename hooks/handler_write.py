@@ -14,7 +14,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
-from hooks import is_knowledge_file, is_edit_blocked_by_unverified_constraints, send_error, get_rules_for_file
+from hooks import is_knowledge_file, is_edit_blocked_by_unverified_constraints, send_error, get_deny_reasons_for_file
 
 logger = setup_logger(__name__)
 
@@ -34,11 +34,11 @@ def main():
 
         # Check file-rules deny list
         if file_path:
-            rules = get_rules_for_file(file_path)
-            if rules:
-                error_msg = f"Cannot write {file_path}: denied by file rules: {', '.join(rules)}"
+            reasons = get_deny_reasons_for_file(file_path)
+            if reasons:
+                error_msg = f"Cannot write {file_path}: denied by file rules: {', '.join(reasons)}"
                 send_error(error_msg, file_path)
-                logger.error(f"Write blocked by file rules {rules}: {file_path}")
+                logger.error(f"Write blocked by file rules {reasons}: {file_path}")
                 sys.exit(2)
 
         # Check if the file being written is a registered knowledge file

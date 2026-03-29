@@ -85,11 +85,13 @@ def have_unverified_constraints() -> bool:
         return False
 
 
-def get_rules_for_file(path: str) -> list[str]:
-    """Return all rules matching the given file path via glob patterns.
+def get_deny_reasons_for_file(path: str) -> list[str]:
+    """Return deny reasons for the given file path via glob patterns.
 
     Rules are loaded from the JSON file pointed to by CLAUDE_FILE_RULES env var.
-    Each entry: {"glob": "src/**/*.rs", "rules": ["rule_a", "rule_b"]}
+    Deny entry:      {"deny-rule": ["src/**/*.rs"], "reason": "some reason"}
+    Whitelist entry: {"whitelist-rule": ["src/specific/file.rs"]}
+    If any whitelist-rule glob matches the path, deny rules are overridden and [] is returned.
     """
     from config import FILE_RULES_PATH
 
@@ -99,11 +101,19 @@ def get_rules_for_file(path: str) -> list[str]:
     if not rules_path.exists():
         return []
     entries = json.loads(rules_path.read_text())
-    rules = []
+    reasons = []
     for entry in entries:
-        if fnmatch.fnmatch(path, entry.get("glob", "")):
-            rules.extend(entry.get("rules", []))
-    return rules
+        deny_globs = [os.path.expandvars(g) for g in entry.get("deny-rule", [])]
+        if any(fnmatch.fnmatch(path, g) for g in deny_globs):
+            reason = entry.get("reason")
+            reasons.append(reason if reason else "denied")
+    if not reasons:
+        return []
+    for entry in entries:
+        whitelist_globs = [os.path.expandvars(g) for g in entry.get("whitelist-rule", [])]
+        if any(fnmatch.fnmatch(path, g) for g in whitelist_globs):
+            return []
+    return reasons
 
 
 def is_edit_blocked_by_unverified_constraints(file_path: str = None) -> bool:
@@ -127,5 +137,5 @@ __all__ = [
     "is_knowledge_file",
     "have_unverified_constraints",
     "is_edit_blocked_by_unverified_constraints",
-    "get_rules_for_file",
+    "get_deny_reasons_for_file",
 ]
