@@ -6,6 +6,7 @@ import subprocess
 import sys
 import argparse
 import os
+import time
 from pathlib import Path
 from typing import Dict, Optional, Union
 
@@ -111,6 +112,7 @@ def execute_constraint(
             env = os.environ.copy()
             env['PROJECT_ROOT'] = str(CONFIG_PROJECT_ROOT)
 
+            start = time.monotonic()
             result = subprocess.run(
                 cmd,
                 shell=True,
@@ -119,11 +121,12 @@ def execute_constraint(
                 timeout=CONSTRAINTS_TIMEOUT,
                 env=env
             )
+            duration = time.monotonic() - start
             verdict = result.returncode == 0
             output = result.stdout + result.stderr
-            return constraint.create_result(verdict, output)
+            return constraint.create_result(verdict, output, duration)
         except subprocess.TimeoutExpired:
-            return constraint.create_result(False, "Command timeout")
+            return constraint.create_result(False, "Command timeout", float(CONSTRAINTS_TIMEOUT))
         except Exception as e:
             return constraint.create_result(False, str(e))
 
@@ -434,19 +437,26 @@ Examples:
 
     parser.add_argument(
         '--output-checks-path',
-        help='Path to save ChecksResults document',
+        help='Path to save ChecksResults document (default: checks_results.k.json next to spec)',
         type=str,
-        default='checks_results.k.json'
+        default=None
     )
 
     parser.add_argument(
         '--task-iterations-path',
-        help='Path to task-iterations.k.json; computes FeaturesStatsDiff against the last iteration',
+        help='Path to task-iterations.k.json; computes FeaturesStatsDiff against the last iteration (default: task-iterations.k.json next to spec)',
         type=str,
-        default='task-iterations.k.json'
+        default=None
     )
 
     args = parser.parse_args()
+
+    # Default sibling paths relative to spec file, not CWD
+    spec_dir = Path(args.spec_path).parent
+    if args.output_checks_path is None:
+        args.output_checks_path = str(spec_dir / 'checks_results.k.json')
+    if args.task_iterations_path is None:
+        args.task_iterations_path = str(spec_dir / 'task-iterations.k.json')
 
     # Parse feature IDs if provided
     feature_ids = None
