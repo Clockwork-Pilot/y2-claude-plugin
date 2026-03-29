@@ -2,6 +2,10 @@ protected_files.txt
 .claude.local.json
 .credentials/
 .claude/
+checks_results.k.json
+checks_results.k.md
+task-iterations.k.json
+task-iterations.k.md
 
 *~
 *.pyc

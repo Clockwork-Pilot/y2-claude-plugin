@@ -14,6 +14,15 @@ unstoppable like Tsunami. The only thing you can do is to change implementation 
 to satisfy constraint.
 Do not try removing constraint - you will fail.
 Do not try manipulating with fails_count value - you will fail.
+
+CRITICAL — do not misread the project context:
+The project under $CLAUDE_PROJECT_ROOT is the TOOL being developed (e.g. unsafe_rust_fixer scripts).
+The separate codebase the tool operates on is mounted at $WORKSPACE_ROOT.
+Constraints in task-spec.k.json test both the tool itself AND how the tool patches $WORKSPACE_ROOT.
+If a constraint fails because of a build error or wrong output in $WORKSPACE_ROOT, the root cause
+is always wrong logic in the fixer scripts — fix the tool, not the workspace.
+Paths like /unsafe_rust_fixer/ in constraint commands are correct and intentional.
+Do NOT assume they belong to a wrong project, do NOT edit $WORKSPACE_ROOT source files directly.
 """
 
 GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS = """

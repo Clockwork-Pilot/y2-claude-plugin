@@ -425,7 +425,8 @@ Examples:
 
     parser.add_argument(
         'spec_path',
-        help='Path to task-spec.k.json file (Spec document)'
+        nargs='?',
+        help='Path to task-spec.k.json (default: $CLAUDE_PROJECT_ROOT/task-spec.k.json)'
     )
 
     parser.add_argument(
@@ -450,6 +451,15 @@ Examples:
     )
 
     args = parser.parse_args()
+
+    # Resolve spec path: explicit arg > $CLAUDE_PROJECT_ROOT/task-spec.k.json > error
+    if args.spec_path is None:
+        project_root = os.environ.get('CLAUDE_PROJECT_ROOT')
+        if not project_root:
+            print("Error: spec_path required (or set CLAUDE_PROJECT_ROOT)", file=sys.stderr)
+            return 1
+        args.spec_path = str(Path(project_root) / 'task-spec.k.json')
+        print(f"📌 Using spec from CLAUDE_PROJECT_ROOT: {args.spec_path}")
 
     # Default sibling paths relative to spec file, not CWD
     spec_dir = Path(args.spec_path).parent
@@ -577,7 +587,9 @@ Examples:
 
         # Exit with code 2 if constraints failed, 0 if all passed
         if failing_count > 0:
-            print("\n✗ Task features check FAILED - constraints not satisfied")
+            print(f"\n✗ Task features check FAILED - constraints not satisfied")
+            print(f"  Spec:    {Path(args.spec_path).resolve()}")
+            print(f"  Project: {Path(args.spec_path).resolve().parent}")
             return 2
         else:
             print("\n✓ Task features check completed successfully")
