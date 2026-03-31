@@ -23,16 +23,18 @@ PLUGIN_ROOT = Path(__file__).parent.parent
 _iteration_script = PLUGIN_ROOT / "skills" / "task-lifecycle-tool" / "task-add-iteration.py"
 
 
-def check_constraints() -> int:
+def check_constraints() -> tuple[int, str]:
     """Run constraint checks on task document.
 
     Returns:
-        Exit code: 0=all passed, 2=constraints failed, 1=error
+        Tuple of (exit_code, message) where:
+        - exit_code: 0=all passed, 2=constraints failed, 1=error
+        - message: captured stdout/stderr from the constraint checker
     """
     spec_json = PROJECT_ROOT / "task-spec.k.json"
 
     if not spec_json.exists():
-        return 0
+        return (0, "")
 
     checker_script = PLUGIN_ROOT / "constraints_tool" / "constraints_tool" / "check_spec_constraints.py"
 
@@ -44,11 +46,12 @@ def check_constraints() -> int:
             text=True,
             timeout=STOP_HANDLER_TIMEOUT,
         )
-        return result.returncode
+        message = result.stdout + result.stderr
+        return (result.returncode, message)
 
     except Exception as e:
         logger.error(f"Error running constraint checks: {e}")
-        return 1
+        return (1, str(e))
 
 
 def add_iteration() -> int:
@@ -134,7 +137,7 @@ def main():
         hook_input = json.loads(input_data) if input_data else {}
 
         # Run constraint checks
-        check_exit_code = check_constraints()
+        check_exit_code, check_message = check_constraints()
 
         # Handle constraint failures
         if check_exit_code == 2:
@@ -142,7 +145,11 @@ def main():
             reason = "Constraints violated, fix features implementation to satisfy them."
             if recurring:
                 reason += f" Recurring failures (3+ iterations): {', '.join(sorted(recurring))}."
-            
+
+            # Add constraint checker output
+            if check_message:
+                reason += f"\n\nConstraint Checker Output:\n{check_message}"
+
             # Add guide message
             reason += "\n\n" + GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP
 
