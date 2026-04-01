@@ -15,10 +15,7 @@ to satisfy constraint.
 Do not try removing constraint - you will fail.
 Do not try manipulating with fails_count value - you will fail.
 
-CRITICAL — do not misread the project context:
-The project under $CLAUDE_PROJECT_ROOT is the TOOL being developed.
-The separate codebase the tool operates on is mounted at $WORKSPACE_ROOT.
-Constraints in task-spec.k.json test both the tool itself AND how the tool patches $WORKSPACE_ROOT.
+Note: Constraints in task-spec.k.json tests project under CLAUDE_PROJECT_ROOT env var.
 """
 
 GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS = """

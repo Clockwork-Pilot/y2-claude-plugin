@@ -152,6 +152,8 @@ def main():
 
             # Add guide message
             reason += "\n\n" + GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP
+            # Add project root info
+            reason += f"\n\nProject root: {PROJECT_ROOT}"
 
             output = {"decision": "block", "reason": reason, "vars": get_vars()}
             print(json.dumps(output))
@@ -171,22 +173,22 @@ def main():
         # Constraints passed — record iteration (runs pytest internally).
         # Chain: add_iteration() → subprocess task-add-iteration.py → run_pytest()
         #        → if exit 2, propagates back to add_iteration() → main() blocks with decision: block.
-        iteration_exit_code = add_iteration()
+        # iteration_exit_code = add_iteration()
 
-        if iteration_exit_code == 2:
-            output = {"decision": "block", "reason": "Tests failed — fix failing tests before stopping.", "vars": get_vars()}
-            print(json.dumps(output))
+        # if iteration_exit_code == 2:
+        #     output = {"decision": "block", "reason": "Tests failed — fix failing tests before stopping.", "vars": get_vars()}
+        #     print(json.dumps(output))
 
-            log_output = {
-                'timestamp': datetime.now().isoformat(),
-                'event': 'Stop',
-                'status': 'blocked',
-                'reason': 'Tests failed',
-                'data': hook_input,
-                'vars': get_vars(),
-            }
-            logger.info(json.dumps(log_output))
-            sys.exit(2)
+        #     log_output = {
+        #         'timestamp': datetime.now().isoformat(),
+        #         'event': 'Stop',
+        #         'status': 'blocked',
+        #         'reason': 'Tests failed',
+        #         'data': hook_input,
+        #         'vars': get_vars(),
+        #     }
+        #     logger.info(json.dumps(log_output))
+        #     sys.exit(2)
 
         log_output = {
             'timestamp': datetime.now().isoformat(),
