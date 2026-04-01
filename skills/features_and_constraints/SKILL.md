@@ -154,7 +154,7 @@ After adding constraints, immediately proceed to Phase 2 to validate them.
 python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py \
     <task-spec.k.json> \
     [--features feature1,feature2,...] \
-    [--output-checks-path checks_results.k.json]
+    [--output-checks-path task-results.k.json]
 ```
 
 **Arguments:**
@@ -244,7 +244,7 @@ Directly edit source files to implement the feature/behavior the constraint test
 ### 3. Verify
 ```bash
 python3 constraints_tool/constraints_tool/check_spec_constraints.py \
-    task-spec.k.json --features feature_id --output-checks-path checks_results.k.json
+    task-spec.k.json --features feature_id --output-checks-path task-results.k.json
 ```
 Constraint should FAIL (exit non-zero) -> `fails_count` increments to 1 -> constraint becomes verified.
 
@@ -338,7 +338,7 @@ Before finalizing a constraint suite, verify:
 - **Constraint checker**: `constraints_tool/constraints_tool/check_spec_constraints.py`
 - **Knowledge patcher**: `${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py`
 - **Features location**: `task-spec.k.json` at path `/features/<feature_id>`
-- **Results output**: `checks_results.k.json` (ChecksResults model)
+- **Results output**: `task-results.k.json` (ChecksResults model)
 - `$PROJECT_ROOT` is substituted automatically in constraint commands
 - Recursive execution of `check_spec_constraints.py` within constraints is detected and prevented
 - All timestamps are ISO8601 formatted

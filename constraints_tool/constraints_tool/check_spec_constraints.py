@@ -31,7 +31,7 @@ from patch_knowledge_document import apply_json_patch
 # Import config for PROJECT_ROOT
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from config import PROJECT_ROOT as CONFIG_PROJECT_ROOT
-from config import CONSTRAINTS_TIMEOUT
+from config import CONSTRAINTS_TIMEOUT, CONSTRAINTS_RESULTS_FILE
 
 
 
@@ -414,12 +414,12 @@ Examples:
   python3 check_spec_constraints.py task-spec.k.json --features feature_1,feature_2
 
   # Check and save results
-  python3 check_spec_constraints.py task-spec.k.json --output-checks-path checks_results.k.json
+  python3 check_spec_constraints.py task-spec.k.json --output-checks-path task-results.k.json
 
   # Check specific features and save results
   python3 check_spec_constraints.py task-spec.k.json \\
     --features forbid_task_status_downgrade,render_spec_features_in_task \\
-    --output-checks-path checks_results.k.json
+    --output-checks-path task-results.k.json
         """
     )
 
@@ -438,7 +438,7 @@ Examples:
 
     parser.add_argument(
         '--output-checks-path',
-        help='Path to save ChecksResults document (default: checks_results.k.json next to spec)',
+        help=f'Path to save ChecksResults document (default: {CONSTRAINTS_RESULTS_FILE} next to spec)',
         type=str,
         default=None
     )
@@ -464,7 +464,7 @@ Examples:
     # Default sibling paths relative to spec file, not CWD
     spec_dir = Path(args.spec_path).parent
     if args.output_checks_path is None:
-        args.output_checks_path = str(spec_dir / 'checks_results.k.json')
+        args.output_checks_path = str(spec_dir / CONSTRAINTS_RESULTS_FILE)
     if args.task_iterations_path is None:
         args.task_iterations_path = str(spec_dir / 'task-iterations.k.json')
 

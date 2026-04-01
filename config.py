@@ -56,6 +56,9 @@ CLAUDE_HOOKS_CONFIG_FILE = HOOKS_DIR / "hooks.json"
 # By convention we use just this path, so knowledge tools just hardocded the same path
 KNOWN_KNOWLEDGE_FILES_PATH = PROJECT_ROOT / "protected_files.txt"
 
+# Constraint check results file
+CONSTRAINTS_RESULTS_FILE = "task-results.k.json"
+
 # Logging - write to consuming project's .claude directory
 # Base directory for logs across multiple consuming projects
 # If defined, logs go to <HOOK_LOGS_BASE_DIR>/<CONSUMING_PROJECT_NAME>/.claude/hooks.log
@@ -86,6 +89,7 @@ __all__ = [
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
     "KNOWN_KNOWLEDGE_FILES_PATH",
+    "CONSTRAINTS_RESULTS_FILE",
     "HOOK_LOGS_BASE_DIR",
     "HOOKS_LOG_FILE",
     "HOOKS_LOG_LEVEL"

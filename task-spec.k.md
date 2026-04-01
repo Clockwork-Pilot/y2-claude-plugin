@@ -353,7 +353,7 @@
 - Populate shrunken_output with command output truncated to 500 characters
 - Ensure output is captured for both passed and failed constraints
 - Display failed output in ChecksResults markdown rendering
-- Include output in checks_results.k.json for full constraint result tracking
+- Include output in task-results.k.json for full constraint result tracking
 - Improve debugging capability by preserving command output in results
 
 #### constraint_output_populated_on_failure
@@ -803,7 +803,7 @@
 **Selective patching of constraint check results**
 
 **Goals:**
-- Patch only specified features in checks_results.k.json instead of full overwrite
+- Patch only specified features in task-results.k.json instead of full overwrite
 - Preserve existing results for unselected features
 - Support incremental validation runs without losing prior results
 
