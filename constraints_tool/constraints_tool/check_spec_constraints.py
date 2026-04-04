@@ -134,20 +134,91 @@ def execute_constraint(
         raise TypeError(f"Unknown constraint type: {type(constraint)}")
 
 
-def check_feature(feature: Feature) -> FeatureResult:
+def _build_dependency_buckets(
+    features: Dict[str, Feature],
+    features_to_check: Dict[str, Feature]
+) -> list[list[str]]:
+    """Build topologically sorted buckets of features based on depends_on.
+
+    Returns a list of buckets, where each bucket contains feature IDs that can be
+    executed in parallel (all their dependencies are in previous buckets).
+
+    Args:
+        features: Dict of all features in spec
+        features_to_check: Dict of features to be checked
+
+    Returns:
+        List of buckets, where each bucket is a list of feature IDs
+    """
+    feature_ids_to_check = set(features_to_check.keys())
+    buckets = []
+    assigned = set()
+
+    while len(assigned) < len(feature_ids_to_check):
+        bucket = []
+        for feature_id in feature_ids_to_check:
+            if feature_id in assigned:
+                continue
+            feature = features_to_check[feature_id]
+            # Check if all dependencies are assigned to previous buckets
+            can_add = True
+            if feature.depends_on:
+                for dep_id in feature.depends_on:
+                    # If dependency is in features_to_check but not yet assigned, skip
+                    if dep_id in feature_ids_to_check and dep_id not in assigned:
+                        can_add = False
+                        break
+            if can_add:
+                bucket.append(feature_id)
+
+        if not bucket:
+            # Circular dependency detected - break gracefully
+            break
+
+        buckets.append(bucket)
+        assigned.update(bucket)
+
+    return buckets
+
+
+def check_feature(
+    feature: Feature,
+    failing_parent_features: Optional[set[str]] = None
+) -> FeatureResult:
     """Execute all constraints in a feature and return aggregated results.
+
+    If feature has depends_on and any parent failed in current run, proven constraints
+    (fails_count > 0) are skipped. Unproven constraints (fails_count == 0) always execute
+    to establish proof.
 
     Args:
         feature: Feature with embedded constraints to execute
+        failing_parent_features: Set of parent feature IDs that failed in current run
 
     Returns:
         FeatureResult with constraint execution results indexed by constraint ID
     """
     constraint_results = {}
 
+    # Check if any dependencies failed in current run
+    skip_due_to_deps = False
+    if feature.depends_on and failing_parent_features:
+        # Check if any dependency is in the failing set
+        for dep_id in feature.depends_on:
+            if dep_id in failing_parent_features:
+                skip_due_to_deps = True
+                break
+
     if feature.constraints:
         for constraint_id, constraint in feature.constraints.items():
-            result = execute_constraint(constraint)
+            if skip_due_to_deps and isinstance(constraint, ConstraintBash) and constraint.fails_count > 0:
+                # Skip only proven constraints (fails_count > 0) if parent failed
+                result = constraint.create_result(True, "")
+                result.postponed = True
+            else:
+                # Execute: either no dependency issues, or unproven constraint (always execute)
+                result = execute_constraint(constraint)
+
             constraint_results[constraint_id] = result
 
     return FeatureResult(
@@ -241,14 +312,40 @@ def check_constraints(
             print(f"⚠️  No matching features found for: {feature_ids}")
             return ChecksResults.create_default(), None
 
-    # Execute constraints for each feature
+    # Execute constraints for each feature with dependency ordering
     features_results = {}
     print(f"🎯 Found {len(features_to_check)} features to check")
 
-    for feature_id, feature in features_to_check.items():
-        feature_result = check_feature(feature)
-        if feature_result.constraints_results:
-            features_results[feature_id] = feature_result
+    # Build dependency buckets
+    try:
+        buckets = _build_dependency_buckets(features, features_to_check)
+    except ValueError as e:
+        # This won't happen now, but keep for safety
+        print(f"⚠️  {e}")
+        buckets = [list(features_to_check.keys())]
+
+    # Check if circular dependency was detected (not all features assigned)
+    all_assigned = sum(len(bucket) for bucket in buckets)
+    if all_assigned < len(features_to_check):
+        unassigned = set(features_to_check.keys()) - {fid for bucket in buckets for fid in bucket}
+        print(f"⚠️  Circular dependency detected in features: {sorted(unassigned)}")
+
+    # Execute buckets sequentially, tracking failures
+    failing_features = set()
+    for bucket_idx, bucket in enumerate(buckets):
+        print(f"  Bucket {bucket_idx + 1}/{len(buckets)}: executing {len(bucket)} feature(s)")
+        for feature_id in bucket:
+            feature = features_to_check[feature_id]
+            feature_result = check_feature(feature, failing_parent_features=failing_features)
+            if feature_result.constraints_results:
+                features_results[feature_id] = feature_result
+                # Check if this feature failed (has any failed constraints)
+                has_failure = any(
+                    isinstance(result, ConstraintBashResult) and not result.verdict and not getattr(result, 'postponed', False)
+                    for result in feature_result.constraints_results.values()
+                )
+                if has_failure:
+                    failing_features.add(feature_id)
 
     # Create ChecksResults document from results
     print("📊 Aggregating results...")
@@ -507,24 +604,38 @@ Examples:
             for feature_id, feature_result in checks_results.features_results.items():
                 constraint_count = len(feature_result.constraints_results or {})
                 passed_count = sum(1 for result in (feature_result.constraints_results or {}).values()
-                                 if (isinstance(result, ConstraintBashResult) and result.verdict))
-                failed_count = constraint_count - passed_count
-                status = "✓" if failed_count == 0 else "✗"
-                print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed")
+                                 if (isinstance(result, ConstraintBashResult) and result.verdict and not getattr(result, 'postponed', False)))
+                skipped_count = sum(1 for result in (feature_result.constraints_results or {}).values()
+                                   if (isinstance(result, ConstraintBashResult) and getattr(result, 'postponed', False)))
+                failed_count = constraint_count - passed_count - skipped_count
+
+                # Status icon: ✓ all passed, ✗ some failed, ⏸️ some skipped
+                if failed_count > 0:
+                    status = "✗"
+                elif skipped_count > 0:
+                    status = "⏸️"
+                else:
+                    status = "✓"
+
+                # Show counts: passed / total (skipped)
+                if skipped_count > 0:
+                    print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed ({skipped_count} skipped)")
+                else:
+                    print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed")
         else:
             print("  No features tested")
 
-        # Print features stats summary (only proven failures count)
+        # Print features stats summary
         failing_count = 0
         if features_stats:
-            print("\n📈 Feature Validation Stats (proven constraints only):")
+            print("\n📈 Feature Validation Summary:")
             failing = len(features_stats.failed)
             failing_count = failing
             total = len(spec.features or {})
             passing = total - failing
-            print(f"  Overall: {passing}/{total} features passed")
-            if failing > 0:
-                print(f"  Failed: {failing} features (proven constraints failing)")
+            print(f"  Overall: {passing}/{total} features passed\n")
+
+            # Show iteration changes if available
             if features_stats_diff:
                 if features_stats_diff.improved:
                     print(f"  Improved ({len(features_stats_diff.improved)}):")
@@ -536,31 +647,64 @@ Examples:
                     for fid in sorted(features_stats_diff.regressed):
                         cids = features_stats_diff.regressed[fid]
                         print(f"    ✗ {fid}: {', '.join(cids)}")
-                if features_stats_diff.still_failing:
-                    print(f"  Still failing ({len(features_stats_diff.still_failing)}):")
-                    for fid in sorted(features_stats_diff.still_failing):
-                        cids = features_stats_diff.still_failing[fid]
-                        print(f"    ✗ {fid}: {', '.join(cids)}")
 
-        # Print detailed error information for failed constraints
-        if features_stats and features_stats.failed:
-            print("\n❌ Failed Constraint Details:")
-            for feature_id in sorted(features_stats.failed.keys()):
-                feature_result = features_stats.failed[feature_id]
-                print(f"\n  {feature_id}:")
+        # Group constraints by status: Failed, Skipped, First-Run Verification
+        failed_constraints = {}
+        skipped_constraints = {}
+        first_run_constraints = {}
+
+        if checks_results.features_results:
+            for feature_id, feature_result in checks_results.features_results.items():
                 if feature_result.constraints_results:
-                    for constraint_id, result in sorted(feature_result.constraints_results.items()):
-                        is_failed = False
-                        if isinstance(result, ConstraintBashResult) and not result.verdict:
-                            is_failed = True
+                    for constraint_id, result in feature_result.constraints_results.items():
+                        if isinstance(result, ConstraintBashResult):
+                            is_postponed = getattr(result, 'postponed', False)
+                            if is_postponed:
+                                if feature_id not in skipped_constraints:
+                                    skipped_constraints[feature_id] = []
+                                skipped_constraints[feature_id].append((constraint_id, result))
+                            elif not result.verdict:
+                                if feature_id not in failed_constraints:
+                                    failed_constraints[feature_id] = []
+                                failed_constraints[feature_id].append((constraint_id, result))
+                            else:
+                                # Check if this was unproven constraint (first-run verification)
+                                feature = spec.features.get(feature_id) if spec.features else None
+                                constraint = feature.constraints.get(constraint_id) if feature and feature.constraints else None
+                                if constraint and isinstance(constraint, ConstraintBash) and constraint.fails_count == 0:
+                                    if feature_id not in first_run_constraints:
+                                        first_run_constraints[feature_id] = []
+                                    first_run_constraints[feature_id].append((constraint_id, result))
 
-                        if is_failed:
-                            print(f"    ✗ {constraint_id}")
-                            output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
-                            if output:
-                                for line in output.split('\n'):
-                                    if line.strip():
-                                        print(f"      {line}")
+        # Print first-run verification constraints (unproven, executed to establish proof)
+        if first_run_constraints:
+            print("\n🔍 First-Run Verification (establishing proof):")
+            for feature_id in sorted(first_run_constraints.keys()):
+                print(f"  {feature_id}:")
+                for constraint_id, result in sorted(first_run_constraints[feature_id]):
+                    print(f"    ✓ {constraint_id}")
+
+        # Print skipped constraints
+        if skipped_constraints:
+            print("\n⏸️  Skipped Constraints (waiting for dependencies):")
+            for feature_id in sorted(skipped_constraints.keys()):
+                print(f"  {feature_id}:")
+                for constraint_id, result in sorted(skipped_constraints[feature_id]):
+                    print(f"    ⏸️  {constraint_id}")
+
+        # Print failed constraints with error details
+        if failed_constraints:
+            print("\n❌ Failed Constraints:")
+            for feature_id in sorted(failed_constraints.keys()):
+                print(f"  {feature_id}:")
+                for constraint_id, result in sorted(failed_constraints[feature_id]):
+                    output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
+                    if output:
+                        # Get first line of error
+                        first_error = output.split('\n')[0] if output else ""
+                        print(f"    ✗ {constraint_id} — {first_error}")
+                    else:
+                        print(f"    ✗ {constraint_id}")
 
         # Print unverified constraints (fails_count < 1) grouped by feature
         unverified_by_feature = {}
