@@ -123,7 +123,19 @@ def execute_constraint(
             )
             duration = time.monotonic() - start
             verdict = result.returncode == 0
-            output = result.stdout + result.stderr
+
+            # Truncate stdout and stderr to last 200 chars each
+            stdout = result.stdout[-200:] if len(result.stdout) > 200 else result.stdout
+            stderr = result.stderr[-200:] if len(result.stderr) > 200 else result.stderr
+
+            # Format output with labels
+            output_parts = []
+            if stdout:
+                output_parts.append(f"[stdout] {stdout}")
+            if stderr:
+                output_parts.append(f"[stderr] {stderr}")
+            output = "\n".join(output_parts) if output_parts else ""
+
             return constraint.create_result(verdict, output, duration)
         except subprocess.TimeoutExpired:
             return constraint.create_result(False, "Command timeout", float(CONSTRAINTS_TIMEOUT))
@@ -699,12 +711,12 @@ Examples:
                 print(f"  {feature_id}:")
                 for constraint_id, result in sorted(failed_constraints[feature_id]):
                     output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
+                    print(f"    ✗ {constraint_id}")
                     if output:
-                        # Get first line of error
-                        first_error = output.split('\n')[0] if output else ""
-                        print(f"    ✗ {constraint_id} — {first_error}")
-                    else:
-                        print(f"    ✗ {constraint_id}")
+                        # Print all lines of output
+                        for line in output.split('\n'):
+                            if line.strip():
+                                print(f"      {line}")
 
         # Print unverified constraints (fails_count < 1) grouped by feature
         unverified_by_feature = {}
