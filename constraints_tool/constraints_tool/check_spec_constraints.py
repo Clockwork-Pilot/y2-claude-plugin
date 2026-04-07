@@ -21,7 +21,7 @@ from models import (
     Spec, Feature,
     ConstraintBash,
     ConstraintBashResult,
-    FeatureResult, ChecksResults, FeaturesStats
+    FeatureResult, ChecksResults
 )
 
 # Import patch_knowledge_document for protected file updates
@@ -239,42 +239,15 @@ def check_feature(
     )
 
 
-def generate_features_stats(
-    features: Dict[str, Feature],
-    checks_results: ChecksResults
-) -> FeaturesStats:
-    """Generate FeaturesStats from ChecksResults for iteration tracking.
-
-    Args:
-        features: Dict of features (used to scope results to known features)
-        checks_results: ChecksResults with constraint execution results
-
-    Returns:
-        FeaturesStats with failed features populated; passing features are absent
-    """
-    failed_features = {}
-    if checks_results.features_results:
-        for feature_id, feature_result in checks_results.features_results.items():
-            if feature_result.constraints_results:
-                has_failure = any(
-                    isinstance(result, ConstraintBashResult) and not result.verdict
-                    for result in feature_result.constraints_results.values()
-                )
-                if has_failure:
-                    failed_features[feature_id] = feature_result
-
-    return FeaturesStats(failed=failed_features)
-
-
 def check_constraints(
     spec_json_path: str,
     feature_ids: Optional[list] = None,
     output_checks_path: Optional[str] = None
-) -> tuple[ChecksResults, Optional[FeaturesStats]]:
-    """Execute constraints for features in a Spec document (task-spec.k.json).
+) -> ChecksResults:
+    """Execute constraints for features in a Spec document (spec.k.json).
 
     Workflow:
-    1. Load task-spec.k.json as Spec document
+    1. Load spec.k.json as Spec document
     2. Extract features from spec
     3. Filter by feature_ids if provided
     4. For each feature, execute its constraints
@@ -282,7 +255,7 @@ def check_constraints(
     6. Optionally save ChecksResults to file using patch_knowledge_document
 
     Args:
-        spec_json_path: Path to task-spec.k.json (Spec document)
+        spec_json_path: Path to spec.k.json (Spec document)
         feature_ids: Optional list of feature IDs to check (if None, check all)
         output_checks_path: Optional path to ChecksResults file to save results
 
@@ -300,7 +273,7 @@ def check_constraints(
     with open(spec_path, 'r') as f:
         data = json.load(f)
 
-    # Load Spec document (task-spec.k.json)
+    # Load Spec document (spec.k.json)
     try:
         spec = Spec.model_validate(data)
         features = spec.features
@@ -503,39 +476,36 @@ def check_constraints(
         else:
             print(f"ℹ️  No changes to ChecksResults (same features as before)")
 
-    # Generate FeaturesStats for iteration tracking
-    features_stats = generate_features_stats(features, checks_results)
-
-    return checks_results, features_stats
+    return checks_results
 
 
 def main():
     """Main entry point with CLI argument parsing."""
     parser = argparse.ArgumentParser(
-        description="Execute and validate feature constraints from a Spec document (task-spec.k.json)",
+        description="Execute and validate feature constraints from a Spec document (spec.k.json)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Check all features in task-spec.k.json
-  python3 check_spec_constraints.py task-spec.k.json
+  # Check all features in spec.k.json
+  python3 check_spec_constraints.py spec.k.json
 
   # Check specific features
-  python3 check_spec_constraints.py task-spec.k.json --features feature_1,feature_2
+  python3 check_spec_constraints.py spec.k.json --features feature_1,feature_2
 
   # Check and save results
-  python3 check_spec_constraints.py task-spec.k.json --output-checks-path task-results.k.json
+  python3 check_spec_constraints.py spec.k.json --output-checks-path spec-checks.k.json
 
   # Check specific features and save results
-  python3 check_spec_constraints.py task-spec.k.json \\
+  python3 check_spec_constraints.py spec.k.json \\
     --features forbid_task_status_downgrade,render_spec_features_in_task \\
-    --output-checks-path task-results.k.json
+    --output-checks-path spec-checks.k.json
         """
     )
 
     parser.add_argument(
         'spec_path',
         nargs='?',
-        help='Path to task-spec.k.json (default: $CLAUDE_PROJECT_ROOT/task-spec.k.json)'
+        help='Path to spec.k.json (default: $CLAUDE_PROJECT_ROOT/spec.k.json)'
     )
 
     parser.add_argument(
@@ -552,30 +522,21 @@ Examples:
         default=None
     )
 
-    parser.add_argument(
-        '--task-iterations-path',
-        help='Path to task-iterations.k.json; computes FeaturesStatsDiff against the last iteration (default: task-iterations.k.json next to spec)',
-        type=str,
-        default=None
-    )
-
     args = parser.parse_args()
 
-    # Resolve spec path: explicit arg > $CLAUDE_PROJECT_ROOT/task-spec.k.json > error
+    # Resolve spec path: explicit arg > $CLAUDE_PROJECT_ROOT/spec.k.json > error
     if args.spec_path is None:
         project_root = os.environ.get('CLAUDE_PROJECT_ROOT')
         if not project_root:
             print("Error: spec_path required (or set CLAUDE_PROJECT_ROOT)", file=sys.stderr)
             return 1
-        args.spec_path = str(Path(project_root) / 'task-spec.k.json')
+        args.spec_path = str(Path(project_root) / 'spec.k.json')
         print(f"📌 Using spec from CLAUDE_PROJECT_ROOT: {args.spec_path}")
 
     # Default sibling paths relative to spec file, not CWD
     spec_dir = Path(args.spec_path).parent
     if args.output_checks_path is None:
         args.output_checks_path = str(spec_dir / CONSTRAINTS_RESULTS_FILE)
-    if args.task_iterations_path is None:
-        args.task_iterations_path = str(spec_dir / 'task-iterations.k.json')
 
     # Parse feature IDs if provided
     feature_ids = None
@@ -588,26 +549,11 @@ Examples:
         spec = Spec.model_validate(spec_data)
 
         # Execute constraint checks
-        checks_results, features_stats = check_constraints(
+        checks_results = check_constraints(
             args.spec_path,
             feature_ids=feature_ids,
             output_checks_path=args.output_checks_path
         )
-
-        # Compute FeaturesStatsDiff against last iteration in task-iterations.k.json
-        features_stats_diff = None
-        if features_stats and args.task_iterations_path:
-            task_path = Path(args.task_iterations_path)
-            if task_path.exists():
-                from models import Task
-                task_data = json.loads(task_path.read_text())
-                task = Task.model_validate(task_data)
-                iterations = task.iterations or {}
-                if iterations:
-                    last_iter = iterations[max(iterations.keys())]
-                    features_stats_diff = features_stats.diff(last_iter.features_stats)
-            else:
-                features_stats_diff = features_stats.diff(None)
 
 
         # Print tested features summary
@@ -637,29 +583,6 @@ Examples:
         else:
             print("  No features tested")
 
-        # Print features stats summary
-        failing_count = 0
-        if features_stats:
-            print("\n📈 Feature Validation Summary:")
-            failing = len(features_stats.failed)
-            failing_count = failing
-            total = len(spec.features or {})
-            passing = total - failing
-            print(f"  Overall: {passing}/{total} features passed\n")
-
-            # Show iteration changes if available
-            if features_stats_diff:
-                if features_stats_diff.improved:
-                    print(f"  Improved ({len(features_stats_diff.improved)}):")
-                    for fid in sorted(features_stats_diff.improved):
-                        cids = features_stats_diff.improved[fid]
-                        print(f"    ✓ {fid}: {', '.join(cids)}")
-                if features_stats_diff.regressed:
-                    print(f"  Regressed ({len(features_stats_diff.regressed)}):")
-                    for fid in sorted(features_stats_diff.regressed):
-                        cids = features_stats_diff.regressed[fid]
-                        print(f"    ✗ {fid}: {', '.join(cids)}")
-
         # Group constraints by status: Failed, Skipped, First-Run Verification
         failed_constraints = {}
         skipped_constraints = {}
@@ -687,6 +610,9 @@ Examples:
                                     if feature_id not in first_run_constraints:
                                         first_run_constraints[feature_id] = []
                                     first_run_constraints[feature_id].append((constraint_id, result))
+
+        # Calculate failing_count from failed constraints
+        failing_count = sum(len(constraints) for constraints in failed_constraints.values())
 
         # Print first-run verification constraints (unproven, executed to establish proof)
         if first_run_constraints:

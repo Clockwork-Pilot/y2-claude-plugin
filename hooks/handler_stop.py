@@ -4,6 +4,7 @@
 import sys
 import json
 import subprocess
+import os
 
 from pathlib import Path
 from datetime import datetime
@@ -19,6 +20,9 @@ from hooks import get_vars
 
 logger = setup_logger(__name__)
 
+# Set PROTECTED_REGISTRY_DIR to ensure knowledge_tool creates .protected_files.txt in PROJECT_ROOT
+os.environ['PROTECTED_REGISTRY_DIR'] = str(PROJECT_ROOT)
+
 PLUGIN_ROOT = Path(__file__).parent.parent
 _iteration_script = PLUGIN_ROOT / "skills" / "task-lifecycle-tool" / "task-add-iteration.py"
 
@@ -31,7 +35,7 @@ def check_constraints() -> tuple[int, str]:
         - exit_code: 0=all passed, 2=constraints failed, 1=error
         - message: captured stdout/stderr from the constraint checker
     """
-    spec_json = PROJECT_ROOT / "task-spec.k.json"
+    spec_json = PROJECT_ROOT / "spec.k.json"
 
     if not spec_json.exists():
         return (0, "")

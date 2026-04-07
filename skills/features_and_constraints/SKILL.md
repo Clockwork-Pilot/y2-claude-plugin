@@ -29,7 +29,7 @@ This skill spans the complete feature constraint lifecycle: **design** -> **vali
 
 | Phase | Tool | Purpose |
 |---|---|---|
-| Design | `patch_knowledge_document.py` | Add features and constraints to `task-spec.k.json` |
+| Design | `patch_knowledge_document.py` | Add features and constraints to `spec.k.json` |
 | Validate | `check_spec_constraints.py` | Verify constraints fail on empty codebase |
 | Implement | Direct code edits | Build feature to satisfy constraints |
 | Verify | `check_spec_constraints.py` | Confirm all constraints PASS |
@@ -40,10 +40,10 @@ This skill spans the complete feature constraint lifecycle: **design** -> **vali
 
 ## Step 1 — Define the Feature
 
-Add a feature to `task-spec.k.json` via the knowledge tool:
+Add a feature to `spec.k.json` via the knowledge tool:
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-spec.k.json '[
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
   {
     "op": "add",
     "path": "/features/my_feature",
@@ -125,7 +125,7 @@ grep -q "success" output.log                 # Wrong
 ## Step 3 — Add Constraints to the Feature
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-spec.k.json '[
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
   {
     "op": "add",
     "path": "/features/my_feature/constraints/constraint_file_exists",
@@ -152,13 +152,13 @@ After adding constraints, immediately proceed to Phase 2 to validate them.
 
 ```bash
 python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py \
-    <task-spec.k.json> \
+    <spec.k.json> \
     [--features feature1,feature2,...] \
-    [--output-checks-path task-results.k.json]
+    [--output-checks-path spec-checks.k.json]
 ```
 
 **Arguments:**
-- `task-spec.k.json` — Input specification document with features containing constraints
+- `spec.k.json` — Input specification document with features containing constraints
 - `--features` — Optional comma-separated feature IDs (omit to check all)
 - `--output-checks-path` — Optional output file for ChecksResults
 
@@ -202,7 +202,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_const
 
 # Handling Unverified Constraints (TOP PRIORITY)
 
-When `task-spec.k.json` contains unverified constraints (`fails_count < 1` and `contains_unverified_constraints=True`):
+When `spec.k.json` contains unverified constraints (`fails_count < 1` and `contains_unverified_constraints=True`):
 
 **Unverified constraints BLOCK all file editing and become TOP PRIORITY.** Fix them before any other work.
 
@@ -219,7 +219,7 @@ When a constraint is unverified (`fails_count < 1`):
 ## Fix Workflow
 
 ### 1. Understand the Constraint
-Read the constraint in `task-spec.k.json`. What does `cmd` do? What does `description` require?
+Read the constraint in `spec.k.json`. What does `cmd` do? What does `description` require?
 
 ### 2. Fix (choose one or combine)
 
@@ -227,7 +227,7 @@ cmd may only be fixed for unverified constraints. Verified constraints require f
 
 **Option A — Refine the constraint command** (cmd is buggy or incomplete):
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py task-spec.k.json '[
+python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
   {
     "op": "replace",
     "path": "/features/my_feature/constraints/constraint_id/cmd",
@@ -244,7 +244,7 @@ Directly edit source files to implement the feature/behavior the constraint test
 ### 3. Verify
 ```bash
 python3 constraints_tool/constraints_tool/check_spec_constraints.py \
-    task-spec.k.json --features feature_id --output-checks-path task-results.k.json
+    spec.k.json --features feature_id --output-checks-path spec-checks.k.json
 ```
 Constraint should FAIL (exit non-zero) -> `fails_count` increments to 1 -> constraint becomes verified.
 
@@ -337,8 +337,8 @@ Before finalizing a constraint suite, verify:
 
 - **Constraint checker**: `constraints_tool/constraints_tool/check_spec_constraints.py`
 - **Knowledge patcher**: `${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py`
-- **Features location**: `task-spec.k.json` at path `/features/<feature_id>`
-- **Results output**: `task-results.k.json` (ChecksResults model)
+- **Features location**: `spec.k.json` at path `/features/<feature_id>`
+- **Results output**: `spec-checks.k.json` (ChecksResults model)
 - `$PROJECT_ROOT` is substituted automatically in constraint commands
 - Recursive execution of `check_spec_constraints.py` within constraints is detected and prevented
 - All timestamps are ISO8601 formatted

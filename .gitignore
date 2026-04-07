@@ -1,11 +1,10 @@
-protected_files.txt
+.protected_files.txt
 .claude.local.json
 .credentials/
 .claude/
-task-results.k.json
-task-results.k.md
-task-iterations.k.json
-task-iterations.k.md
+spec.k.md
+spec-checks.k.json
+spec-checks.k.md
 
 *~
 *.pyc

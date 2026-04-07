@@ -46,23 +46,32 @@ def is_knowledge_file(file_path: str) -> bool:
     Returns:
         True if the file is a registered knowledge file, False otherwise.
     """
-    from config import KNOWN_KNOWLEDGE_FILES_PATH
+    import sys
+    from config import PROJECT_ROOT
 
-    if not KNOWN_KNOWLEDGE_FILES_PATH.exists():
+    # Get filename definition from knowledge_tool submodule (single source of truth)
+    knowledge_tool_path = Path(__file__).parent.parent / "knowledge_tool"
+    if str(knowledge_tool_path) not in sys.path:
+        sys.path.insert(0, str(knowledge_tool_path))
+
+    from knowledge_tool import PROTECTED_REGISTRY_FILENAME
+    registry_path = PROJECT_ROOT / PROTECTED_REGISTRY_FILENAME
+
+    if not registry_path.exists():
         return False
 
     abs_path = str(Path(file_path).resolve())
     try:
-        content = KNOWN_KNOWLEDGE_FILES_PATH.read_text().strip()
+        content = registry_path.read_text().strip()
         return abs_path in content.split('\n')
     except Exception:
         return False
 
 
 def have_unverified_constraints() -> bool:
-    """Check if task-spec.k.json has unverified constraints.
+    """Check if spec.k.json has unverified constraints.
 
-    Reads the contains_unverified_constraints flag from PROJECT_ROOT/task-spec.k.json.
+    Reads the contains_unverified_constraints flag from PROJECT_ROOT/spec.k.json.
     Unverified constraints (fails_count < 1) are those that haven't been proven to fail.
 
     Returns:
@@ -73,7 +82,7 @@ def have_unverified_constraints() -> bool:
     if TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK:
         return False
 
-    spec_path = PROJECT_ROOT / "task-spec.k.json"
+    spec_path = PROJECT_ROOT / "spec.k.json"
 
     try:
         if not spec_path.exists():

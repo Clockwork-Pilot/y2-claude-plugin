@@ -15,11 +15,11 @@ to satisfy constraint.
 Do not try removing constraint - you will fail.
 Do not try manipulating with fails_count value - you will fail.
 
-Note: Constraints in task-spec.k.json tests project under CLAUDE_PROJECT_ROOT env var.
+Note: Constraints in spec.k.json tests project under CLAUDE_PROJECT_ROOT env var.
 """
 
 GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS = """
-Current task spec `task-spec.k.json` contains unverified never failed constraints.
+Current task spec `spec.k.json` contains unverified never failed constraints.
 Unverified constraint is a no go way! You should be carefull according to y2:features_and_constraints
 when add new constraints. If constraint never fails - you will never be allowed to modify source code
 until constrait will fail at least once. You can not modify source code if you add non failing constraint.
@@ -53,21 +53,19 @@ HOOKS_DIR = PLUGIN_ROOT / "hooks"
 
 # Files
 CLAUDE_HOOKS_CONFIG_FILE = HOOKS_DIR / "hooks.json"
-# By convention we use just this path, so knowledge tools just hardocded the same path
-KNOWN_KNOWLEDGE_FILES_PATH = PROJECT_ROOT / "protected_files.txt"
 
 # Constraint check results file
-CONSTRAINTS_RESULTS_FILE = "task-results.k.json"
+CONSTRAINTS_RESULTS_FILE = "spec-checks.k.json"
 
-# Logging - write to consuming project's .claude directory
+# Logging - write to project root hooks_log directory
 # Base directory for logs across multiple consuming projects
-# If defined, logs go to <HOOK_LOGS_BASE_DIR>/<CONSUMING_PROJECT_NAME>/.claude/hooks.log
-# If None, logs go to consuming project's .claude directory (default behavior)
+# If defined, logs go to <HOOK_LOGS_BASE_DIR>/<CONSUMING_PROJECT_NAME>/hooks_log/hooks.log
+# If None, logs go to project root hooks_log directory (default behavior)
 HOOK_LOGS_BASE_DIR = os.getenv("CLAUDE_DOCKER_HOOK_LOGS_BASE_DIR", None)
 if HOOK_LOGS_BASE_DIR is not None:
-    HOOKS_LOG_FILE = Path(HOOK_LOGS_BASE_DIR) / CONSUMING_PROJECT_ROOT.name / ".claude" / "hooks.log"
+    HOOKS_LOG_FILE = Path(HOOK_LOGS_BASE_DIR) / CONSUMING_PROJECT_ROOT.name / "hooks_log" / "hooks.log"
 else:
-    HOOKS_LOG_FILE = CLAUDE_DIR / "hooks.log"
+    HOOKS_LOG_FILE = PROJECT_ROOT / "hooks_log" / "hooks.log"
 
 HOOKS_LOG_LEVEL = "INFO"  # Can be: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
@@ -77,6 +75,15 @@ FILE_RULES_PATH = os.getenv("CLAUDE_FILE_RULES", None)
 # Project data directory for task iterations and spec snapshots
 PROJECT_DATA_DIR = PROJECT_ROOT / "project"
 
+# Protected files registry directory (knowledge_tool uses this to track protected files)
+# Can be overridden via PROTECTED_REGISTRY_DIR env var
+PROTECTED_REGISTRY_DIR = Path(
+    os.getenv(
+        "PROTECTED_REGISTRY_DIR",
+        str(PROJECT_ROOT)
+    )
+)
+
 # This flag should  always be False, but human can actually set it manually to True when needed
 TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK = False
 
@@ -85,10 +92,10 @@ __all__ = [
     "CONSUMING_PROJECT_ROOT",
     "PROJECT_ROOT",
     "PROJECT_DATA_DIR",
+    "PROTECTED_REGISTRY_DIR",
     "CLAUDE_DIR",
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
-    "KNOWN_KNOWLEDGE_FILES_PATH",
     "CONSTRAINTS_RESULTS_FILE",
     "HOOK_LOGS_BASE_DIR",
     "HOOKS_LOG_FILE",

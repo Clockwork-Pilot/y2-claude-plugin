@@ -52,10 +52,10 @@ python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_docu
 
 ## Task-Spec Document Pattern
 
-As of the spec decoupling refactor, specifications are now maintained in a separate `task-spec.k.json` knowledge document:
+As of the spec decoupling refactor, specifications are now maintained in a separate `spec.k.json` knowledge document:
 
 - **task-iterations.k.json** — Contains Task type at root with iterations (spec field now optional)
-- **task-spec.k.json** — Contains Spec type at root with features and constraints
+- **spec.k.json** — Contains Spec type at root with features and constraints
 
 This separation allows:
 - Independent versioning of specifications and task iterations
@@ -63,7 +63,7 @@ This separation allows:
 - Cleaner archival of completed specs in `project/raw-specs/`
 - Task iterations archived in `project/iterations/`
 
-When working with specifications, use `task-spec.k.json` instead of accessing `task.spec`.
+When working with specifications, use `spec.k.json` instead of accessing `task.spec`.
 
 ## Examples
 ```bash

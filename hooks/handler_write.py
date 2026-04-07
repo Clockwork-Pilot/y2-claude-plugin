@@ -27,7 +27,7 @@ def main():
         # Check if writing is blocked due to unverified constraints
         file_path = hook_input.get('tool_input', {}).get('file_path')
         if is_edit_blocked_by_unverified_constraints(file_path):
-            error_msg = "Cannot write: task-spec.k.json contains unverified constraints.\n\nUnverified constraints must be removed or fixed before modifications are allowed."
+            error_msg = "Cannot write: spec.k.json contains unverified constraints.\n\nUnverified constraints must be removed or fixed before modifications are allowed."
             send_error(error_msg, file_path)
             logger.error(f"Write blocked due to unverified constraints: {file_path}")
             sys.exit(2)
