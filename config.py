@@ -87,6 +87,10 @@ PROTECTED_REGISTRY_DIR = Path(
 # This flag should  always be False, but human can actually set it manually to True when needed
 TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK = False
 
+# Disable stop hook execution
+# Can be overridden via DISABLE_STOP_HOOK env var (set to "true" or "1" to disable)
+DISABLE_STOP_HOOK = os.getenv("DISABLE_STOP_HOOK", "").lower() in ("true", "1")
+
 __all__ = [
     "PLUGIN_ROOT",
     "CONSUMING_PROJECT_ROOT",
@@ -99,5 +103,6 @@ __all__ = [
     "CONSTRAINTS_RESULTS_FILE",
     "HOOK_LOGS_BASE_DIR",
     "HOOKS_LOG_FILE",
-    "HOOKS_LOG_LEVEL"
+    "HOOKS_LOG_LEVEL",
+    "DISABLE_STOP_HOOK"
 ]

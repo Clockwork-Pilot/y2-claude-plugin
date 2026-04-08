@@ -30,7 +30,15 @@ def main():
         if is_edit_blocked_by_unverified_constraints(file_path):
             error_msg = "Cannot edit: spec.k.json contains unverified constraints.\n\nUnverified constraints must be removed or fixed before modifications are allowed.\n\n" + GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS
             send_error(error_msg, file_path)
-            logger.error(f"Edit blocked due to unverified constraints: {file_path}")
+            log_message = {
+                'timestamp': datetime.now().isoformat(),
+                'event': 'Edit',
+                'status': 'blocked',
+                'reason': 'Unverified constraints',
+                'file_path': file_path,
+                'data': hook_input
+            }
+            logger.error(json.dumps(log_message))
             sys.exit(2)
 
         # Check file-rules deny list
@@ -39,7 +47,16 @@ def main():
             if reasons:
                 error_msg = f"Cannot edit {file_path}: denied by file rules: {', '.join(reasons)}"
                 send_error(error_msg, file_path)
-                logger.error(f"Edit blocked by file rules {reasons}: {file_path}")
+                log_message = {
+                    'timestamp': datetime.now().isoformat(),
+                    'event': 'Edit',
+                    'status': 'blocked',
+                    'reason': 'File rules denial',
+                    'deny_reasons': reasons,
+                    'file_path': file_path,
+                    'data': hook_input
+                }
+                logger.error(json.dumps(log_message))
                 sys.exit(2)
 
         # Check if the file being edited is a registered knowledge file
@@ -47,7 +64,15 @@ def main():
         if file_path and is_knowledge_file(file_path):
             error_msg = f"Cannot edit knowledge document: {file_path}\n\nKnowledge documents should only be modified using patch_knowledge_document.py to ensure proper validation and automatic markdown rendering."
             send_error(error_msg, file_path)
-            logger.error(f"Attempted to edit registered knowledge file: {file_path}")
+            log_message = {
+                'timestamp': datetime.now().isoformat(),
+                'event': 'Edit',
+                'status': 'blocked',
+                'reason': 'Knowledge file protected',
+                'file_path': file_path,
+                'data': hook_input
+            }
+            logger.error(json.dumps(log_message))
             sys.exit(2)
 
         log_message = {

@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
 from config import PROJECT_ROOT, GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP
-from config import STOP_HANDLER_TIMEOUT
+from config import STOP_HANDLER_TIMEOUT, DISABLE_STOP_HOOK
 
 # Import get_vars from local hooks module
 from hooks import get_vars
@@ -139,6 +139,19 @@ def main():
     try:
         input_data = sys.stdin.read()
         hook_input = json.loads(input_data) if input_data else {}
+
+        # Skip constraint checks if stop hook is disabled
+        if DISABLE_STOP_HOOK:
+            log_output = {
+                'timestamp': datetime.now().isoformat(),
+                'event': 'Stop',
+                'status': 'allowed',
+                'reason': 'Stop hook disabled',
+                'data': hook_input,
+                'vars': get_vars(),
+            }
+            logger.info(json.dumps(log_output))
+            sys.exit(0)
 
         # Run constraint checks
         check_exit_code, check_message = check_constraints()
