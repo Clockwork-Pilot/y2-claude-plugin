@@ -106,6 +106,9 @@ def execute_constraint(
         # Substitute PROJECT_ROOT placeholders
         cmd = _substitute_project_root(constraint.cmd)
 
+        # Use constraint-specific timeout if set, otherwise use global default
+        timeout_seconds = constraint.timeout if constraint.timeout is not None else CONSTRAINTS_TIMEOUT
+
         # Execute bash command
         try:
             # Set PROJECT_ROOT environment variable so constraints can use it
@@ -118,7 +121,7 @@ def execute_constraint(
                 shell=True,
                 capture_output=True,
                 text=True,
-                timeout=CONSTRAINTS_TIMEOUT,
+                timeout=timeout_seconds,
                 env=env
             )
             duration = time.monotonic() - start
@@ -138,7 +141,7 @@ def execute_constraint(
 
             return constraint.create_result(verdict, output, duration)
         except subprocess.TimeoutExpired:
-            return constraint.create_result(False, "Command timeout", float(CONSTRAINTS_TIMEOUT))
+            return constraint.create_result(False, "Command timeout", float(timeout_seconds))
         except Exception as e:
             return constraint.create_result(False, str(e))
 
