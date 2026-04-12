@@ -547,6 +547,15 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -
             for constraint_id, result in sorted(skipped_constraints[feature_id]):
                 print(f"    ⏸️  {constraint_id}")
 
+    def _lookup_cmd(feature_id: str, constraint_id: str) -> Optional[str]:
+        if not (spec and spec.features):
+            return None
+        feature = spec.features.get(feature_id)
+        if not feature or not feature.constraints:
+            return None
+        constraint = feature.constraints.get(constraint_id)
+        return getattr(constraint, 'cmd', None) if constraint else None
+
     if failed_constraints:
         print("\n❌ Failed Constraints:")
         for feature_id in sorted(failed_constraints.keys()):
@@ -554,6 +563,9 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -
             for constraint_id, result in sorted(failed_constraints[feature_id]):
                 output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
                 print(f"    ✗ {constraint_id}")
+                cmd = _lookup_cmd(feature_id, constraint_id)
+                if cmd:
+                    print(f"      $ {cmd}")
                 if output:
                     for line in output.split('\n'):
                         if line.strip():
@@ -569,7 +581,7 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -
                         unverified_by_feature.setdefault(feature_id, []).append((constraint_id, fails_count))
 
     if unverified_by_feature:
-        print("\n⚠️  Unverified Constraints (fails_count < 1):")
+        print("\n⚠️  Unverified Blocking Constraints (fails_count < 1):")
         total_unverified = 0
         for feature_id in sorted(unverified_by_feature.keys()):
             constraints = unverified_by_feature[feature_id]
@@ -577,9 +589,18 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -
             print(f"\n  {feature_id}:")
             for constraint_id, fails_count in sorted(constraints):
                 print(f"    🚫 {constraint_id} (fails_count={fails_count})")
+                cmd = _lookup_cmd(feature_id, constraint_id)
+                if cmd:
+                    print(f"      $ {cmd}")
         print(f"\nTotal unverified: {total_unverified}")
 
-    if failing_count > 0:
+    if unverified_by_feature:
+        print(f"\n🚫 Task features check DETECTED unverified constraints — code changes are blocked.")
+        print(f"  Either adjust the constraints so they fail initially, or remove them entirely.")
+        print(f"  Spec:    {Path(spec_path).resolve()}")
+        print(f"  Project: {Path(spec_path).resolve().parent}")
+        return 3
+    elif failing_count > 0:
         print(f"\n✗ Task features check FAILED - constraints not satisfied")
         print(f"  Spec:    {Path(spec_path).resolve()}")
         print(f"  Project: {Path(spec_path).resolve().parent}")
