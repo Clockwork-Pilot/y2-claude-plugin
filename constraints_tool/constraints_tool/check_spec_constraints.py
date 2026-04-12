@@ -482,6 +482,113 @@ def check_constraints(
     return checks_results
 
 
+def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -> int:
+    """Print a human-readable report from ChecksResults and return an exit code.
+
+    Returns 2 if any constraint failed, 0 otherwise.
+    """
+    print("\n📋 Tested Features:")
+    if checks_results.features_results:
+        for feature_id, feature_result in checks_results.features_results.items():
+            constraint_count = len(feature_result.constraints_results or {})
+            passed_count = sum(1 for result in (feature_result.constraints_results or {}).values()
+                             if (isinstance(result, ConstraintBashResult) and result.verdict and not getattr(result, 'postponed', False)))
+            skipped_count = sum(1 for result in (feature_result.constraints_results or {}).values()
+                               if (isinstance(result, ConstraintBashResult) and getattr(result, 'postponed', False)))
+            failed_count = constraint_count - passed_count - skipped_count
+
+            if failed_count > 0:
+                status = "✗"
+            elif skipped_count > 0:
+                status = "⏸️"
+            else:
+                status = "✓"
+
+            if skipped_count > 0:
+                print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed ({skipped_count} skipped)")
+            else:
+                print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed")
+    else:
+        print("  No features tested")
+
+    failed_constraints = {}
+    skipped_constraints = {}
+    first_run_constraints = {}
+
+    if checks_results.features_results:
+        for feature_id, feature_result in checks_results.features_results.items():
+            if feature_result.constraints_results:
+                for constraint_id, result in feature_result.constraints_results.items():
+                    if isinstance(result, ConstraintBashResult):
+                        is_postponed = getattr(result, 'postponed', False)
+                        if is_postponed:
+                            skipped_constraints.setdefault(feature_id, []).append((constraint_id, result))
+                        elif not result.verdict:
+                            failed_constraints.setdefault(feature_id, []).append((constraint_id, result))
+                        else:
+                            feature = spec.features.get(feature_id) if spec.features else None
+                            constraint = feature.constraints.get(constraint_id) if feature and feature.constraints else None
+                            if constraint and isinstance(constraint, ConstraintBash) and constraint.fails_count == 0:
+                                first_run_constraints.setdefault(feature_id, []).append((constraint_id, result))
+
+    failing_count = sum(len(constraints) for constraints in failed_constraints.values())
+
+    if first_run_constraints:
+        print("\n🔍 First-Run Verification (establishing proof):")
+        for feature_id in sorted(first_run_constraints.keys()):
+            print(f"  {feature_id}:")
+            for constraint_id, result in sorted(first_run_constraints[feature_id]):
+                print(f"    ✓ {constraint_id}")
+
+    if skipped_constraints:
+        print("\n⏸️  Skipped Constraints (waiting for dependencies):")
+        for feature_id in sorted(skipped_constraints.keys()):
+            print(f"  {feature_id}:")
+            for constraint_id, result in sorted(skipped_constraints[feature_id]):
+                print(f"    ⏸️  {constraint_id}")
+
+    if failed_constraints:
+        print("\n❌ Failed Constraints:")
+        for feature_id in sorted(failed_constraints.keys()):
+            print(f"  {feature_id}:")
+            for constraint_id, result in sorted(failed_constraints[feature_id]):
+                output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
+                print(f"    ✗ {constraint_id}")
+                if output:
+                    for line in output.split('\n'):
+                        if line.strip():
+                            print(f"      {line}")
+
+    unverified_by_feature = {}
+    if spec and spec.features:
+        for feature_id, feature in spec.features.items():
+            if feature.constraints:
+                for constraint_id, constraint in feature.constraints.items():
+                    fails_count = getattr(constraint, 'fails_count', 0)
+                    if fails_count < 1:
+                        unverified_by_feature.setdefault(feature_id, []).append((constraint_id, fails_count))
+
+    if unverified_by_feature:
+        print("\n⚠️  Unverified Constraints (fails_count < 1):")
+        total_unverified = 0
+        for feature_id in sorted(unverified_by_feature.keys()):
+            constraints = unverified_by_feature[feature_id]
+            total_unverified += len(constraints)
+            print(f"\n  {feature_id}:")
+            for constraint_id, fails_count in sorted(constraints):
+                print(f"    🚫 {constraint_id} (fails_count={fails_count})")
+        print(f"\nTotal unverified: {total_unverified}")
+
+    if failing_count > 0:
+        print(f"\n✗ Task features check FAILED - constraints not satisfied")
+        print(f"  Spec:    {Path(spec_path).resolve()}")
+        print(f"  Project: {Path(spec_path).resolve().parent}")
+        return 2
+    else:
+        print("\n✓ Task features check completed successfully")
+        return 0
+
+
 def main():
     """Main entry point with CLI argument parsing."""
     parser = argparse.ArgumentParser(
@@ -519,6 +626,12 @@ Examples:
     )
 
     parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Skip execution; load existing checks results file and print report only'
+    )
+
+    parser.add_argument(
         '--output-checks-path',
         help=f'Path to save ChecksResults document (default: {CONSTRAINTS_RESULTS_FILE} next to spec)',
         type=str,
@@ -551,134 +664,23 @@ Examples:
         spec_data = json.loads(Path(args.spec_path).read_text())
         spec = Spec.model_validate(spec_data)
 
-        # Execute constraint checks
-        checks_results = check_constraints(
-            args.spec_path,
-            feature_ids=feature_ids,
-            output_checks_path=args.output_checks_path
-        )
-
-
-        # Print tested features summary
-        print("\n📋 Tested Features:")
-        if checks_results.features_results:
-            for feature_id, feature_result in checks_results.features_results.items():
-                constraint_count = len(feature_result.constraints_results or {})
-                passed_count = sum(1 for result in (feature_result.constraints_results or {}).values()
-                                 if (isinstance(result, ConstraintBashResult) and result.verdict and not getattr(result, 'postponed', False)))
-                skipped_count = sum(1 for result in (feature_result.constraints_results or {}).values()
-                                   if (isinstance(result, ConstraintBashResult) and getattr(result, 'postponed', False)))
-                failed_count = constraint_count - passed_count - skipped_count
-
-                # Status icon: ✓ all passed, ✗ some failed, ⏸️ some skipped
-                if failed_count > 0:
-                    status = "✗"
-                elif skipped_count > 0:
-                    status = "⏸️"
-                else:
-                    status = "✓"
-
-                # Show counts: passed / total (skipped)
-                if skipped_count > 0:
-                    print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed ({skipped_count} skipped)")
-                else:
-                    print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed")
+        if args.dry_run:
+            checks_path = Path(args.output_checks_path)
+            if not checks_path.exists():
+                print(f"✗ Error: checks results file not found: {checks_path}", file=sys.stderr)
+                return 1
+            print(f"📂 Loading existing checks results from {checks_path}")
+            checks_data = json.loads(checks_path.read_text())
+            checks_results = ChecksResults.model_validate(checks_data)
         else:
-            print("  No features tested")
+            # Execute constraint checks
+            checks_results = check_constraints(
+                args.spec_path,
+                feature_ids=feature_ids,
+                output_checks_path=args.output_checks_path
+            )
 
-        # Group constraints by status: Failed, Skipped, First-Run Verification
-        failed_constraints = {}
-        skipped_constraints = {}
-        first_run_constraints = {}
-
-        if checks_results.features_results:
-            for feature_id, feature_result in checks_results.features_results.items():
-                if feature_result.constraints_results:
-                    for constraint_id, result in feature_result.constraints_results.items():
-                        if isinstance(result, ConstraintBashResult):
-                            is_postponed = getattr(result, 'postponed', False)
-                            if is_postponed:
-                                if feature_id not in skipped_constraints:
-                                    skipped_constraints[feature_id] = []
-                                skipped_constraints[feature_id].append((constraint_id, result))
-                            elif not result.verdict:
-                                if feature_id not in failed_constraints:
-                                    failed_constraints[feature_id] = []
-                                failed_constraints[feature_id].append((constraint_id, result))
-                            else:
-                                # Check if this was unproven constraint (first-run verification)
-                                feature = spec.features.get(feature_id) if spec.features else None
-                                constraint = feature.constraints.get(constraint_id) if feature and feature.constraints else None
-                                if constraint and isinstance(constraint, ConstraintBash) and constraint.fails_count == 0:
-                                    if feature_id not in first_run_constraints:
-                                        first_run_constraints[feature_id] = []
-                                    first_run_constraints[feature_id].append((constraint_id, result))
-
-        # Calculate failing_count from failed constraints
-        failing_count = sum(len(constraints) for constraints in failed_constraints.values())
-
-        # Print first-run verification constraints (unproven, executed to establish proof)
-        if first_run_constraints:
-            print("\n🔍 First-Run Verification (establishing proof):")
-            for feature_id in sorted(first_run_constraints.keys()):
-                print(f"  {feature_id}:")
-                for constraint_id, result in sorted(first_run_constraints[feature_id]):
-                    print(f"    ✓ {constraint_id}")
-
-        # Print skipped constraints
-        if skipped_constraints:
-            print("\n⏸️  Skipped Constraints (waiting for dependencies):")
-            for feature_id in sorted(skipped_constraints.keys()):
-                print(f"  {feature_id}:")
-                for constraint_id, result in sorted(skipped_constraints[feature_id]):
-                    print(f"    ⏸️  {constraint_id}")
-
-        # Print failed constraints with error details
-        if failed_constraints:
-            print("\n❌ Failed Constraints:")
-            for feature_id in sorted(failed_constraints.keys()):
-                print(f"  {feature_id}:")
-                for constraint_id, result in sorted(failed_constraints[feature_id]):
-                    output = getattr(result, 'shrunken_output', None) or getattr(result, 'output', None)
-                    print(f"    ✗ {constraint_id}")
-                    if output:
-                        # Print all lines of output
-                        for line in output.split('\n'):
-                            if line.strip():
-                                print(f"      {line}")
-
-        # Print unverified constraints (fails_count < 1) grouped by feature
-        unverified_by_feature = {}
-        if spec and spec.features:
-            for feature_id, feature in spec.features.items():
-                if feature.constraints:
-                    for constraint_id, constraint in feature.constraints.items():
-                        fails_count = getattr(constraint, 'fails_count', 0)
-                        if fails_count < 1:
-                            if feature_id not in unverified_by_feature:
-                                unverified_by_feature[feature_id] = []
-                            unverified_by_feature[feature_id].append((constraint_id, fails_count))
-
-        if unverified_by_feature:
-            print("\n⚠️  Unverified Constraints (fails_count < 1):")
-            total_unverified = 0
-            for feature_id in sorted(unverified_by_feature.keys()):
-                constraints = unverified_by_feature[feature_id]
-                total_unverified += len(constraints)
-                print(f"\n  {feature_id}:")
-                for constraint_id, fails_count in sorted(constraints):
-                    print(f"    🚫 {constraint_id} (fails_count={fails_count})")
-            print(f"\nTotal unverified: {total_unverified}")
-
-        # Exit with code 2 if constraints failed, 0 if all passed
-        if failing_count > 0:
-            print(f"\n✗ Task features check FAILED - constraints not satisfied")
-            print(f"  Spec:    {Path(args.spec_path).resolve()}")
-            print(f"  Project: {Path(args.spec_path).resolve().parent}")
-            return 2
-        else:
-            print("\n✓ Task features check completed successfully")
-            return 0
+        return generate_report(checks_results, spec, args.spec_path)
 
     except Exception as e:
         print(f"\n✗ Error: {e}", file=sys.stderr)

@@ -1,6 +1,6 @@
 ---
 name: features_and_constraints
-description: Design feature constraint suites and execute comprehensive validation workflows—from specification through implementation verification
+description: Design and add features, create comprehensive constraints testing those features. Check constraints, by executing them ensuring every new constraint failed once after creation. Print features spec report.
 ---
 
 ## What This Skill Does
@@ -154,13 +154,26 @@ After adding constraints, immediately proceed to Phase 2 to validate them.
 python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py \
     <spec.k.json> \
     [--features feature1,feature2,...] \
-    [--output-checks-path spec-checks.k.json]
+    [--output-checks-path spec-checks.k.json] \
+    [--dry-run]
 ```
 
 **Arguments:**
 - `spec.k.json` — Input specification document with features containing constraints
 - `--features` — Optional comma-separated feature IDs (omit to check all)
 - `--output-checks-path` — Optional output file for ChecksResults
+- `--dry-run` — Skip execution; load the existing ChecksResults file at `--output-checks-path` and print the report for the previous run. Useful for re-displaying the last results without re-running constraints.
+
+### Printing a Report Without Running Constraints
+
+To print the report for a **previous** constraint check run — without invoking any constraint commands — use `--dry-run`:
+
+```bash
+# print report for previous constraint check run, for project in workspace
+python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py --dry-run
+```
+
+This reads the prior `spec-checks.k.json` and renders its report. No constraint `cmd` is executed, no history is updated, and no `fails_count` is incremented. Use this whenever you need to re-display or review the last results (e.g., after context loss, or to share the report) instead of re-running the full suite.
 
 ### When to Run
 
