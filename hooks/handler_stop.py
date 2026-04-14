@@ -156,10 +156,13 @@ def main():
         # Run constraint checks
         check_exit_code, check_message = check_constraints()
 
-        # Handle constraint failures
-        if check_exit_code == 2:
+        # Handle constraint failures (2=violated, 3=unverified)
+        if check_exit_code in (2, 3):
             recurring = get_recurring_failures()
-            reason = "Constraints violated, fix features implementation to satisfy them."
+            if check_exit_code == 3:
+                reason = "Unverified constraints detected — resolve them before stopping."
+            else:
+                reason = "Constraints violated, fix features implementation to satisfy them."
             if recurring:
                 reason += f" Recurring failures (3+ iterations): {', '.join(sorted(recurring))}."
 
