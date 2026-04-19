@@ -157,3 +157,37 @@ def test_dry_run_exit_3_unverified_in_spec(tmp_path):
     result = _run(spec_path, "--output-checks-path", str(checks_path), "--dry-run")
     assert result.returncode == 3, result.stdout + result.stderr
     assert "Unverified Blocking Constraints" in result.stdout
+
+
+# --- --full-report toggle --------------------------------------------------
+
+def test_default_suppresses_detail_sections_when_unverified(tmp_path):
+    """Default: detail sections are suppressed when unverified constraints exist.
+
+    User should see only the unverified block + blocking banner, not the
+    Tested Features / Failed Constraints sections.
+    """
+    spec_path = _write_spec(tmp_path, {
+        "c_unverified": _cb("c_unverified", "true", fails_count=0),
+        "c_fail": _cb("c_fail", "false", fails_count=1),
+    })
+    result = _run(spec_path)
+    assert result.returncode == 3, result.stdout + result.stderr
+    # Unverified block present
+    assert "Unverified Blocking Constraints" in result.stdout
+    # Detail sections suppressed
+    assert "Tested Features:" not in result.stdout
+    assert "Failed Constraints:" not in result.stdout
+
+
+def test_full_report_flag_shows_detail_sections_when_unverified(tmp_path):
+    """--full-report re-enables the detail sections even when unverified exist."""
+    spec_path = _write_spec(tmp_path, {
+        "c_unverified": _cb("c_unverified", "true", fails_count=0),
+        "c_fail": _cb("c_fail", "false", fails_count=1),
+    })
+    result = _run(spec_path, "--full-report")
+    assert result.returncode == 3, result.stdout + result.stderr
+    assert "Unverified Blocking Constraints" in result.stdout
+    assert "Tested Features:" in result.stdout
+    assert "Failed Constraints:" in result.stdout

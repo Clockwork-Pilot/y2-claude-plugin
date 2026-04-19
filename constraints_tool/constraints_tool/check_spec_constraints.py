@@ -482,13 +482,25 @@ def check_constraints(
     return checks_results
 
 
-def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -> int:
+def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str, full_report: bool = False) -> int:
     """Print a human-readable report from ChecksResults and return an exit code.
 
-    Returns 2 if any constraint failed, 0 otherwise.
+    Returns 3 if any unverified, 2 if any constraint failed, 0 otherwise.
+
+    When unverified constraints exist and full_report is False (default), the
+    detail sections (Tested Features, First-Run, Skipped, Failed) are suppressed
+    so the user sees only the unverified block. Pass --full-report for full output.
     """
-    print("\n📋 Tested Features:")
-    if checks_results.features_results:
+    has_unverified = any(
+        getattr(c, 'fails_count', 0) < 1
+        for f in ((spec.features or {}).values() if spec and spec.features else [])
+        for c in (f.constraints or {}).values()
+    )
+    show_details = full_report or not has_unverified
+
+    if show_details:
+        print("\n📋 Tested Features:")
+    if show_details and checks_results.features_results:
         for feature_id, feature_result in checks_results.features_results.items():
             constraint_count = len(feature_result.constraints_results or {})
             passed_count = sum(1 for result in (feature_result.constraints_results or {}).values()
@@ -508,7 +520,7 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -
                 print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed ({skipped_count} skipped)")
             else:
                 print(f"  {status} {feature_id}: {passed_count}/{constraint_count} constraints passed")
-    else:
+    elif show_details:
         print("  No features tested")
 
     failed_constraints = {}
@@ -533,14 +545,14 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -
 
     failing_count = sum(len(constraints) for constraints in failed_constraints.values())
 
-    if first_run_constraints:
+    if show_details and first_run_constraints:
         print("\n🔍 First-Run Verification (establishing proof):")
         for feature_id in sorted(first_run_constraints.keys()):
             print(f"  {feature_id}:")
             for constraint_id, result in sorted(first_run_constraints[feature_id]):
                 print(f"    ✓ {constraint_id}")
 
-    if skipped_constraints:
+    if show_details and skipped_constraints:
         print("\n⏸️  Skipped Constraints (waiting for dependencies):")
         for feature_id in sorted(skipped_constraints.keys()):
             print(f"  {feature_id}:")
@@ -556,7 +568,7 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str) -
         constraint = feature.constraints.get(constraint_id)
         return getattr(constraint, 'cmd', None) if constraint else None
 
-    if failed_constraints:
+    if show_details and failed_constraints:
         print("\n❌ Failed Constraints:")
         for feature_id in sorted(failed_constraints.keys()):
             print(f"  {feature_id}:")
@@ -659,6 +671,13 @@ Examples:
         default=None
     )
 
+    parser.add_argument(
+        '--full-report',
+        action='store_true',
+        help='Show complete report even when unverified constraints are present '
+             '(default: suppress detail sections and show only the unverified block)'
+    )
+
     args = parser.parse_args()
 
     # Resolve spec path: explicit arg > $CLAUDE_PROJECT_ROOT/spec.k.json > error
@@ -701,7 +720,7 @@ Examples:
                 output_checks_path=args.output_checks_path
             )
 
-        return generate_report(checks_results, spec, args.spec_path)
+        return generate_report(checks_results, spec, args.spec_path, full_report=args.full_report)
 
     except Exception as e:
         print(f"\n✗ Error: {e}", file=sys.stderr)
