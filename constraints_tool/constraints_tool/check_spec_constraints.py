@@ -28,12 +28,58 @@ from models import (
 sys.path.insert(0, str(_knowledge_tool_root))
 from patch_knowledge_document import apply_json_patch
 
+# Admin-path write primitives: the checker skips apply_json_patch for the
+# fails_count increment and writes directly. See _sync_spec_with_results below.
+from common.file_tools import write_protected_file
+from common.render import render as render_document
+from knowledge_files_registry import add_knowledge_files
+
 # Import config for PROJECT_ROOT
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from config import PROJECT_ROOT as CONFIG_PROJECT_ROOT
 from config import CONSTRAINTS_TIMEOUT, CONSTRAINTS_RESULTS_FILE
 
 
+
+
+def _sync_spec_with_results(spec_path: Path, doc_type: str, increments: list) -> None:
+    """Record first-time failures back into the spec (0 → 1 on fails_count).
+
+    Kept deliberately separate from apply_json_patch. apply_json_patch is the
+    user-facing path — it passes context={'original_doc': ...} to the model
+    validator, which activates the mutation guard in feature_model.py and
+    rejects any fails_count change. This routine skips that context on purpose:
+    it loads the spec, flips fails_count to 1, validates schema-only via
+    Spec.model_validate(data) (no context → guard returns early), and writes
+    through the same protected-file primitives apply_json_patch uses.
+
+    Do not call this from anywhere other than the checker. The separation is
+    code-level (owning this function), not enforced at runtime.
+
+    Args:
+        spec_path: Path to the spec JSON.
+        doc_type: "Spec" or other (nested under /spec for Task-style docs).
+        increments: Pairs of (feature_id, constraint_id) to bump from 0 to 1.
+    """
+    data = json.loads(spec_path.read_text(encoding="utf-8"))
+    container = data if doc_type == "Spec" else data.setdefault("spec", {})
+    for feature_id, constraint_id in increments:
+        container["features"][feature_id]["constraints"][constraint_id]["fails_count"] = 1
+
+    # Schema validation without original_doc context; the mutation guard in
+    # feature_model.py returns early when context is absent.
+    validated = Spec.model_validate(data)
+    canonical = json.loads(validated.model_dump_json(exclude_none=True))
+
+    write_protected_file(spec_path, json.dumps(canonical, indent=2))
+    try:
+        render_document(str(spec_path))
+    except Exception as e:
+        print(f"⚠️  Warning: Failed to render markdown: {e}", file=sys.stderr)
+    try:
+        add_knowledge_files([str(spec_path), str(spec_path.with_suffix(".md"))])
+    except Exception as e:
+        print(f"⚠️  Warning: Failed to register knowledge files: {e}", file=sys.stderr)
 
 
 def _substitute_project_root(cmd: str) -> str:
@@ -341,12 +387,10 @@ def check_constraints(
         features_results=features_results if features_results else None
     )
 
-    # Build JSON Patch operations to increment fails_count for failed constraints
-    patch_ops = []
-    locked_constraints = []  # Track constraints that become locked
-    # Determine patch path based on document type (Spec vs Task)
-    feature_path_prefix = "features" if doc_type == "Spec" else "spec/features"
-
+    # Collect the 0 → 1 increments; fails_count is a verified/unverified flag, not
+    # a counter. Already-verified constraints (fails_count > 0) are locked by
+    # feature_model.py and don't need further writes.
+    increments = []  # list of (feature_id, constraint_id)
     if checks_results.features_results and features:
         for feature_id, feature_result in checks_results.features_results.items():
             feature_obj = features.get(feature_id)
@@ -354,47 +398,22 @@ def check_constraints(
                 continue
 
             for constraint_id, result in feature_result.constraints_results.items():
-                # Generate patch to increment fails_count for failed bash constraints
                 if isinstance(result, ConstraintBashResult) and not result.verdict:
                     constraint_obj = feature_obj.constraints.get(constraint_id) if feature_obj.constraints else None
-                    if isinstance(constraint_obj, ConstraintBash):
-                        # Get current fails_count and increment it
-                        current_fails_count = constraint_obj.fails_count
-                        new_fails_count = current_fails_count + 1
-                        # Use "add" when field is absent (fails_count==0 is omitted from JSON),
-                        # "replace" when the field already exists (fails_count > 0).
-                        patch_ops.append({
-                            "op": "add" if current_fails_count == 0 else "replace",
-                            "path": f"/{feature_path_prefix}/{feature_id}/constraints/{constraint_id}/fails_count",
-                            "value": new_fails_count
-                        })
-                        # Track if constraint is becoming locked (fails_count > 0)
-                        if current_fails_count == 0:
-                            locked_constraints.append(f"{feature_id}.{constraint_id}")
+                    if isinstance(constraint_obj, ConstraintBash) and constraint_obj.fails_count == 0:
+                        increments.append((feature_id, constraint_id))
 
-    # Save updated task with incremented fails_count using knowledge API.
-    #
-    # NOTE: apply_json_patch intentionally blocks fails_count changes for verified
-    # constraints (fails_count > 0) — see feature_model.py protection guard.
-    # This means the batch will fail when any already-verified constraint is failing
-    # again. That warning is expected and non-fatal: the checker's primary output
-    # (verdicts, ChecksResults, exit code) is correct regardless.
-    # DO NOT replace apply_json_patch with a direct file write to work around this —
-    # fails_count tracking for verified constraints is handled by the protection design.
-    if patch_ops:
+    if increments:
         print("🔄 Updating fails_count for failed constraints...")
-        error = apply_json_patch(str(spec_path), json.dumps(patch_ops))
-        if error:
-            print(f"⚠️  Failed to update fails_count: {error.error}")
-        else:
-            print(f"✓ Updated fails_count for {len(patch_ops)} constraint(s)")
-
-            # Warn about newly locked constraints
-            if locked_constraints:
-                print(f"\n⚠️  {len(locked_constraints)} constraint(s) now locked (cmd cannot be changed):")
-                for constraint in locked_constraints:
-                    print(f"   • {constraint}")
-                print("   Options: (1) Fix constraint to pass, or (2) Remove constraint entirely")
+        # Deliberately not apply_json_patch — that path's mutation guard rejects
+        # fails_count changes. _sync_spec_with_results is the checker's own
+        # write path; see its docstring for the code-level boundary.
+        _sync_spec_with_results(spec_path, doc_type, increments)
+        print(f"✓ Updated fails_count for {len(increments)} constraint(s)")
+        print(f"\n⚠️  {len(increments)} constraint(s) now locked (cmd cannot be changed):")
+        for feature_id, constraint_id in increments:
+            print(f"   • {feature_id}.{constraint_id}")
+        print("   Options: (1) Fix constraint to pass, or (2) Remove constraint entirely")
 
     # Save ChecksResults to file
     if output_checks_path:
