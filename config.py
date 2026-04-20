@@ -58,14 +58,7 @@ CLAUDE_HOOKS_CONFIG_FILE = HOOKS_DIR / "hooks.json"
 CONSTRAINTS_RESULTS_FILE = "spec-checks.k.json"
 
 # Logging - write to project root hooks_log directory
-# Base directory for logs across multiple consuming projects
-# If defined, logs go to <HOOK_LOGS_BASE_DIR>/<CONSUMING_PROJECT_NAME>/hooks_log/hooks.log
-# If None, logs go to project root hooks_log directory (default behavior)
-HOOK_LOGS_BASE_DIR = os.getenv("CLAUDE_DOCKER_HOOK_LOGS_BASE_DIR", None)
-if HOOK_LOGS_BASE_DIR is not None:
-    HOOKS_LOG_FILE = Path(HOOK_LOGS_BASE_DIR) / CONSUMING_PROJECT_ROOT.name / "hooks_log" / "hooks.log"
-else:
-    HOOKS_LOG_FILE = PROJECT_ROOT / "hooks_log" / "hooks.log"
+HOOKS_LOG_FILE = CLAUDE_DIR / "hooks.log"
 
 HOOKS_LOG_LEVEL = "INFO"  # Can be: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
@@ -101,7 +94,6 @@ __all__ = [
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
     "CONSTRAINTS_RESULTS_FILE",
-    "HOOK_LOGS_BASE_DIR",
     "HOOKS_LOG_FILE",
     "HOOKS_LOG_LEVEL",
     "DISABLE_STOP_HOOK"
