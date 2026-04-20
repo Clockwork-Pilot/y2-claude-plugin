@@ -48,7 +48,6 @@ STOP_HANDLER_TIMEOUT = 300
 CONSTRAINTS_TIMEOUT = 500
 
 # Use consuming project's .claude directory for logs
-CLAUDE_DIR = CONSUMING_PROJECT_ROOT / ".claude"
 HOOKS_DIR = PLUGIN_ROOT / "hooks"
 
 # Files
@@ -58,7 +57,10 @@ CLAUDE_HOOKS_CONFIG_FILE = HOOKS_DIR / "hooks.json"
 CONSTRAINTS_RESULTS_FILE = "spec-checks.k.json"
 
 # Logging - write to project root hooks_log directory
-HOOKS_LOG_FILE = CLAUDE_DIR / "hooks.log"
+# Defaults to <PROJECT_ROOT>/hooks_log/hooks.log, overridable via CLAUDE_HOOKS_LOG_FILE env var
+HOOKS_LOG_FILE = Path(
+    os.getenv("CLAUDE_HOOKS_LOG_FILE", str(PROJECT_ROOT / "hooks_log" / "hooks.log"))
+)
 
 HOOKS_LOG_LEVEL = "INFO"  # Can be: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
@@ -90,7 +92,6 @@ __all__ = [
     "PROJECT_ROOT",
     "PROJECT_DATA_DIR",
     "PROTECTED_REGISTRY_DIR",
-    "CLAUDE_DIR",
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
     "CONSTRAINTS_RESULTS_FILE",
