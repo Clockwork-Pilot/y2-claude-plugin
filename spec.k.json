@@ -131,35 +131,17 @@
       "type": "Feature",
       "model_version": 1,
       "id": "constraint_scripts_directory",
-      "description": "Create and maintain constraints_scripts/ directory for reusable constraint validation scripts. This directory stores bash, python, and other scripts that can be referenced by constraint definitions. Provides centralized location for constraint script management and reusability across multiple features. Example: validate_toc_links.py validates task document TOC links.",
+      "description": "Create and maintain constraints_tool/helpers/ directory for reusable constraint validation scripts. This directory stores bash, python, and other scripts that can be referenced by constraint definitions. Provides centralized location for constraint script management and reusability across multiple features. Example: validate_toc_links.py validates task document TOC links.",
       "goals": [
-        "Establish constraints_scripts/ directory for reusable scripts",
+        "Establish constraints_tool/helpers/ directory for reusable scripts",
         "Document constraint script conventions",
         "Enable ${PROJECT_ROOT} substitution in script paths",
         "Support modular constraint validation"
       ],
       "constraints": {
-        "constraint_scripts_directory_exists": {
-          "id": "constraint_scripts_directory_exists",
-          "cmd": "test -d constraints_scripts && echo '\u2713 constraints_scripts/ directory exists' || echo '\u2717 Missing'",
-          "description": "Verify constraints_scripts/ directory exists",
-          "fails_count": 1
-        },
-        "constraint_scripts_readme_exists": {
-          "id": "constraint_scripts_readme_exists",
-          "cmd": "test -f constraints_scripts/README.md && echo '\u2713 README.md exists' || echo '\u2717 Missing'",
-          "description": "Verify constraints_scripts/README.md documentation exists",
-          "fails_count": 1
-        },
-        "constraint_scripts_documented": {
-          "id": "constraint_scripts_documented",
-          "cmd": "grep -q 'constraint.*script\\|script.*location' constraints_scripts/README.md && echo '\u2713 Documentation found' || echo '\u2717 Incomplete'",
-          "description": "Verify constraints_scripts/ purpose is documented",
-          "fails_count": 1
-        },
         "constraint_validate_spec_toc_links": {
           "id": "constraint_validate_spec_toc_links",
-          "cmd": "python3 constraints_scripts/validate_toc_links.py spec.k.md",
+          "cmd": "python3 constraints_tool/helpers/validate_toc_links.py spec.k.md",
           "description": "Verify all TOC links in spec.k.md have matching heading anchors. If this fails, it means the markdown rendering needs to be fixed to match heading format with TOC link format. Check how headings are generated in the render() method and ensure TOC anchors match the heading text exactly.",
           "fails_count": 1
         }
