@@ -196,7 +196,6 @@ def execute_constraint(
 
 
 def _build_dependency_buckets(
-    features: Dict[str, Feature],
     features_to_check: Dict[str, Feature]
 ) -> list[list[str]]:
     """Build topologically sorted buckets of features based on depends_on.
@@ -205,7 +204,6 @@ def _build_dependency_buckets(
     executed in parallel (all their dependencies are in previous buckets).
 
     Args:
-        features: Dict of all features in spec
         features_to_check: Dict of features to be checked
 
     Returns:
@@ -352,7 +350,7 @@ def check_constraints(
 
     # Build dependency buckets
     try:
-        buckets = _build_dependency_buckets(features, features_to_check)
+        buckets = _build_dependency_buckets(features_to_check)
     except ValueError as e:
         # This won't happen now, but keep for safety
         print(f"⚠️  {e}")
@@ -667,7 +665,7 @@ Examples:
     parser.add_argument(
         'spec_path',
         nargs='?',
-        help='Path to spec.k.json (default: $CLAUDE_PROJECT_ROOT/spec.k.json)'
+        help='Path to spec.k.json (default: $PROJECT_ROOT/spec.k.json)'
     )
 
     parser.add_argument(
@@ -699,14 +697,14 @@ Examples:
 
     args = parser.parse_args()
 
-    # Resolve spec path: explicit arg > $CLAUDE_PROJECT_ROOT/spec.k.json > error
+    # Resolve spec path: explicit arg > $PROJECT_ROOT/spec.k.json > error
     if args.spec_path is None:
-        project_root = os.environ.get('CLAUDE_PROJECT_ROOT')
+        project_root = os.environ.get('PROJECT_ROOT')
         if not project_root:
-            print("Error: spec_path required (or set CLAUDE_PROJECT_ROOT)", file=sys.stderr)
+            print("Error: spec_path required (or set PROJECT_ROOT)", file=sys.stderr)
             return 1
         args.spec_path = str(Path(project_root) / 'spec.k.json')
-        print(f"📌 Using spec from CLAUDE_PROJECT_ROOT: {args.spec_path}")
+        print(f"📌 Using spec from PROJECT_ROOT: {args.spec_path}")
 
     # Default sibling paths relative to spec file, not CWD
     spec_dir = Path(args.spec_path).parent

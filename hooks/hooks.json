@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_edit.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_edit.py"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_write.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_write.py"
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_edit.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_edit.py"
           }
         ]
       },
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_write.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_write.py"
           }
         ]
       }
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_start.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_session_start.py"
           }
         ]
       }
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_session_end.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_session_end.py"
           }
         ]
       }
@@ -68,7 +68,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_notification.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_notification.py"
           }
         ]
       },
@@ -77,7 +77,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_notification.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_notification.py"
           }
         ]
       },
@@ -86,7 +86,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_notification.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_notification.py"
           }
         ]
       },
@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_notification.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_notification.py"
           }
         ]
       }
@@ -106,7 +106,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_pre_compact.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_pre_compact.py"
           }
         ]
       },
@@ -115,7 +115,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_pre_compact.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_pre_compact.py"
           }
         ]
       }
@@ -125,7 +125,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_user_prompt_submit.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_user_prompt_submit.py"
           }
         ]
       }
@@ -135,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_stop.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_stop.py"
           }
         ]
       }
@@ -145,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_teammate_idle.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_teammate_idle.py"
           }
         ]
       }
@@ -155,7 +155,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_task_completed.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_task_completed.py"
           }
         ]
       }
@@ -165,7 +165,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_worktree_create.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_worktree_create.py"
           }
         ]
       }
@@ -175,7 +175,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/handler_worktree_remove.py"
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_worktree_remove.py"
           }
         ]
       }

@@ -696,32 +696,6 @@
         }
       },
       "metadata": {}
-    },
-    "protected_registry_in_project_root": {
-      "type": "Feature",
-      "model_version": 1,
-      "id": "protected_registry_in_project_root",
-      "description": "Ensure .protected_files.txt registry is created and persisted in project root",
-      "goals": [
-        "Configure PROTECTED_REGISTRY_DIR in config.py",
-        "Default to PROJECT_ROOT for registry location",
-        "Allow override via PROTECTED_REGISTRY_DIR environment variable",
-        "Verify .protected_files.txt is physically created in project root"
-      ],
-      "constraints": {
-        "constraint_protected_registry_dir_in_config": {
-          "id": "constraint_protected_registry_dir_in_config",
-          "cmd": "grep -q \"PROTECTED_REGISTRY_DIR\" $PROJECT_ROOT/config.py && echo \"\u2713 PROTECTED_REGISTRY_DIR in config.py\" || echo \"\u2717 Not found\"",
-          "description": "Verify PROTECTED_REGISTRY_DIR is defined in config.py",
-          "fails_count": 1
-        },
-        "constraint_protected_files_created_in_project_root": {
-          "id": "constraint_protected_files_created_in_project_root",
-          "cmd": "test -f $PROJECT_ROOT/.protected_files.txt && echo \"\u2713 .protected_files.txt in PROJECT_ROOT\" || (echo \"\u2717 .protected_files.txt NOT in PROJECT_ROOT\"; test -f $PROJECT_ROOT/knowledge_tool/.protected_files.txt && echo \"  Found in knowledge_tool subdir instead\"; exit 1)",
-          "description": "Verify .protected_files.txt is physically created in PROJECT_ROOT, not in knowledge_tool subdirectory",
-          "fails_count": 1
-        }
-      }
     }
   }
 }

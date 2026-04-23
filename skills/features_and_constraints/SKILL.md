@@ -43,7 +43,7 @@ This skill spans the complete feature constraint lifecycle: **design** -> **vali
 Add a feature to `spec.k.json` via the knowledge tool:
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
+python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
   {
     "op": "add",
     "path": "/features/my_feature",
@@ -125,7 +125,7 @@ grep -q "success" output.log                 # Wrong
 ## Step 3 — Add Constraints to the Feature
 
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
+python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
   {
     "op": "add",
     "path": "/features/my_feature/constraints/constraint_file_exists",
@@ -151,7 +151,7 @@ After adding constraints, immediately proceed to Phase 2 to validate them.
 ## Command
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py \
+python3 ${PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py \
     <spec.k.json> \
     [--features feature1,feature2,...] \
     [--output-checks-path spec-checks.k.json] \
@@ -170,7 +170,7 @@ To print the report for a **previous** constraint check run — without invoking
 
 ```bash
 # print report for previous constraint check run, for project in workspace
-python3 ${CLAUDE_PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py --dry-run
+python3 ${PLUGIN_ROOT}/constraints_tool/constraints_tool/check_spec_constraints.py --dry-run
 ```
 
 This reads the prior `spec-checks.k.json` and renders its report. No constraint `cmd` is executed, no history is updated, and no `fails_count` is incremented. Use this whenever you need to re-display or review the last results (e.g., after context loss, or to share the report) instead of re-running the full suite.
@@ -240,7 +240,7 @@ cmd may only be fixed for unverified constraints. Verified constraints require f
 
 **Option A — Refine the constraint command** (cmd is buggy or incomplete):
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
+python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py spec.k.json '[
   {
     "op": "replace",
     "path": "/features/my_feature/constraints/constraint_id/cmd",
@@ -349,7 +349,7 @@ Before finalizing a constraint suite, verify:
 ## Implementation Details
 
 - **Constraint checker**: `constraints_tool/constraints_tool/check_spec_constraints.py`
-- **Knowledge patcher**: `${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py`
+- **Knowledge patcher**: `${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py`
 - **Features location**: `spec.k.json` at path `/features/<feature_id>`
 - **Results output**: `spec-checks.k.json` (ChecksResults model)
 - `$PROJECT_ROOT` is substituted automatically in constraint commands

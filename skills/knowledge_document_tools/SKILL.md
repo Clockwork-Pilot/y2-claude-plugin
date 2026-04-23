@@ -33,7 +33,7 @@ This script applies JSON Patch operations to a specified `.k.json` knowledge doc
 
 ## Usage
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py <doc.k.json> '<json-patch>'
+python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py <doc.k.json> '<json-patch>'
 ```
 
 ## Tool for creating knowledge documents — `create_knowledge_document.py`
@@ -41,7 +41,7 @@ This script creates a new knowledge document of a specified model type and initi
 
 ## Usage
 ```bash
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py <model_type> <document_path>
+python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py <model_type> <document_path>
 ```
 
 ## Supported model types
@@ -68,10 +68,10 @@ When working with specifications, use `spec.k.json` instead of accessing `task.s
 ## Examples
 ```bash
 # Create a new Doc
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Doc doc.k.json
+python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Doc doc.k.json
 
 # Create a new Task
-python ${CLAUDE_PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Task task-iterations.k.json
+python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Task task-iterations.k.json
 ```
 
 ## Error handling

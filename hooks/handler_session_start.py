@@ -3,7 +3,6 @@
 
 import sys
 import json
-import os
 
 from pathlib import Path
 from datetime import datetime
@@ -11,16 +10,12 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hook_logging import setup_logger
-from config import PROJECT_ROOT
 
 logger = setup_logger(__name__)
 
 
 def main():
     try:
-        # Set PROTECTED_REGISTRY_DIR to ensure knowledge_tool creates .protected_files.txt in PROJECT_ROOT
-        os.environ['PROTECTED_REGISTRY_DIR'] = str(PROJECT_ROOT)
-
         input_data = sys.stdin.read()
         hook_input = json.loads(input_data) if input_data else {}
 

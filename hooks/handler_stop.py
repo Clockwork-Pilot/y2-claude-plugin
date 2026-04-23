@@ -4,7 +4,6 @@
 import sys
 import json
 import subprocess
-import os
 
 from pathlib import Path
 from datetime import datetime
@@ -19,9 +18,6 @@ from config import STOP_HANDLER_TIMEOUT, DISABLE_STOP_HOOK
 from hooks import get_vars
 
 logger = setup_logger(__name__)
-
-# Set PROTECTED_REGISTRY_DIR to ensure knowledge_tool creates .protected_files.txt in PROJECT_ROOT
-os.environ['PROTECTED_REGISTRY_DIR'] = str(PROJECT_ROOT)
 
 PLUGIN_ROOT = Path(__file__).parent.parent
 _iteration_script = PLUGIN_ROOT / "skills" / "task-lifecycle-tool" / "task-add-iteration.py"

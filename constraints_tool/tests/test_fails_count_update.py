@@ -41,7 +41,7 @@ def _cb(cid, cmd, fails_count=0):
 
 
 def _run(spec_path: Path, project_root: Path):
-    env = {**os.environ, "CLAUDE_PROJECT_ROOT": str(project_root)}
+    env = {**os.environ, "PROJECT_ROOT": str(project_root)}
     return subprocess.run(
         ["python3", str(SCRIPT), str(spec_path)],
         capture_output=True, text=True, env=env,
@@ -54,7 +54,7 @@ def _fails_count(spec_path: Path, cid: str = "c_fail") -> int:
 
 
 def test_fails_count_incremented_when_spec_at_workspace_root(tmp_path):
-    """Baseline: failing constraint in a spec at CLAUDE_PROJECT_ROOT must bump 0→1."""
+    """Baseline: failing constraint in a spec at PROJECT_ROOT must bump 0→1."""
     spec_path = tmp_path / "spec.k.json"
     spec_path.write_text(json.dumps(_spec({
         "c_fail": _cb("c_fail", "false", fails_count=0),

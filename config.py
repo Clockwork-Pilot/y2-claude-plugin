@@ -15,7 +15,7 @@ to satisfy constraint.
 Do not try removing constraint - you will fail.
 Do not try manipulating with fails_count value - you will fail.
 
-Note: Constraints in spec.k.json tests project under CLAUDE_PROJECT_ROOT env var.
+Note: Constraints in spec.k.json tests project under PROJECT_ROOT env var.
 """
 
 GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS = """
@@ -29,14 +29,12 @@ an a dev loop before constraint will be satisfied. Remember that constraint is a
 Be aware adding constraint that unconditionally fail - it will block you entirely.
 """
 
-# Plugin root directory
-PLUGIN_ROOT = Path(__file__).parent.resolve()
+# Plugin root directory. Defaults to this file's parent, overridable via PLUGIN_ROOT env var.
+PLUGIN_ROOT = Path(os.getenv("PLUGIN_ROOT", str(Path(__file__).parent))).resolve()
 WORKSPACE_ROOT = Path(os.getenv("WORKSPACE_ROOT", os.getcwd())).resolve()
 
-# Consuming project root (when used as a plugin, this is the target project)
-# Defaults to current working directory, can be overridden by env var
-CONSUMING_PROJECT_ROOT = Path(os.getenv("CLAUDE_PROJECT_ROOT", os.getcwd())).resolve()
-PROJECT_ROOT = CONSUMING_PROJECT_ROOT
+# Target project root. Defaults to cwd, overridable via PROJECT_ROOT env var.
+PROJECT_ROOT = Path(os.getenv("PROJECT_ROOT", os.getcwd())).resolve()
 
 # Executables paths for external executables discovery
 PATH = ':'.join([
@@ -70,15 +68,6 @@ FILE_RULES_PATH = os.getenv("CLAUDE_FILE_RULES", None)
 # Project data directory for task iterations and spec snapshots
 PROJECT_DATA_DIR = PROJECT_ROOT / "project"
 
-# Protected files registry directory (knowledge_tool uses this to track protected files)
-# Can be overridden via PROTECTED_REGISTRY_DIR env var
-PROTECTED_REGISTRY_DIR = Path(
-    os.getenv(
-        "PROTECTED_REGISTRY_DIR",
-        str(PROJECT_ROOT)
-    )
-)
-
 # This flag should  always be False, but human can actually set it manually to True when needed
 TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK = False
 
@@ -88,10 +77,8 @@ DISABLE_STOP_HOOK = os.getenv("DISABLE_STOP_HOOK", "").lower() in ("true", "1")
 
 __all__ = [
     "PLUGIN_ROOT",
-    "CONSUMING_PROJECT_ROOT",
     "PROJECT_ROOT",
     "PROJECT_DATA_DIR",
-    "PROTECTED_REGISTRY_DIR",
     "HOOKS_DIR",
     "CLAUDE_HOOKS_CONFIG_FILE",
     "CONSTRAINTS_RESULTS_FILE",

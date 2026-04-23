@@ -44,7 +44,7 @@ def _cb(cid, cmd, fails_count=1):
 
 
 def _run(spec_path: Path, *extra: str) -> subprocess.CompletedProcess:
-    env = {**os.environ, "CLAUDE_PROJECT_ROOT": str(spec_path.parent)}
+    env = {**os.environ, "PROJECT_ROOT": str(spec_path.parent)}
     return subprocess.run(
         ["python3", str(SCRIPT), str(spec_path), *extra],
         capture_output=True,
