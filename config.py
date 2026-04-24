@@ -6,27 +6,22 @@ This serves as the single source of truth for all project paths.
 import os
 from pathlib import Path
 
-# Message to a Claude when it forced to dev loop because of failing constraints
+# Shown by hooks when constraints fail in the dev loop. Full guidance lives in
+# the y2:features_and_constraints skill; this message only states what happened and
+# nudges the agent to load the skill.
 GUIDE_MESSAGE_WHEN_CONSTRAINTS_FAIL_IN_DEV_LOOP = """
-Constraints violation happened -one or more constraints are failing.
-You should not be trying to remove these constraints, as once constraint is verified it becomes
-unstoppable like Tsunami. The only thing you can do is to change implementation of related feature,
-to satisfy constraint.
-Do not try removing constraint - you will fail.
-Do not try manipulating with fails_count value - you will fail.
+Constraints violation: one or more constraints are failing, and the session has been forced back into the dev loop until they pass.
 
-Note: Constraints in spec.k.json tests project under PROJECT_ROOT env var.
+Note: ensure the y2:features_and_constraints skill is loaded (load it once if not) — it explains how to resolve failing constraints.
 """
 
+# Shown by hooks when edits are blocked by unverified constraints. Full guidance
+# lives in the y2:features_and_constraints skill; this message only states what
+# happened and nudges the agent to load the skill.
 GUIDE_MESSAGE_UNVERIFIED_BLOCKING_CONSTRAINTS = """
-Current task spec `spec.k.json` contains unverified never failed constraints.
-Unverified constraint is a no go way! You should be carefull according to y2:features_and_constraints
-when add new constraints. If constraint never fails - you will never be allowed to modify source code
-until constrait will fail at least once. You can not modify source code if you add non failing constraint.
-Always add carefully crafted failing constraint, so it will expected to pass as soon as feature will be
-properly implemented. Badly crafted constraints will cause either block source code changes or will cause
-an a dev loop before constraint will be satisfied. Remember that constraint is a function of source code.
-Be aware adding constraint that unconditionally fail - it will block you entirely.
+Edit blocked: `spec.k.json` contains unverified constraints (never failed), which block all source code modifications until each fails at least once.
+
+Note: ensure the y2:features_and_constraints skill is loaded (load it once if not) — it explains how to resolve unverified blocking constraints.
 """
 
 # Plugin root directory. Defaults to this file's parent, overridable via PLUGIN_ROOT env var.

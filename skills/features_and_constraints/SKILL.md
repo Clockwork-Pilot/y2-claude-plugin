@@ -1,11 +1,11 @@
 ---
 name: features_and_constraints
-description: Design and add features, create comprehensive constraints testing those features. Check constraints, by executing them ensuring every new constraint failed once after creation. Print features spec report.
+description: Design and add features, create comprehensive constraints testing those features. Check constraints, by executing them ensuring every new constraint failed once after creation. Print features spec report. Includes guidance for when a constraint violation forces the dev loop, and when unverified constraints block source code changes.
 ---
 
 ## What This Skill Does
 
-This skill provides two critical capabilities:
+This skill provides four critical capabilities:
 
 1. **Constraint Suite Design**
    - Define comprehensive test suites that guard against lazy implementations
@@ -19,11 +19,29 @@ This skill provides two critical capabilities:
    - Track constraint history and failure counts
    - Generate markdown reports for review
 
+3. **Immutability of Verified Constraints**
+   - Once a constraint has failed at least once, it becomes verified and its command is locked
+   - A failing verified constraint can only be resolved by changing the source implementation
+   - Attempts to remove, rewrite, or otherwise bypass a verified constraint will not succeed
+
+4. **Unverified Constraints Block Source Code Changes**
+   - A newly added constraint that has never failed blocks all source code edits until it fails once
+   - Resolving unverified constraints is top priority — no other work should proceed while they exist
+   - New constraints must be crafted to fail on the current codebase and pass once the feature is implemented
+
 ---
 
 # Features and Constraints: End-to-End Validation
 
 This skill spans the complete feature constraint lifecycle: **design** -> **validate** -> **implement** -> **verify**.
+
+## Spec and Project
+
+A **Spec** (`spec.k.json`) holds the features and constraints for a single area of the codebase. A **Project** (`project.k.json`) is an optional top-level index that references multiple specs living in different directories, each with its own environment variables. When a Project is present, the constraint checker runs every spec it lists, so a single check covers the whole repository regardless of how the specs are distributed.
+
+## Caution When Adding Features and Constraints
+
+Be deliberate when adding features and constraints. A poorly written or immature constraint can block all further development: once verified it becomes immutable, and if it stays unverified it blocks source edits until it fails. Design each constraint carefully before adding it, confirm it fails for the right reason on the current codebase, and only add constraints you are confident will pass once the feature is correctly implemented.
 
 ## Quick Reference
 
@@ -214,11 +232,20 @@ This reads the prior `spec-checks.k.json` and renders its report. No constraint 
 
 ## Interpreting and Addressing Failures
 
+When the stop hook reports constraint violations (dev loop):
+
 1. Read constraint description — understand what's required
 2. Run the constraint command manually to debug
 3. Fix the underlying issue in code
 4. Re-run `bin/check` to validate
 5. Repeat until all constraints pass
+
+**Do NOT attempt these escapes — they will fail:**
+- Removing or disabling a verified constraint. Once `fails_count > 0`, the constraint is locked: `cmd` and `fails_count` cannot be modified.
+- Manipulating `fails_count` to bypass the check.
+- Editing `spec-checks.k.json` by hand.
+
+Once a constraint is verified, it is unstoppable — the only way out of a dev loop is to change the source implementation so the constraint passes. Constraints test the project rooted at `$PROJECT_ROOT`.
 
 ---
 
@@ -226,7 +253,18 @@ This reads the prior `spec-checks.k.json` and renders its report. No constraint 
 
 When `spec.k.json` contains unverified constraints (`fails_count < 1` and `contains_unverified_constraints=True`):
 
-**Unverified constraints BLOCK all file editing and become TOP PRIORITY.** Fix them before any other work.
+**Unverified constraints BLOCK all file editing and become TOP PRIORITY.** Fix them before any other work. If a constraint never fails, source-code modifications will stay blocked until it fails at least once.
+
+## Crafting Failing Constraints
+
+Every new constraint must be carefully crafted so it:
+- **Fails** on the current (empty / incomplete) codebase — this produces the first failure that marks it verified.
+- **Is expected to pass** once the feature is correctly implemented (constraint is a function of the source code).
+
+Anti-patterns to avoid:
+- **Unconditionally failing constraints** (e.g., plain `exit 1`) — they can never pass, which blocks you entirely once verified.
+- **Trivially passing constraints** — they never verify, which blocks all source edits.
+- **Badly crafted constraints** — they either block edits or trap you in a dev loop you cannot satisfy.
 
 ## Constraint Protection Rules
 
