@@ -788,13 +788,14 @@ Examples:
 
                 # Per-spec PROJECT_ROOT = its spec_dir; user envs layer on top and may override.
                 env_for_spec = {'PROJECT_ROOT': str(spec_root)}
-                env_for_spec.update(ref.envs)
+                env_for_spec.update({k: v.value for k, v in ref.envs.items()})
 
                 if not quiet:
                     print(f"\n🧩 Spec [{spec_id}]: {spec_full_path}")
                     print(f"   PROJECT_ROOT={spec_root}")
                     if ref.envs:
-                        print(f"   envs: {ref.envs}")
+                        printable = {k: v.value for k, v in ref.envs.items()}
+                        print(f"   envs: {printable}")
 
                 if not spec_full_path.exists():
                     print(f"✗ Error: spec not found: {spec_full_path}", file=sys.stderr)
