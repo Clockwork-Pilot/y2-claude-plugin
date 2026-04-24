@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+"""Thin wrapper: apply a JSON Patch to a knowledge document from PLUGIN_ROOT/bin.
+
+Delegates to knowledge_tool/knowledge_tool/patch_knowledge_document.py via
+runpy so its own `__file__`-relative path math works unchanged.
+"""
+
+import runpy
+from pathlib import Path
+
+_target = Path(__file__).resolve().parent.parent / "knowledge_tool" / "knowledge_tool" / "patch_knowledge_document.py"
+runpy.run_path(str(_target), run_name="__main__")

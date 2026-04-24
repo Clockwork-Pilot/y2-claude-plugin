@@ -71,6 +71,12 @@
           "cmd": "grep -q \"Path(output_checks_path)\\|output_path.write_text\" constraints_tool/constraints_tool/check_spec_constraints.py && echo 'Output path handling implemented' || echo 'Output path handling missing'",
           "description": "Verify output checks path is writable and ChecksResults file can be created/updated",
           "fails_count": 1
+        },
+        "constraint_bin_wrappers_present": {
+          "id": "constraint_bin_wrappers_present",
+          "cmd": "for f in check create-knowledge-document patch-knowledge-document; do test -f $PROJECT_ROOT/bin/$f || exit 1; done",
+          "description": "bin/ contains the three wrappers: check, create-knowledge-document, patch-knowledge-document",
+          "fails_count": 1
         }
       },
       "metadata": {
@@ -678,6 +684,23 @@
         }
       },
       "metadata": {}
+    },
+    "project_envs_propagate_to_spec_constraints": {
+      "type": "Feature",
+      "model_version": 1,
+      "id": "project_envs_propagate_to_spec_constraints",
+      "description": "Envs declared on a SpecRef in a Project must reach each nested constraint's cmd as environment variables at check time.",
+      "goals": [
+        "End-to-end proof that Project.specs[...].envs propagate to spec constraint invocations via bin/check."
+      ],
+      "constraints": {
+        "constraint_project_envs_reach_spec_cmd": {
+          "id": "constraint_project_envs_reach_spec_cmd",
+          "cmd": "D=$(mktemp -d) && printf '%s' '{\"type\":\"Project\",\"model_version\":1,\"specs\":{\"s\":{\"spec_dir\":\"\",\"envs\":{\"DEMO_ENV\":\"hello\"}}}}' > \"$D/project.k.json\" && printf '%s' '{\"type\":\"Spec\",\"model_version\":1,\"version\":1,\"description\":\"x\",\"features\":{\"f\":{\"type\":\"Feature\",\"model_version\":1,\"id\":\"f\",\"description\":\"f\",\"constraints\":{\"c\":{\"id\":\"c\",\"cmd\":\"[ \\\"$DEMO_ENV\\\" = hello ]\",\"description\":\"c\",\"fails_count\":1}}}}}' > \"$D/spec.k.json\" && \"$PROJECT_ROOT/bin/check\" \"$D/project.k.json\" > /dev/null; RC=$?; rm -rf \"$D\"; exit $RC",
+          "description": "Build a Project+Spec in a temp dir. Project declares env DEMO_ENV=hello for its one spec; Spec has a constraint asserting $DEMO_ENV = hello. Run bin/check against the Project; it must pass.",
+          "fails_count": 1
+        }
+      }
     }
   }
 }

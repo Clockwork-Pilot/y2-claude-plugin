@@ -162,10 +162,10 @@ def test_dry_run_exit_3_unverified_in_spec(tmp_path):
 # --- --full-report toggle --------------------------------------------------
 
 def test_default_suppresses_detail_sections_when_unverified(tmp_path):
-    """Default: detail sections are suppressed when unverified constraints exist.
+    """Default: when unverified exist, only the unverified block is shown.
 
-    User should see only the unverified block + blocking banner, not the
-    Tested Features / Failed Constraints sections.
+    Unverified takes top priority — Failed Constraints and Tested Features are
+    suppressed so the user focuses on fixing unverified first.
     """
     spec_path = _write_spec(tmp_path, {
         "c_unverified": _cb("c_unverified", "true", fails_count=0),
@@ -175,7 +175,7 @@ def test_default_suppresses_detail_sections_when_unverified(tmp_path):
     assert result.returncode == 3, result.stdout + result.stderr
     # Unverified block present
     assert "Unverified Blocking Constraints" in result.stdout
-    # Detail sections suppressed
+    # All other sections suppressed
     assert "Tested Features:" not in result.stdout
     assert "Failed Constraints:" not in result.stdout
 

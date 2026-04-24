@@ -1,6 +1,6 @@
 ---
 name: knowledge_document_tools
-description: Apply JSON Patch to knowledge documents and render Markdown equivalents.
+description: Apply JSON Patch to knowledge documents tools and render Markdown equivalents.
 ---
 
 This tool drives the knowledge document workflow by applying **RFC 6902 JSON Patch** operations to `.k.json` files and then automatically generating `.k.md` file with markdown representation.
@@ -17,9 +17,9 @@ We claim that all the files matched by following patterns are protected knowledg
 > Sometimes user omits `.k` sub-extension in knowledge files. We support `*.json`, `*.md` natively as well.
 
 ## Prevent direct updates  Direct updates enforcement
-- `patch_knowledge_document` registers both files in the knowledge file registry
+- All updates must go through `${PLUGIN_ROOT}/bin/patch-knowledge-document` to ensure consistency and proper rendering
+- `${PLUGIN_ROOT}/bin/patch-knowledge-document` registers both files in the knowledge file registry
 - Both files are protected (read-only) to prevent direct edits
-- All updates must go through `patch_knowledge_document.py` to ensure consistency and proper rendering
 - In case of Edit|Write hooks are triggered, the script will raise an error to enforce the workflow
 
 ## When to use
@@ -28,50 +28,37 @@ We claim that all the files matched by following patterns are protected knowledg
 - Applying structured edits without hand-editing JSON
 
 
-## Tool for updating knowledge documents — `patch_knowledge_document.py`
-This script applies JSON Patch operations to a specified `.k.json` knowledge document, validates the result, and regenerates the corresponding `.k.md` file.
+## Tool for updating knowledge documents — `${PLUGIN_ROOT}/bin/patch-knowledge-document`
+Applies JSON Patch operations to a `.k.json` knowledge document, validates the result, and regenerates the corresponding `.k.md` file.
 
 ## Usage
 ```bash
-python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/patch_knowledge_document.py <doc.k.json> '<json-patch>'
+${PLUGIN_ROOT}/bin/patch-knowledge-document <doc.k.json> '<json-patch>'
 ```
 
-## Tool for creating knowledge documents — `create_knowledge_document.py`
-This script creates a new knowledge document of a specified model type and initializes it with default values.
+## Tool for creating knowledge documents — `bin/create-knowledge-document`
+Creates a new knowledge document of a specified model type and initializes it with default values.
 
 ## Usage
 ```bash
-python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py <model_type> <document_path>
+${PLUGIN_ROOT}/bin/create-knowledge-document <model_type> <document_path>
 ```
 
 ## Supported model types
 - `Doc` — Create a basic knowledge document
-- `Task` — Create a task document with iterations (spec field is optional/deprecated)
 - `Spec` — Create a specification document with features and constraints
-- `Iteration` — Create an iteration document
-
-## Task-Spec Document Pattern
-
-As of the spec decoupling refactor, specifications are now maintained in a separate `spec.k.json` knowledge document:
-
-- **task-iterations.k.json** — Contains Task type at root with iterations (spec field now optional)
-- **spec.k.json** — Contains Spec type at root with features and constraints
-
-This separation allows:
-- Independent versioning of specifications and task iterations
-- Reuse of specifications across multiple tasks
-- Cleaner archival of completed specs in `project/raw-specs/`
-- Task iterations archived in `project/iterations/`
-
-When working with specifications, use `spec.k.json` instead of accessing `task.spec`.
+- `Project` — Create a project document indexing specs across a repository
 
 ## Examples
 ```bash
 # Create a new Doc
-python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Doc doc.k.json
+${PLUGIN_ROOT}/bin/create-knowledge-document Doc doc.k.json
 
-# Create a new Task
-python ${PLUGIN_ROOT}/knowledge_tool/knowledge_tool/create_knowledge_document.py Task task-iterations.k.json
+# Create a new Spec
+${PLUGIN_ROOT}/bin/create-knowledge-document Spec spec.k.json
+
+# Create a new Project
+${PLUGIN_ROOT}/bin/create-knowledge-document Project project.k.json
 ```
 
 ## Error handling

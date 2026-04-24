@@ -19,6 +19,7 @@ sys.path.insert(0, str(_script_dir))
 
 from models import (
     Spec, Feature,
+    Project,
     ConstraintBash,
     ConstraintBashResult,
     FeatureResult, ChecksResults
@@ -82,17 +83,8 @@ def _sync_spec_with_results(spec_path: Path, doc_type: str, increments: list) ->
         print(f"⚠️  Warning: Failed to register knowledge files: {e}", file=sys.stderr)
 
 
-def _substitute_project_root(cmd: str) -> str:
-    """Substitute ${PROJECT_ROOT} and $PROJECT_ROOT placeholders in command.
-
-    Args:
-        cmd: Command string potentially containing PROJECT_ROOT placeholders
-
-    Returns:
-        Command with PROJECT_ROOT placeholders replaced with actual path
-    """
-    project_root_str = str(CONFIG_PROJECT_ROOT)
-    # Replace both ${PROJECT_ROOT} and $PROJECT_ROOT patterns
+def _substitute_project_root(cmd: str, project_root_str: str) -> str:
+    """Substitute ${PROJECT_ROOT} and $PROJECT_ROOT placeholders in command."""
     cmd = cmd.replace("${PROJECT_ROOT}", project_root_str)
     cmd = cmd.replace("$PROJECT_ROOT", project_root_str)
     return cmd
@@ -131,12 +123,17 @@ def _check_recursive_execution(cmd: str) -> bool:
 
 
 def execute_constraint(
-    constraint: Union[ConstraintBash]
+    constraint: Union[ConstraintBash],
+    extra_env: Optional[Dict[str, str]] = None,
 ) -> Union[ConstraintBashResult]:
     """Execute a single constraint and return its result.
 
     Args:
         constraint: ConstraintBash to execute
+        extra_env: Env vars layered on top of the process env after the default
+            PROJECT_ROOT is set. Can override PROJECT_ROOT (e.g. when a Project
+            document supplies per-spec envs). The final PROJECT_ROOT in env is
+            also used for ${PROJECT_ROOT} substitution in the command string.
 
     Returns:
         ConstraintBashResult with execution result
@@ -149,18 +146,20 @@ def execute_constraint(
                 "✗ Recursive execution detected: check_spec_constraints.py cannot check itself"
             )
 
-        # Substitute PROJECT_ROOT placeholders
-        cmd = _substitute_project_root(constraint.cmd)
+        # Build env: default PROJECT_ROOT, then extra_env layered on top (may override PROJECT_ROOT)
+        env = os.environ.copy()
+        env['PROJECT_ROOT'] = str(CONFIG_PROJECT_ROOT)
+        if extra_env:
+            env.update(extra_env)
+
+        # Substitute ${PROJECT_ROOT} using the final value in env (so spec-level envs win)
+        cmd = _substitute_project_root(constraint.cmd, env['PROJECT_ROOT'])
 
         # Use constraint-specific timeout if set, otherwise use global default
         timeout_seconds = constraint.timeout if constraint.timeout is not None else CONSTRAINTS_TIMEOUT
 
         # Execute bash command
         try:
-            # Set PROJECT_ROOT environment variable so constraints can use it
-            env = os.environ.copy()
-            env['PROJECT_ROOT'] = str(CONFIG_PROJECT_ROOT)
-
             start = time.monotonic()
             result = subprocess.run(
                 cmd,
@@ -242,7 +241,8 @@ def _build_dependency_buckets(
 
 def check_feature(
     feature: Feature,
-    failing_parent_features: Optional[set[str]] = None
+    failing_parent_features: Optional[set[str]] = None,
+    extra_env: Optional[Dict[str, str]] = None,
 ) -> FeatureResult:
     """Execute all constraints in a feature and return aggregated results.
 
@@ -253,6 +253,7 @@ def check_feature(
     Args:
         feature: Feature with embedded constraints to execute
         failing_parent_features: Set of parent feature IDs that failed in current run
+        extra_env: Env vars propagated to each constraint's execution
 
     Returns:
         FeatureResult with constraint execution results indexed by constraint ID
@@ -276,7 +277,7 @@ def check_feature(
                 result.postponed = True
             else:
                 # Execute: either no dependency issues, or unproven constraint (always execute)
-                result = execute_constraint(constraint)
+                result = execute_constraint(constraint, extra_env=extra_env)
 
             constraint_results[constraint_id] = result
 
@@ -291,6 +292,7 @@ def check_constraints(
     feature_ids: Optional[list] = None,
     output_checks_path: Optional[str] = None,
     quiet: bool = False,
+    extra_env: Optional[Dict[str, str]] = None,
 ) -> ChecksResults:
     """Execute constraints for features in a Spec document (spec.k.json).
 
@@ -373,7 +375,7 @@ def check_constraints(
         info(f"  Bucket {bucket_idx + 1}/{len(buckets)}: executing {len(bucket)} feature(s)")
         for feature_id in bucket:
             feature = features_to_check[feature_id]
-            feature_result = check_feature(feature, failing_parent_features=failing_features)
+            feature_result = check_feature(feature, failing_parent_features=failing_features, extra_env=extra_env)
             if feature_result.constraints_results:
                 features_results[feature_id] = feature_result
                 # Check if this feature failed (has any failed constraints)
@@ -597,7 +599,9 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str, f
         constraint = feature.constraints.get(constraint_id)
         return getattr(constraint, 'cmd', None) if constraint else None
 
-    if failed_constraints:
+    # Unverified takes precedence: when present, suppress Failed Constraints
+    # in quiet mode so the user focuses on fixing the unverified block first.
+    if failed_constraints and (full_report or not has_unverified):
         print("\n❌ Failed Constraints:")
         for feature_id in sorted(failed_constraints.keys()):
             print(f"  {feature_id}:")
@@ -642,38 +646,77 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str, f
         return 0
 
 
+def _run_spec(
+    spec_path: str,
+    output_checks_path: Optional[str],
+    feature_ids: Optional[list],
+    dry_run: bool,
+    quiet: bool,
+    full_report: bool,
+    extra_env: Optional[Dict[str, str]] = None,
+) -> int:
+    """Check a single spec file and print its report. Returns its exit code."""
+    spec_data = json.loads(Path(spec_path).read_text())
+    spec = Spec.model_validate(spec_data)
+
+    spec_dir = Path(spec_path).parent
+    if output_checks_path is None:
+        output_checks_path = str(spec_dir / CONSTRAINTS_RESULTS_FILE)
+
+    if dry_run:
+        checks_path = Path(output_checks_path)
+        if not checks_path.exists():
+            print(f"✗ Error: checks results file not found: {checks_path}", file=sys.stderr)
+            return 1
+        if not quiet:
+            print(f"📂 Loading existing checks results from {checks_path}")
+        checks_data = json.loads(checks_path.read_text())
+        checks_results = ChecksResults.model_validate(checks_data)
+    else:
+        checks_results = check_constraints(
+            spec_path,
+            feature_ids=feature_ids,
+            output_checks_path=output_checks_path,
+            quiet=quiet,
+            extra_env=extra_env,
+        )
+
+    return generate_report(checks_results, spec, spec_path, full_report=full_report)
+
+
 def main():
     """Main entry point with CLI argument parsing."""
     parser = argparse.ArgumentParser(
-        description="Execute and validate feature constraints from a Spec document (spec.k.json)",
+        description="Execute feature constraints for a Project (project.k.json) or a single Spec (spec.k.json).",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
+Resolution order when no path is given:
+  $PROJECT_ROOT/project.k.json  (if present, run each spec it references)
+  $PROJECT_ROOT/spec.k.json     (otherwise)
+
 Examples:
-  # Check all features in spec.k.json
-  python3 check_spec_constraints.py spec.k.json
+  # Default: pick project.k.json if present, else spec.k.json, under $PROJECT_ROOT
+  python3 check_spec_constraints.py
 
-  # Check specific features
+  # Single spec
   python3 check_spec_constraints.py spec.k.json --features feature_1,feature_2
-
-  # Check and save results
   python3 check_spec_constraints.py spec.k.json --output-checks-path spec-checks.k.json
 
-  # Check specific features and save results
-  python3 check_spec_constraints.py spec.k.json \\
-    --features forbid_task_status_downgrade,render_spec_features_in_task \\
-    --output-checks-path spec-checks.k.json
+  # Project: runs every spec it references, applying that spec's envs
+  python3 check_spec_constraints.py project.k.json
         """
     )
 
     parser.add_argument(
-        'spec_path',
+        'doc_path',
         nargs='?',
-        help='Path to spec.k.json (default: $PROJECT_ROOT/spec.k.json)'
+        help='Path to project.k.json or spec.k.json (default: $PROJECT_ROOT/project.k.json '
+             'if present, else $PROJECT_ROOT/spec.k.json)'
     )
 
     parser.add_argument(
         '--features',
-        help='Comma-separated list of feature IDs to check (if not provided, checks all)',
+        help='Comma-separated list of feature IDs to check (spec mode only; ignored for projects)',
         type=str,
         default=None
     )
@@ -686,7 +729,7 @@ Examples:
 
     parser.add_argument(
         '--output-checks-path',
-        help=f'Path to save ChecksResults document (default: {CONSTRAINTS_RESULTS_FILE} next to spec)',
+        help=f'Path to save ChecksResults document (spec mode only; default: {CONSTRAINTS_RESULTS_FILE} next to spec)',
         type=str,
         default=None
     )
@@ -701,50 +744,84 @@ Examples:
     args = parser.parse_args()
     quiet = not args.full_report
 
-    # Resolve spec path: explicit arg > $PROJECT_ROOT/spec.k.json > error
-    if args.spec_path is None:
+    # Resolve doc path: explicit arg > $PROJECT_ROOT/project.k.json (if exists) > $PROJECT_ROOT/spec.k.json
+    if args.doc_path is None:
         project_root = os.environ.get('PROJECT_ROOT')
         if not project_root:
-            print("Error: spec_path required (or set PROJECT_ROOT)", file=sys.stderr)
+            print("Error: doc_path required (or set PROJECT_ROOT)", file=sys.stderr)
             return 1
-        args.spec_path = str(Path(project_root) / 'spec.k.json')
+        project_file = Path(project_root) / 'project.k.json'
+        if project_file.exists():
+            args.doc_path = str(project_file)
+        else:
+            args.doc_path = str(Path(project_root) / 'spec.k.json')
         if not quiet:
-            print(f"📌 Using spec from PROJECT_ROOT: {args.spec_path}")
+            print(f"📌 Using {args.doc_path}")
 
-    # Default sibling paths relative to spec file, not CWD
-    spec_dir = Path(args.spec_path).parent
-    if args.output_checks_path is None:
-        args.output_checks_path = str(spec_dir / CONSTRAINTS_RESULTS_FILE)
-
-    # Parse feature IDs if provided
     feature_ids = None
     if args.features:
         feature_ids = [f.strip() for f in args.features.split(',')]
 
     try:
-        # Load spec document for unverified constraints reporting
-        spec_data = json.loads(Path(args.spec_path).read_text())
-        spec = Spec.model_validate(spec_data)
+        doc_data = json.loads(Path(args.doc_path).read_text())
+        doc_type = doc_data.get('type')
 
-        if args.dry_run:
-            checks_path = Path(args.output_checks_path)
-            if not checks_path.exists():
-                print(f"✗ Error: checks results file not found: {checks_path}", file=sys.stderr)
-                return 1
-            if not quiet:
-                print(f"📂 Loading existing checks results from {checks_path}")
-            checks_data = json.loads(checks_path.read_text())
-            checks_results = ChecksResults.model_validate(checks_data)
-        else:
-            # Execute constraint checks
-            checks_results = check_constraints(
-                args.spec_path,
-                feature_ids=feature_ids,
-                output_checks_path=args.output_checks_path,
-                quiet=quiet,
-            )
+        if doc_type == 'Project':
+            if args.features or args.output_checks_path:
+                print("⚠️  --features and --output-checks-path are ignored in project mode", file=sys.stderr)
 
-        return generate_report(checks_results, spec, args.spec_path, full_report=args.full_report)
+            project = Project.model_validate(doc_data)
+            project_dir = Path(args.doc_path).resolve().parent
+
+            if not project.specs:
+                print("⚠️  Project has no specs")
+                return 0
+
+            worst_code = 0
+            for spec_id, ref in sorted(project.specs.items()):
+                # Resolve spec_dir: empty/"." → project file's dir; absolute → itself;
+                # relative → joined with project file's dir.
+                raw_dir = ref.spec_dir or "."
+                raw_path = Path(raw_dir)
+                spec_root = raw_path.resolve() if raw_path.is_absolute() else (project_dir / raw_path).resolve()
+                spec_full_path = spec_root / 'spec.k.json'
+
+                # Per-spec PROJECT_ROOT = its spec_dir; user envs layer on top and may override.
+                env_for_spec = {'PROJECT_ROOT': str(spec_root)}
+                env_for_spec.update(ref.envs)
+
+                if not quiet:
+                    print(f"\n🧩 Spec [{spec_id}]: {spec_full_path}")
+                    print(f"   PROJECT_ROOT={spec_root}")
+                    if ref.envs:
+                        print(f"   envs: {ref.envs}")
+
+                if not spec_full_path.exists():
+                    print(f"✗ Error: spec not found: {spec_full_path}", file=sys.stderr)
+                    worst_code = max(worst_code, 1)
+                    continue
+
+                code = _run_spec(
+                    str(spec_full_path),
+                    output_checks_path=None,
+                    feature_ids=None,
+                    dry_run=args.dry_run,
+                    quiet=quiet,
+                    full_report=args.full_report,
+                    extra_env=env_for_spec,
+                )
+                worst_code = max(worst_code, code)
+            return worst_code
+
+        # Default: Spec document
+        return _run_spec(
+            args.doc_path,
+            output_checks_path=args.output_checks_path,
+            feature_ids=feature_ids,
+            dry_run=args.dry_run,
+            quiet=quiet,
+            full_report=args.full_report,
+        )
 
     except Exception as e:
         print(f"\n✗ Error: {e}", file=sys.stderr)

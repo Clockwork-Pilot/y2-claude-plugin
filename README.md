@@ -8,7 +8,7 @@ This plugin is for claude code.
 
 ## Git submodules
 
-- **knowledge_tool** - Knowledge tool system (https://github.com/BoundPilot/y2-claude-plugin)
+- **knowledge_tool** - Knowledge tool system (https://github.com/Clockwork-Pilot/y2-claude-plugin)
 
 To clone with submodules:
 ```bash
@@ -38,10 +38,10 @@ claude --plugin-dir /path/to/y2-claude-plugin
 7. Right after constraints were added they immediately affect development enforcing constraints verification. 
    If there are any freshly added constraints didn't fail yet - plugin treats them as 
    unverified blocking constraints and all Edit|Write operations rejected on any files.
-   Claude instructed to run `check_spec_constraints.py` that performs constraints checks.
+   Claude instructed to run `bin/check` that performs constraints checks.
    At soon as constraints proven to fail at least once - Edit|Write operations are allowed.
 9. Claude starts implementing features, and worwking until all constraints checks are OK.
-10. As soon as plugin "Stop" hook called it runs `check_spec_constraints.py` script and
+10. As soon as plugin "Stop" hook called it runs `bin/check` script and
     if there are still failing constraints left - it blocks stop operation keeping dev in loop.
 11. Claude stops if tests pass, and constraints checks successfull.
 
@@ -66,13 +66,13 @@ claude --plugin-dir /path/to/y2-claude-plugin
 - **JSON Patch Operations** — Apply RFC 6902 JSON Patch to `.k.json` knowledge documents
 - **Auto-generated Markdown** — Automatically generates `.k.md` markdown representation from JSON
 - **Protected Documents** — Read-only enforcement on `.k.json` and `.k.md` files
-- **Knowledge Document Creation** — Create Doc, Task, Spec, and Iteration documents
-- **Consistency Enforcement** — All updates through `patch_knowledge_document.py` API
+- **Knowledge Document Creation** — Create Doc, Spec, and Project documents
+- **Consistency Enforcement** — All updates through `${PLUGIN_ROOT}/bin/patch-knowledge-document`
 
 #### features_and_constraints Skill
 - **Constraint Suite Design** — Define comprehensive test suites with 4 coverage categories (Structural, Behavioral, Environmental, Negative/Security)
 - **Zero-State Rule** — All constraints must fail on empty codebase
-- **Constraint Execution** — Execute bash and prompt constraints via `check_spec_constraints.py`
+- **Constraint Execution** — Execute bash and prompt constraints via `${PLUGIN_ROOT}/bin/check`
 - **History Tracking** — Track constraint failure counts and verification status
 - **Unverified Constraint Blocking** — Lock code modifications until constraints verified
 - **Constraint Protection** — Lock verified constraint commands to prevent bypass attempts

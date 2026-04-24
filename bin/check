@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+"""Thin wrapper: run the constraints checker without exposing its nested path.
+
+Users should invoke this from `${PLUGIN_ROOT}/bin/check-constraints`. Delegates
+to the real script via runpy so its own `__file__`-relative path math works
+unchanged.
+"""
+
+import runpy
+from pathlib import Path
+
+_target = Path(__file__).resolve().parent.parent / "constraints_tool" / "constraints_tool" / "check_spec_constraints.py"
+runpy.run_path(str(_target), run_name="__main__")
