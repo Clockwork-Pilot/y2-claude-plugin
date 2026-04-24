@@ -68,30 +68,53 @@ def is_knowledge_file(file_path: str) -> bool:
         return False
 
 
+def _spec_has_unverified(spec_path: Path) -> bool:
+    """Return the contains_unverified_constraints flag for a spec file.
+
+    Missing or unreadable specs are treated as not-blocking (fail-open); the
+    constraint checker remains the source of truth, and fail-closed would
+    strand edits on a transient path error.
+    """
+    try:
+        if not spec_path.exists():
+            return False
+        spec_data = json.loads(spec_path.read_text())
+        return spec_data.get("contains_unverified_constraints", False)
+    except Exception:
+        return False
+
+
 def have_unverified_constraints() -> bool:
-    """Check if spec.k.json has unverified constraints.
+    """Check whether any spec reachable from PROJECT_ROOT has unverified constraints.
 
-    Reads the contains_unverified_constraints flag from PROJECT_ROOT/spec.k.json.
-    Unverified constraints (fails_count < 1) are those that haven't been proven to fail.
+    When PROJECT_ROOT/project.k.json exists, iterate every spec it references
+    and return True if any sub-spec's contains_unverified_constraints flag is
+    True. Otherwise, fall back to reading PROJECT_ROOT/spec.k.json directly.
 
-    Returns:
-        True if contains_unverified_constraints flag is True, False otherwise.
+    Unverified constraints (fails_count < 1) have never failed and must be
+    resolved before edits are allowed.
     """
     from config import PROJECT_ROOT, TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK
 
     if TEMPORARY_BYPASS_UNVERIFIED_CONSTRAINTS_BLOCK:
         return False
 
-    spec_path = PROJECT_ROOT / "spec.k.json"
-
-    try:
-        if not spec_path.exists():
+    project_path = PROJECT_ROOT / "project.k.json"
+    if project_path.exists():
+        try:
+            project_data = json.loads(project_path.read_text())
+            for spec_ref in project_data.get("specs", {}).values():
+                spec_dir = spec_ref.get("spec_dir", "") or "."
+                spec_dir_path = Path(spec_dir)
+                if not spec_dir_path.is_absolute():
+                    spec_dir_path = PROJECT_ROOT / spec_dir_path
+                if _spec_has_unverified(spec_dir_path / "spec.k.json"):
+                    return True
+            return False
+        except Exception:
             return False
 
-        spec_data = json.loads(spec_path.read_text())
-        return spec_data.get("contains_unverified_constraints", False)
-    except Exception:
-        return False
+    return _spec_has_unverified(PROJECT_ROOT / "spec.k.json")
 
 
 def get_deny_reasons_for_file(path: str) -> list[str]:

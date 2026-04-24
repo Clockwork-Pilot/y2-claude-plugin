@@ -26,21 +26,30 @@ _iteration_script = PLUGIN_ROOT / "skills" / "task-lifecycle-tool" / "task-add-i
 def check_constraints() -> tuple[int, str]:
     """Run constraint checks on task document.
 
+    Prefers PROJECT_ROOT/project.k.json when present (runs every spec it
+    references), otherwise falls back to PROJECT_ROOT/spec.k.json. Skips
+    the check only if neither file exists.
+
     Returns:
         Tuple of (exit_code, message) where:
         - exit_code: 0=all passed, 2=constraints failed, 1=error
         - message: captured stdout/stderr from the constraint checker
     """
+    project_json = PROJECT_ROOT / "project.k.json"
     spec_json = PROJECT_ROOT / "spec.k.json"
 
-    if not spec_json.exists():
+    if project_json.exists():
+        doc_path = project_json
+    elif spec_json.exists():
+        doc_path = spec_json
+    else:
         return (0, "")
 
     checker_script = PLUGIN_ROOT / "constraints_tool" / "constraints_tool" / "check_spec_constraints.py"
 
     try:
         result = subprocess.run(
-            [sys.executable, str(checker_script), str(spec_json)],
+            [sys.executable, str(checker_script), str(doc_path)],
             cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,
