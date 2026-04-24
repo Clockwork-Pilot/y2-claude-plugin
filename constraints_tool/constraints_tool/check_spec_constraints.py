@@ -415,7 +415,7 @@ def check_constraints(
         # write path; see its docstring for the code-level boundary.
         _sync_spec_with_results(spec_path, doc_type, increments)
         info(f"✓ Updated fails_count for {len(increments)} constraint(s)")
-        print(f"\n⚠️  {len(increments)} constraint(s) now locked (cmd cannot be changed):")
+        print(f"\n🚫 {len(increments)} constraint(s) now locked (cmd cannot be changed):")
         for feature_id, constraint_id in increments:
             print(f"   • {feature_id}.{constraint_id}")
         print("   Options: (1) Fix constraint to pass, or (2) Remove constraint entirely")
@@ -624,14 +624,14 @@ def generate_report(checks_results: ChecksResults, spec: Spec, spec_path: str, f
             total_unverified += len(constraints)
             print(f"\n  {feature_id}:")
             for constraint_id, fails_count in sorted(constraints):
-                print(f"    🚫 {constraint_id} (fails_count={fails_count})")
+                print(f"    ⚠️  {constraint_id} (fails_count={fails_count})")
                 cmd = _lookup_cmd(feature_id, constraint_id)
                 if cmd:
                     print(f"      $ {cmd}")
         print(f"\nTotal unverified: {total_unverified}")
 
     if unverified_by_feature:
-        print(f"\n🚫 Task features check DETECTED unverified constraints — code changes are blocked.")
+        print(f"\n⚠️  Task features check DETECTED unverified constraints — code changes are blocked.")
         print(f"  Either adjust the constraints so they fail initially, or remove them entirely.")
         print(f"  Spec:    {Path(spec_path).resolve()}")
         print(f"  Project: {Path(spec_path).resolve().parent}")
@@ -680,6 +680,10 @@ def _run_spec(
             quiet=quiet,
             extra_env=extra_env,
         )
+        # check_constraints may have incremented fails_count on disk for
+        # constraints that failed on their first run; reload so the report's
+        # unverified-vs-verified classification reflects the post-sync state.
+        spec = Spec.model_validate(json.loads(Path(spec_path).read_text()))
 
     return generate_report(checks_results, spec, spec_path, full_report=full_report)
 
