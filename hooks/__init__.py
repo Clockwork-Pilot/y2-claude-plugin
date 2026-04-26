@@ -4,8 +4,19 @@ import sys
 import json
 import fnmatch
 import os
+import shlex
 from pathlib import Path
 from typing import Dict
+
+# Make proxy_wrapper importable from its install location inside the agent
+# docker image. Outside the image (plugin tests on the host) the import fails
+# and is_bash_command_allowed() short-circuits to allowed.
+if "/usr/local/bin" not in sys.path:
+    sys.path.append("/usr/local/bin")
+try:
+    import proxy_wrapper as _proxy_wrapper  # pyright: ignore[reportMissingImports]
+except Exception:
+    _proxy_wrapper = None
 
 def get_vars() -> Dict[str, str]:
     """Return a dict with PROJECT_ROOT and PLUGIN_ROOT environment variables.
@@ -120,7 +131,7 @@ def have_unverified_constraints() -> bool:
 def get_deny_reasons_for_file(path: str) -> list[str]:
     """Return deny reasons for the given file path via glob patterns.
 
-    Rules are loaded from the JSON file pointed to by CLAUDE_FILE_RULES env var.
+    Rules are loaded from the JSON file pointed to by AGENT_FILE_ACCESS_RULES env var.
     Deny entry:      {"deny-rule": ["src/**/*.rs"], "reason": "some reason"}
     Whitelist entry: {"whitelist-rule": ["src/specific/file.rs"]}
     If any whitelist-rule glob matches the path, deny rules are overridden and [] is returned.
@@ -148,6 +159,32 @@ def get_deny_reasons_for_file(path: str) -> list[str]:
     return reasons
 
 
+def is_bash_command_allowed(command: str, cwd: str) -> tuple[bool, str | None]:
+    """Check if a Bash tool command's leading invocation is allowed under
+    proxy_wrapper.py's namespace deny rules. Mirrors get_deny_reasons_for_file
+    for Bash.
+
+    Tokenizes via shlex; uses argv[0] as called_as and argv[1:] as args.
+    Multi-stage pipelines (&&, ||, |, ;) are checked at their first stage
+    only — the runtime proxy_wrapper backstops downstream stages at exec
+    time.
+
+    Returns (True, None) — fail-open — when proxy_wrapper isn't importable
+    (e.g. plugin tests on the host outside the agent docker image), when
+    the command can't be tokenized, or when the command is empty.
+    """
+    if _proxy_wrapper is None:
+        return True, None
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return True, None
+    if not tokens:
+        return True, None
+    called_as = os.path.basename(tokens[0])
+    return _proxy_wrapper.is_command_allowed(called_as, tokens[1:], cwd)
+
+
 def is_edit_blocked_by_unverified_constraints(file_path: str = None) -> bool:
     """Check if editing is blocked due to unverified constraints.
 
@@ -170,4 +207,5 @@ __all__ = [
     "have_unverified_constraints",
     "is_edit_blocked_by_unverified_constraints",
     "get_deny_reasons_for_file",
+    "is_bash_command_allowed",
 ]

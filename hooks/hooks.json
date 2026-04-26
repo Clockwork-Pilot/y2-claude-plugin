@@ -18,6 +18,16 @@
             "command": "python3 ${PLUGIN_ROOT}/hooks/handler_write.py"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_bash.py",
+            "timeout": 600
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -38,8 +48,19 @@
             "command": "python3 ${PLUGIN_ROOT}/hooks/handler_write.py"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${PLUGIN_ROOT}/hooks/handler_bash.py",
+            "timeout": 600
+          }
+        ]
       }
-    ],    
+    ],
+
     "SessionStart": [
       {
         "matcher": "*",
