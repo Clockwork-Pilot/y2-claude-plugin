@@ -25,6 +25,8 @@ def main():
         input_data = sys.stdin.read()
         hook_input = json.loads(input_data) if input_data else {}
 
+        phase = hook_input.get('hook_event_name', '')
+
         # Check if editing is blocked due to unverified constraints
         file_path = hook_input.get('tool_input', {}).get('file_path')
         if is_edit_blocked_by_unverified_constraints(file_path):
@@ -33,6 +35,7 @@ def main():
             log_message = {
                 'timestamp': datetime.now().isoformat(),
                 'event': 'Edit',
+                'phase': phase,
                 'status': 'blocked',
                 'reason': 'Unverified constraints',
                 'file_path': file_path,
@@ -50,6 +53,7 @@ def main():
                 log_message = {
                     'timestamp': datetime.now().isoformat(),
                     'event': 'Edit',
+                    'phase': phase,
                     'status': 'blocked',
                     'reason': 'File rules denial',
                     'deny_reasons': reasons,
@@ -67,6 +71,7 @@ def main():
             log_message = {
                 'timestamp': datetime.now().isoformat(),
                 'event': 'Edit',
+                'phase': phase,
                 'status': 'blocked',
                 'reason': 'Knowledge file protected',
                 'file_path': file_path,
@@ -78,6 +83,7 @@ def main():
         log_message = {
             'timestamp': datetime.now().isoformat(),
             'event': 'Edit',
+            'phase': phase,
             'data': hook_input
         }
         logger.info(json.dumps(log_message))

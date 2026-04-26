@@ -26,6 +26,7 @@ def main():
         input_data = sys.stdin.read()
         hook_input = json.loads(input_data) if input_data else {}
 
+        phase = hook_input.get('hook_event_name', '')
         command = hook_input.get('tool_input', {}).get('command', '')
         cwd = hook_input.get('cwd') or os.getcwd()
 
@@ -37,6 +38,7 @@ def main():
             log_message = {
                 'timestamp': datetime.now().isoformat(),
                 'event': 'Bash',
+                'phase': phase,
                 'status': 'blocked',
                 'reason': reason,
                 'command': command,
@@ -48,6 +50,7 @@ def main():
         log_message = {
             'timestamp': datetime.now().isoformat(),
             'event': 'Bash',
+            'phase': phase,
             'command': command,
             'data': hook_input,
         }

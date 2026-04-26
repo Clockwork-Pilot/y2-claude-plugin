@@ -52,6 +52,7 @@ def main():
         log_message = {
             'timestamp': datetime.now().isoformat(),
             'event': 'Write',
+            'phase': hook_input.get('hook_event_name', ''),
             'data': hook_input
         }
         logger.info(json.dumps(log_message))
